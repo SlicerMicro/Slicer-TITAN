@@ -133,12 +133,6 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         self.ui.subjectHierarchy.setMRMLScene(slicer.mrmlScene)
         # self.ui.dataSelection.setMRMLScene(slicer.mrmlScene)
 
-        # Visualization
-        self.ui.redImageSelect.setMRMLScene(slicer.mrmlScene)
-        self.ui.greenImageSelect.setMRMLScene(slicer.mrmlScene)
-        self.ui.blueImageSelect.setMRMLScene(slicer.mrmlScene)
-
-
         # Connections
 
         # Data
@@ -149,10 +143,6 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
 
         # Visualization
         self.ui.resetViewButton.connect("clicked(bool)", self.onReset)
-
-        self.ui.redImageSelect.connect("currentNodeChanged(vtkMRMLNode*)", self.onVisualization)
-        self.ui.greenImageSelect.connect("currentNodeChanged(vtkMRMLNode*)", self.onVisualization)
-        self.ui.blueImageSelect.connect("currentNodeChanged(vtkMRMLNode*)", self.onVisualization)
 
         self.ui.redSelect.connect("activated(int)", self.onVisualization)
         self.ui.greenSelect.connect("activated(int)", self.onVisualization)
@@ -200,10 +190,6 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
     # Whenever something is updated in Visualization tab, this function runs
     def onVisualization(self):
         logic = HypModuleLogic()
-        # logic.visualizationRun(self.ui.redImageSelect.currentNode(), self.ui.greenImageSelect.currentNode(),
-        #                        self.ui.blueImageSelect.currentNode(), self.ui.threshMinSlider.value,
-        #                        self.ui.threshMaxSlider.value)
-
 
         logic.visualizationRun(self.ui.roiVisualization.currentText, self.ui.redSelect.currentText,
                                self.ui.greenSelect.currentText, self.ui.blueSelect.currentText,
