@@ -154,10 +154,10 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         self.ui.greenImageSelect.connect("currentNodeChanged(vtkMRMLNode*)", self.onVisualization)
         self.ui.blueImageSelect.connect("currentNodeChanged(vtkMRMLNode*)", self.onVisualization)
 
-        self.ui.redSelect.connect("currentTextChanged()", self.onVisualization)
-        self.ui.greenSelect.connect("currentTextChanged()", self.onVisualization)
-        self.ui.blueSelect.connect("currentTextChanged()", self.onVisualization)
-        self.ui.roiVisualization.connect("currentTextChanged()", self.onVisualization)
+        self.ui.redSelect.connect("activated(int)", self.onVisualization)
+        self.ui.greenSelect.connect("activated(int)", self.onVisualization)
+        self.ui.blueSelect.connect("activated(int)", self.onVisualization)
+        # self.ui.roiVisualization.connect("activated(int)", self.onVisualization)
 
         self.ui.threshMinSlider.connect('valueChanged(int)', self.onVisualization)
         self.ui.threshMaxSlider.connect('valueChanged(int)', self.onVisualization)
@@ -203,24 +203,26 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         # logic.visualizationRun(self.ui.redImageSelect.currentNode(), self.ui.greenImageSelect.currentNode(),
         #                        self.ui.blueImageSelect.currentNode(), self.ui.threshMinSlider.value,
         #                        self.ui.threshMaxSlider.value)
-        logic.visualizationRun(self.ui.roiVisualization.currentText(), self.ui.redSelect.currentText(),
-                               self.ui.greenSelect.currentText(), self.ui.blueSelect.currentText(),
+
+
+        logic.visualizationRun(self.ui.roiVisualization.currentText, self.ui.redSelect.currentText,
+                               self.ui.greenSelect.currentText, self.ui.blueSelect.currentText,
                                self.ui.threshMinSlider.value, self.ui.threshMaxSlider.value)
-        global nodeName
-        nodeName = nodeName.replace("; ", "")
-        self.ui.fileNameLabel.text = nodeName + ".png"
-        self.ui.saveImgButton.enabled = self.ui.redImageSelect.currentNode() or self.ui.greenImageSelect.currentNode() or \
-                                        self.ui.blueImageSelect.currentNode()
-        self.ui.threshMinSlider.enabled = self.ui.redImageSelect.currentNode() or self.ui.greenImageSelect.currentNode() or \
-                                          self.ui.blueImageSelect.currentNode()
-        self.ui.threshMaxSlider.enabled = self.ui.redImageSelect.currentNode() or self.ui.greenImageSelect.currentNode() or \
-                                          self.ui.blueImageSelect.currentNode()
-        self.ui.threshMin.enabled = self.ui.redImageSelect.currentNode() or self.ui.greenImageSelect.currentNode() or \
-                                    self.ui.blueImageSelect.currentNode()
-        self.ui.threshMax.enabled = self.ui.redImageSelect.currentNode() or self.ui.greenImageSelect.currentNode() or \
-                                    self.ui.blueImageSelect.currentNode()
-        # self.ui.applyButton.enabled = self.ui.redImageSelect.currentNode() or self.ui.greenImageSelect.currentNode() or \
-        #                               self.ui.blueImageSelect.currentNode()
+        # global nodeName
+        # nodeName = nodeName.replace("; ", "")
+        # self.ui.fileNameLabel.text = nodeName + ".png"
+        self.ui.saveImgButton.enabled = self.ui.roiVisualization.currentText or self.ui.redSelect.currentText or \
+                                        self.ui.greenSelect.currentText
+        self.ui.threshMinSlider.enabled = self.ui.roiVisualization.currentText or self.ui.redSelect.currentText or \
+                                        self.ui.greenSelect.currentText
+        self.ui.threshMaxSlider.enabled = self.ui.roiVisualization.currentText or self.ui.redSelect.currentText or \
+                                        self.ui.greenSelect.currentText
+        self.ui.threshMin.enabled = self.ui.roiVisualization.currentText or self.ui.redSelect.currentText or \
+                                        self.ui.greenSelect.currentText
+        self.ui.threshMax.enabled = self.ui.roiVisualization.currentText or self.ui.redSelect.currentText or \
+                                        self.ui.greenSelect.currentText
+        self.ui.applyButton.enabled = self.ui.roiVisualization.currentText or self.ui.redSelect.currentText or \
+                                        self.ui.greenSelect.currentText
 
     def onSelect(self):
         self.ui.crtPlotButton.enabled = self.ui.imageHistogramSelect.currentNode() \
@@ -480,210 +482,8 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         # Run helper function
         HypModuleLogic().visualizationRunHelper(overlay, threshMin, threshMax, saveImageName, arraySize,
                                                 existingOverlays)
-        # return True
+        return True
 
-
-
-
-
-
-
-        if redImageSelect is None and greenImageSelect is None:
-            # Get name of image
-            blueName = blueImageSelect.GetName()
-            nameSplit = blueName.rsplit("_")[1]
-            blueFinal = nameSplit.rsplit(".")[0]
-            global nodeName
-            nodeName = blueFinal
-
-            # Set bluescale array
-            blueArray = slicer.util.arrayFromVolume(blueImageSelect)
-            arraySize = blueArray.shape
-            stackedBlue = np.stack((blueArray,) * 3, axis=-1)
-            stackedBlue[:, :, :, 0] = 0
-            stackedBlue[:, :, :, 1] = 0
-            overlay = stackedBlue
-
-            # Run helper function
-            HypModuleLogic().visualizationRunHelper(overlay, threshMin, threshMax, nodeName, arraySize, existingOverlays)
-            return True
-
-        elif redImageSelect is None and blueImageSelect is None:
-            # Get name of image
-            greenName = greenImageSelect.GetName()
-            nameSplit = greenName.rsplit("_")[1]
-            greenFinal = nameSplit.rsplit(".")[0]
-            nodeName = greenFinal
-
-            # Set greenscale array
-            greenArray = slicer.util.arrayFromVolume(greenImageSelect)
-            arraySize = greenArray.shape
-            stackedGreen = np.stack((greenArray,) * 3, axis=-1)
-            stackedGreen[:, :, :, 0] = 0
-            stackedGreen[:, :, :, 2] = 0
-            overlay = stackedGreen
-
-            # Run helper function
-            HypModuleLogic().visualizationRunHelper(overlay, threshMin, threshMax, nodeName, arraySize, existingOverlays)
-            return True
-
-        elif blueImageSelect is None and greenImageSelect is None:
-            # Get name of image
-            redName = redImageSelect.GetName()
-            nameSplit = redName.rsplit("_")[1]
-            redFinal = nameSplit.rsplit(".")[0]
-            nodeName = redFinal
-            # Set redscale array
-            redArray = slicer.util.arrayFromVolume(redImageSelect)
-            arraySize = redArray.shape
-            stackedRed = np.stack((redArray,) * 3, axis=-1)
-            stackedRed[:, :, :, 1] = 0
-            stackedRed[:, :, :, 2] = 0
-            overlay = stackedRed
-
-            # Run helper function
-            HypModuleLogic().visualizationRunHelper(overlay, threshMin, threshMax, nodeName, arraySize, existingOverlays)
-            return True
-
-        elif blueImageSelect is None:
-            # Get names of images
-            redName = redImageSelect.GetName()
-            nameSplit = redName.rsplit("_")[1]
-            redFinal = nameSplit.rsplit(".")[0]
-            greenName = greenImageSelect.GetName()
-            nameSplit = greenName.rsplit("_")[1]
-            greenFinal = nameSplit.rsplit(".")[0]
-            nodeName = redFinal + '; ' + greenFinal
-
-            # Get arrays for each of the images
-            redArray = slicer.util.arrayFromVolume(redImageSelect)
-            greenArray = slicer.util.arrayFromVolume(greenImageSelect)
-            arraySize = redArray.shape
-
-            # Create 3 channel arrays from the original 1 channel
-            stackedRed = np.stack((redArray,) * 3, axis=-1)
-            stackedGreen = np.stack((greenArray,) * 3, axis=-1)
-
-            # Convert each new array to their respective colour scales
-            stackedRed[:, :, :, 1] = 0
-            stackedRed[:, :, :, 2] = 0
-
-            stackedGreen[:, :, :, 0] = 0
-            stackedGreen[:, :, :, 2] = 0
-
-            # Create new array with the images overlaid
-            overlay = stackedRed + stackedGreen
-
-            # Run helper function
-            HypModuleLogic().visualizationRunHelper(overlay, threshMin, threshMax, nodeName, arraySize, existingOverlays)
-            return True
-
-        elif greenImageSelect is None:
-            # Get names of images
-            redName = redImageSelect.GetName()
-            nameSplit = redName.rsplit("_")[1]
-            redFinal = nameSplit.rsplit(".")[0]
-            blueName = blueImageSelect.GetName()
-            nameSplit = blueName.rsplit("_")[1]
-            blueFinal = nameSplit.rsplit(".")[0]
-            nodeName = redFinal + "; " + blueFinal
-
-            # Get arrays for each of the images
-            redArray = slicer.util.arrayFromVolume(redImageSelect)
-            blueArray = slicer.util.arrayFromVolume(blueImageSelect)
-            arraySize = blueArray.shape
-
-            # Create 3 channel arrays from the original 1 channel
-            stackedRed = np.stack((redArray,) * 3, axis=-1)
-            stackedBlue = np.stack((blueArray,) * 3, axis=-1)
-
-            # Convert each new array to their respective colour scales
-            stackedRed[:, :, :, 1] = 0
-            stackedRed[:, :, :, 2] = 0
-
-            stackedBlue[:, :, :, 0] = 0
-            stackedBlue[:, :, :, 1] = 0
-
-            # Create new array with the images overlaid
-            overlay = stackedRed + stackedBlue
-
-            # Run helper function
-            HypModuleLogic().visualizationRunHelper(overlay, threshMin, threshMax, nodeName, arraySize, existingOverlays)
-            return True
-
-        elif redImageSelect is None:
-            # Get names of images
-            greenName = greenImageSelect.GetName()
-            nameSplit = greenName.rsplit("_")[1]
-            greenFinal = nameSplit.rsplit(".")[0]
-            blueName = blueImageSelect.GetName()
-            nameSplit = blueName.rsplit("_")[1]
-            blueFinal = nameSplit.rsplit(".")[0]
-            nodeName = greenFinal + '; ' + blueFinal
-
-            # Get arrays for each of the images
-            blueArray = slicer.util.arrayFromVolume(blueImageSelect)
-            greenArray = slicer.util.arrayFromVolume(greenImageSelect)
-            arraySize = blueArray.shape
-
-            # Create 3 channel arrays from the original 1 channel
-            stackedBlue = np.stack((blueArray,) * 3, axis=-1)
-            stackedGreen = np.stack((greenArray,) * 3, axis=-1)
-
-            # Convert each new array to their respective colour scales
-            stackedBlue[:, :, :, 0] = 0
-            stackedBlue[:, :, :, 1] = 0
-
-            stackedGreen[:, :, :, 0] = 0
-            stackedGreen[:, :, :, 2] = 0
-
-            # Create new array with the images overlaid
-            overlay = stackedBlue + stackedGreen
-
-            # Run helper function
-            HypModuleLogic().visualizationRunHelper(overlay, threshMin, threshMax, nodeName, arraySize, existingOverlays)
-            return True
-
-        else:
-            # Get names of images
-            redName = redImageSelect.GetName()
-            nameSplit = redName.rsplit("_")[1]
-            redFinal = nameSplit.rsplit(".")[0]
-            greenName = greenImageSelect.GetName()
-            nameSplit = greenName.rsplit("_")[1]
-            greenFinal = nameSplit.rsplit(".")[0]
-            blueName = blueImageSelect.GetName()
-            nameSplit = blueName.rsplit("_")[1]
-            blueFinal = nameSplit.rsplit(".")[0]
-            nodeName = redFinal + "; " + greenFinal + "; " + blueFinal
-
-            # Get arrays for each of the images
-            redArray = slicer.util.arrayFromVolume(redImageSelect)
-            greenArray = slicer.util.arrayFromVolume(greenImageSelect)
-            blueArray = slicer.util.arrayFromVolume(blueImageSelect)
-            arraySize = blueArray.shape
-
-            # Create 3 channel arrays from the original 1 channel
-            stackedRed = np.stack((redArray,) * 3, axis=-1)
-            stackedGreen = np.stack((greenArray,) * 3, axis=-1)
-            stackedBlue = np.stack((blueArray,) * 3, axis=-1)
-
-            # Convert each new array to their respective colour scales
-            stackedRed[:, :, :, 1] = 0
-            stackedRed[:, :, :, 2] = 0
-
-            stackedGreen[:, :, :, 0] = 0
-            stackedGreen[:, :, :, 2] = 0
-
-            stackedBlue[:, :, :, 0] = 0
-            stackedBlue[:, :, :, 1] = 0
-
-            # Create new array with the images overlaid
-            overlay = stackedRed + stackedGreen + stackedBlue
-
-            # Run helper function
-            HypModuleLogic().visualizationRunHelper(overlay, threshMin, threshMax, nodeName, arraySize, existingOverlays)
-            return True
 
     def visualizationRunHelper(self, overlay, threshMin, threshMax, nodeName, arraySize, existingOverlays):
 

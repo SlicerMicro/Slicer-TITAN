@@ -373,18 +373,10 @@
         </widget>
        </item>
        <item row="8" column="0">
-        <widget class="QComboBox" name="greenSelect">
-         <property name="placeholderText">
-          <string>Select channel...</string>
-         </property>
-        </widget>
+        <widget class="QComboBox" name="greenSelect"/>
        </item>
        <item row="5" column="0">
-        <widget class="QComboBox" name="redSelect">
-         <property name="placeholderText">
-          <string>Select channel...</string>
-         </property>
-        </widget>
+        <widget class="QComboBox" name="redSelect"/>
        </item>
        <item row="10" column="0">
         <widget class="QLabel" name="blueImageLabel">
@@ -744,11 +736,7 @@
         </widget>
        </item>
        <item row="11" column="0">
-        <widget class="QComboBox" name="blueSelect">
-         <property name="placeholderText">
-          <string>Select channel...</string>
-         </property>
-        </widget>
+        <widget class="QComboBox" name="blueSelect"/>
        </item>
        <item row="20" column="0">
         <widget class="QLabel" name="label_16">
