@@ -276,6 +276,9 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
 
         self.ui.roiList.clear()
         self.ui.channelList.clear()
+        self.ui.redSelect.clear()
+        self.ui.blueSelect.clear()
+        self.ui.greenSelect.clear()
 
         self.ui.redSelect.addItem("None")
         self.ui.greenSelect.addItem("None")
