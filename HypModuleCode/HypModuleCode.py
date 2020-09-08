@@ -1592,7 +1592,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             import matplotlib
         except ModuleNotFoundError:
             import pip
-            pip_install('matplotlib')
+            pip_install("matplotlib")
             import matplotlib
 
         matplotlib.use("Agg")
