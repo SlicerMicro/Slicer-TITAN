@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="image">
+    <file>medilab_qcpu.png</file>
+  </qresource>
+</RCC>

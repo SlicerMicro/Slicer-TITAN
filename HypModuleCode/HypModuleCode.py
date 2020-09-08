@@ -154,6 +154,11 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         self.ui.greenImageSelect.connect("currentNodeChanged(vtkMRMLNode*)", self.onVisualization)
         self.ui.blueImageSelect.connect("currentNodeChanged(vtkMRMLNode*)", self.onVisualization)
 
+        self.ui.redSelect.connect("currentTextChanged()", self.onVisualization)
+        self.ui.greenSelect.connect("currentTextChanged()", self.onVisualization)
+        self.ui.blueSelect.connect("currentTextChanged()", self.onVisualization)
+        self.ui.roiVisualization.connect("currentTextChanged()", self.onVisualization)
+
         self.ui.threshMinSlider.connect('valueChanged(int)', self.onVisualization)
         self.ui.threshMaxSlider.connect('valueChanged(int)', self.onVisualization)
 
@@ -195,9 +200,12 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
     # Whenever something is updated in Visualization tab, this function runs
     def onVisualization(self):
         logic = HypModuleLogic()
-        logic.visualizationRun(self.ui.redImageSelect.currentNode(), self.ui.greenImageSelect.currentNode(),
-                               self.ui.blueImageSelect.currentNode(), self.ui.threshMinSlider.value,
-                               self.ui.threshMaxSlider.value)
+        # logic.visualizationRun(self.ui.redImageSelect.currentNode(), self.ui.greenImageSelect.currentNode(),
+        #                        self.ui.blueImageSelect.currentNode(), self.ui.threshMinSlider.value,
+        #                        self.ui.threshMaxSlider.value)
+        logic.visualizationRun(self.ui.roiVisualization.currentText(), self.ui.redSelect.currentText(),
+                               self.ui.greenSelect.currentText(), self.ui.blueSelect.currentText(),
+                               self.ui.threshMinSlider.value, self.ui.threshMaxSlider.value)
         global nodeName
         nodeName = nodeName.replace("; ", "")
         self.ui.fileNameLabel.text = nodeName + ".png"
@@ -268,11 +276,19 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         self.ui.roiList.clear()
         self.ui.channelList.clear()
 
+        self.ui.redSelect.addItem("None")
+        self.ui.greenSelect.addItem("None")
+        self.ui.blueSelect.addItem("None")
+
         for roi in roiNames:
             if roi != "Scene":
                 self.ui.roiList.addItem(roi)
+                self.ui.roiVisualization.addItem(roi)
         for channel in channelNames:
             self.ui.channelList.addItem(channel)
+            self.ui.redSelect.addItem(channel)
+            self.ui.greenSelect.addItem(channel)
+            self.ui.blueSelect.addItem(channel)
 
     # When "Save Image" is clicked, run saveVisualization function
     def onSaveButton(self):
@@ -391,12 +407,86 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         return True
 
 
-    def visualizationRun(self, redImageSelect, greenImageSelect, blueImageSelect, threshMin, threshMax):
+    def visualizationRun(self, roiSelect, redSelect, greenSelect, blueSelect, threshMin, threshMax):
         """
         Runs the algorithm to display the volumes selected in "Visualization" in their respective colours
         """
         # Delete any existing image overlays
         existingOverlays = slicer.util.getNodesByClass("vtkMRMLVectorVolumeNode")
+
+        # Make dictionary of the selected channels
+        selectChannels = {} # key = colour, value = node
+        allChannels = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
+        for channel in allChannels:
+            name = channel.GetName()
+            if redSelect in name:
+                # Check if channel is the correct ROI
+                id = shNode.GetItemByDataNode(channel)
+                parent = shNode.GetItemParent(id)
+                roiName = shNode.GetItemName(parent)
+                if roiName == roiSelect:
+                    selectChannels["red"] = channel
+            elif greenSelect in name:
+                # Check if channel is the correct ROI
+                id = shNode.GetItemByDataNode(channel)
+                parent = shNode.GetItemParent(id)
+                roiName = shNode.GetItemName(parent)
+                if roiName == roiSelect:
+                    selectChannels["green"] = channel
+            elif blueSelect in name:
+                # Check if channel is the correct ROI
+                id = shNode.GetItemByDataNode(channel)
+                parent = shNode.GetItemParent(id)
+                roiName = shNode.GetItemName(parent)
+                if roiName == roiSelect:
+                    selectChannels["blue"] = channel
+        saveImageName = ""
+        arrayList = []
+        arraySize = None
+        for colour in selectChannels:
+            if colour == "red":
+                saveImageName += redSelect
+                # Set redscale array
+                array = slicer.util.arrayFromVolume(selectChannels[colour])
+                if arraySize == None:
+                    arraySize = array.shape
+                stacked = np.stack((array,) * 3, axis=-1)
+                stacked[:, :, :, 1] = 0
+                stacked[:, :, :, 2] = 0
+                arrayList.append(stacked)
+            elif colour == "green":
+                saveImageName += greenSelect
+                # Set greenscale array
+                array = slicer.util.arrayFromVolume(selectChannels[colour])
+                if arraySize == None:
+                    arraySize = array.shape
+                stacked = np.stack((array,) * 3, axis=-1)
+                stacked[:, :, :, 1] = 0
+                stacked[:, :, :, 2] = 0
+                arrayList.append(stacked)
+            elif colour == "blue":
+                saveImageName += blueSelect
+                # Set bluescale array
+                array = slicer.util.arrayFromVolume(selectChannels[colour])
+                if arraySize == None:
+                    arraySize = array.shape
+                stacked = np.stack((array,) * 3, axis=-1)
+                stacked[:, :, :, 1] = 0
+                stacked[:, :, :, 2] = 0
+                arrayList.append(stacked)
+
+        overlay = sum(arrayList)
+
+        # Run helper function
+        HypModuleLogic().visualizationRunHelper(overlay, threshMin, threshMax, saveImageName, arraySize,
+                                                existingOverlays)
+        # return True
+
+
+
+
+
+
 
         if redImageSelect is None and greenImageSelect is None:
             # Get name of image
