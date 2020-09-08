@@ -157,7 +157,7 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         self.ui.redSelect.connect("activated(int)", self.onVisualization)
         self.ui.greenSelect.connect("activated(int)", self.onVisualization)
         self.ui.blueSelect.connect("activated(int)", self.onVisualization)
-        # self.ui.roiVisualization.connect("activated(int)", self.onVisualization)
+        self.ui.roiVisualization.connect("activated(int)", self.onVisualization)
 
         self.ui.threshMinSlider.connect('valueChanged(int)', self.onVisualization)
         self.ui.threshMaxSlider.connect('valueChanged(int)', self.onVisualization)
@@ -221,8 +221,8 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
                                         self.ui.greenSelect.currentText
         self.ui.threshMax.enabled = self.ui.roiVisualization.currentText or self.ui.redSelect.currentText or \
                                         self.ui.greenSelect.currentText
-        self.ui.applyButton.enabled = self.ui.roiVisualization.currentText or self.ui.redSelect.currentText or \
-                                        self.ui.greenSelect.currentText
+        # self.ui.applyButton.enabled = self.ui.roiVisualization.currentText or self.ui.redSelect.currentText or \
+        #                                 self.ui.greenSelect.currentText
 
     def onSelect(self):
         self.ui.crtPlotButton.enabled = self.ui.imageHistogramSelect.currentNode() \
@@ -418,6 +418,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         # Make dictionary of the selected channels
         selectChannels = {} # key = colour, value = node
+        shNode = slicer.vtkMRMLSubjectHierarchyNode.GetSubjectHierarchyNode(slicer.mrmlScene)
         allChannels = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
         for channel in allChannels:
             name = channel.GetName()
@@ -463,7 +464,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                 if arraySize == None:
                     arraySize = array.shape
                 stacked = np.stack((array,) * 3, axis=-1)
-                stacked[:, :, :, 1] = 0
+                stacked[:, :, :, 0] = 0
                 stacked[:, :, :, 2] = 0
                 arrayList.append(stacked)
             elif colour == "blue":
@@ -473,8 +474,8 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                 if arraySize == None:
                     arraySize = array.shape
                 stacked = np.stack((array,) * 3, axis=-1)
+                stacked[:, :, :, 0] = 0
                 stacked[:, :, :, 1] = 0
-                stacked[:, :, :, 2] = 0
                 arrayList.append(stacked)
 
         overlay = sum(arrayList)
