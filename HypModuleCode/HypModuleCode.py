@@ -208,9 +208,8 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         logic.visualizationRun(self.ui.roiVisualization.currentText, self.ui.redSelect.currentText,
                                self.ui.greenSelect.currentText, self.ui.blueSelect.currentText,
                                self.ui.threshMinSlider.value, self.ui.threshMaxSlider.value)
-        # global nodeName
-        # nodeName = nodeName.replace("; ", "")
-        # self.ui.fileNameLabel.text = nodeName + ".png"
+
+        self.ui.fileNameLabel.text = nodeName + ".png"
         self.ui.saveImgButton.enabled = self.ui.roiVisualization.currentText or self.ui.redSelect.currentText or \
                                         self.ui.greenSelect.currentText
         self.ui.threshMinSlider.enabled = self.ui.roiVisualization.currentText or self.ui.redSelect.currentText or \
@@ -448,7 +447,8 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         arraySize = None
         for colour in selectChannels:
             if colour == "red":
-                saveImageName += redSelect
+                name = redSelect[:-4]
+                saveImageName += name
                 # Set redscale array
                 array = slicer.util.arrayFromVolume(selectChannels[colour])
                 if arraySize == None:
@@ -458,7 +458,8 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                 stacked[:, :, :, 2] = 0
                 arrayList.append(stacked)
             elif colour == "green":
-                saveImageName += greenSelect
+                name = greenSelect[:-4]
+                saveImageName += name
                 # Set greenscale array
                 array = slicer.util.arrayFromVolume(selectChannels[colour])
                 if arraySize == None:
@@ -468,7 +469,8 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                 stacked[:, :, :, 2] = 0
                 arrayList.append(stacked)
             elif colour == "blue":
-                saveImageName += blueSelect
+                name = blueSelect[:-4]
+                saveImageName += name
                 # Set bluescale array
                 array = slicer.util.arrayFromVolume(selectChannels[colour])
                 if arraySize == None:
@@ -486,7 +488,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         return True
 
 
-    def visualizationRunHelper(self, overlay, threshMin, threshMax, nodeName, arraySize, existingOverlays):
+    def visualizationRunHelper(self, overlay, threshMin, threshMax, saveImageName, arraySize, existingOverlays):
 
         # Set array with thresholded values
         overlay[overlay < threshMin] = 0
@@ -510,7 +512,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         # Create volume node
         # Needs to be a vector volume in order to show in colour
-        volumeNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLVectorVolumeNode", nodeName)
+        volumeNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLVectorVolumeNode", saveImageName)
         volumeNode.SetOrigin(imageOrigin)
         volumeNode.SetSpacing(imageSpacing)
         volumeNode.SetIJKToRASDirections(imageDirections)
@@ -531,6 +533,8 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         for overlay in existingOverlays:
             slicer.mrmlScene.RemoveNode(overlay)
 
+        global nodeName
+        nodeName = saveImageName
         # Set slice view to display Red window only
         lm = slicer.app.layoutManager()
         lm.setLayout(slicer.vtkMRMLLayoutNode.SlicerLayoutOneUpRedSliceView)
