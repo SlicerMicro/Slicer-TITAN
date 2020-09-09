@@ -385,7 +385,7 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
             self.ui.analysisErrorMessage.text = ""
 
         self.ui.selectedCellsCount.text = ""
-        
+
         logic = HypModuleLogic()
 
         # If check box is checked, use the selected cells mask for the scatter plot
@@ -408,9 +408,7 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         # Delete any existing selected cell masks
         existingMasks = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
 
-        for img in existingMasks:
-            if "Cell Mask: Selected Cells" in img.GetName():
-                slicer.mrmlScene.RemoveNode(img)
+
 
         for selectionIndex in range(mrmlPlotDataIDs.GetNumberOfValues()):
             pointIdList = []
@@ -460,6 +458,10 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         maskDisplayNode.SetAndObserveColorNodeID(labels.GetID())
         red_logic = slicer.app.layoutManager().sliceWidget("Red").sliceLogic()
         red_logic.GetSliceCompositeNode().SetBackgroundVolumeID(volumeNode.GetID())
+
+        for img in existingMasks:
+            if "Cell Mask: Selected Cells" in img.GetName():
+                slicer.mrmlScene.RemoveNode(img)
 
     def onScatPlotSaveTable(self):
         logic = HypModuleLogic()
