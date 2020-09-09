@@ -433,7 +433,18 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         # cellMaskId = slicer.app.layoutManager().sliceWidget("Red").sliceLogic().GetSliceCompositeNode().GetBackgroundVolumeID()
         global globalCellMask
 
-        cellMaskNode = globalCellMask[scatterPlotRoi]
+        cellMaskId = slicer.app.layoutManager().sliceWidget("Red").sliceLogic().GetSliceCompositeNode().GetBackgroundVolumeID()
+        cellNode = slicer.util.getNode(cellMaskId)
+        cellName = cellNode.GetName()
+
+        roi = None
+
+        if "Cell Mask: Selected Cells" in cellName:
+            roi = "Selected Cells"
+        else:
+            roi = scatterPlotRoi
+
+        cellMaskNode = globalCellMask[roi]
         cellMaskArray = slicer.util.arrayFromVolume(cellMaskNode)
         selectedCellsMask = np.copy(cellMaskArray)
 
