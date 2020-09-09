@@ -384,6 +384,8 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         else:
             self.ui.analysisErrorMessage.text = ""
 
+        self.ui.selectedCellsCount.text = ""
+        
         logic = HypModuleLogic()
 
         # If check box is checked, use the selected cells mask for the scatter plot
