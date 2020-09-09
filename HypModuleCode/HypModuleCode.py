@@ -502,9 +502,11 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                 saveImageName += name
                 # Set redscale array
                 array = slicer.util.arrayFromVolume(selectChannels[colour])
+                # Scale the array
+                scaled = np.interp(array, (array.min(), array.max()), (0, 255))
                 if arraySize == None:
-                    arraySize = array.shape
-                stacked = np.stack((array,) * 3, axis=-1)
+                    arraySize = scaled.shape
+                stacked = np.stack((scaled,) * 3, axis=-1)
                 stacked[:, :, :, 1] = 0
                 stacked[:, :, :, 2] = 0
                 arrayList.append(stacked)
@@ -513,9 +515,11 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                 saveImageName += name
                 # Set greenscale array
                 array = slicer.util.arrayFromVolume(selectChannels[colour])
+                # Scale the array
+                scaled = np.interp(array, (array.min(), array.max()), (0, 255))
                 if arraySize == None:
-                    arraySize = array.shape
-                stacked = np.stack((array,) * 3, axis=-1)
+                    arraySize = scaled.shape
+                stacked = np.stack((scaled,) * 3, axis=-1)
                 stacked[:, :, :, 0] = 0
                 stacked[:, :, :, 2] = 0
                 arrayList.append(stacked)
@@ -524,9 +528,11 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                 saveImageName += name
                 # Set bluescale array
                 array = slicer.util.arrayFromVolume(selectChannels[colour])
+                # Scale the array
+                scaled = np.interp(array, (array.min(), array.max()), (0, 255))
                 if arraySize == None:
-                    arraySize = array.shape
-                stacked = np.stack((array,) * 3, axis=-1)
+                    arraySize = scaled.shape
+                stacked = np.stack((scaled,) * 3, axis=-1)
                 stacked[:, :, :, 0] = 0
                 stacked[:, :, :, 1] = 0
                 arrayList.append(stacked)
@@ -535,9 +541,11 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                 saveImageName += name
                 # Set bluescale array
                 array = slicer.util.arrayFromVolume(selectChannels[colour])
+                # Scale the array
+                scaled = np.interp(array, (array.min(), array.max()), (0, 255))
                 if arraySize == None:
-                    arraySize = array.shape
-                stacked = np.stack((array,) * 3, axis=-1)
+                    arraySize = scaled.shape
+                stacked = np.stack((scaled,) * 3, axis=-1)
                 stacked[:, :, :, 2] = 0
                 arrayList.append(stacked)
             elif colour == "cyan":
@@ -545,9 +553,11 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                 saveImageName += name
                 # Set bluescale array
                 array = slicer.util.arrayFromVolume(selectChannels[colour])
+                # Scale the array
+                scaled = np.interp(array, (array.min(), array.max()), (0, 255))
                 if arraySize == None:
-                    arraySize = array.shape
-                stacked = np.stack((array,) * 3, axis=-1)
+                    arraySize = scaled.shape
+                stacked = np.stack((scaled,) * 3, axis=-1)
                 stacked[:, :, :, 0] = 0
                 arrayList.append(stacked)
             elif colour == "magenta":
@@ -555,9 +565,11 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                 saveImageName += name
                 # Set bluescale array
                 array = slicer.util.arrayFromVolume(selectChannels[colour])
+                # Scale the array
+                scaled = np.interp(array, (array.min(), array.max()), (0, 255))
                 if arraySize == None:
-                    arraySize = array.shape
-                stacked = np.stack((array,) * 3, axis=-1)
+                    arraySize = scaled.shape
+                stacked = np.stack((scaled,) * 3, axis=-1)
                 stacked[:, :, :, 1] = 0
                 arrayList.append(stacked)
             elif colour == "white":
@@ -565,9 +577,11 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                 saveImageName += name
                 # Set bluescale array
                 array = slicer.util.arrayFromVolume(selectChannels[colour])
+                # Scale the array
+                scaled = np.interp(array, (array.min(), array.max()), (0, 255))
                 if arraySize == None:
-                    arraySize = array.shape
-                stacked = np.stack((array,) * 3, axis=-1)
+                    arraySize = scaled.shape
+                stacked = np.stack((scaled,) * 3, axis=-1)
                 arrayList.append(stacked)
 
         overlay = sum(arrayList)
