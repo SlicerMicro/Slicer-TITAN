@@ -170,15 +170,12 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
 
         self.ui.analysisResetButton.connect("clicked(bool)", self.onReset)
 
-
         self.ui.saveHistoTable.connect('clicked(bool)', self.onHistoSave)
 
         self.ui.crtHeatmapChannel.connect('clicked(bool)', self.onHeatmapChannelPlot)
-
         self.ui.saveHeatmapTable.connect('clicked(bool)', self.onHeatmapSaveTable)
 
         self.ui.crtScatterButton.connect('clicked(bool)', self.onScatterPlot)
-
         self.ui.saveScatPlotTable.connect('clicked(bool)', self.onScatPlotSaveTable)
 
         self.ui.crtHeatmapButton.connect('clicked(bool)', self.onHeatmapPlot)
@@ -389,10 +386,67 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         logic = HypModuleLogic()
         logic.scatterPlotRun()
 
-    def onDataSelected(self):
-        logic = HypModuleLogic()
-        cellCount = logic.gating(plotView.dataSelected())
+        # Scatter plot gating signal
+        layoutManager = slicer.app.layoutManager()
+        plotWidget = layoutManager.plotWidget(0)
+        plotView = plotWidget.plotView()
+        plotView.connect("dataSelected(vtkStringArray*, vtkCollection*)", self.onDataSelected)
+
+    def onDataSelected(self, mrmlPlotDataIDs, selectionCol):
+        """
+        Runs when user selects point on scatter plot
+        """
+
+        # Delete any existing selected cell masks
+        existingMasks = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
+
+        for img in existingMasks:
+            if "Cell Mask: Selected Cells" in img.GetName():
+                slicer.mrmlScene.RemoveNode(img)
+
+        for selectionIndex in range(mrmlPlotDataIDs.GetNumberOfValues()):
+            pointIdList = []
+            pointIds = selectionCol.GetItemAsObject(selectionIndex)
+            for pointIndex in range(pointIds.GetNumberOfValues()):
+                pointIdList.append(pointIds.GetValue(pointIndex))
+            # The value returned is the row number of that cell, however you need to add 2 to the value to get
+            # the correct number. eg. value 171 actually refers to the cell at row 173.
+            # BUT in the code, the incorrect row number returned actually works out to refer to the correct cell
+
+        # Get cell number
+        tables = slicer.util.getNodesByClass("vtkMRMLTableNode")
+        tableNode = tables[0]
+        cellLabels = []
+        for cell in pointIdList:
+            label = tableNode.GetCellText(cell, 2)
+            cellLabels.append(label)
+        cellCount = len(cellLabels)
         self.ui.selectedCellsCount.text = cellCount
+
+        # Get cell mask array
+        # cellMaskId = slicer.app.layoutManager().sliceWidget("Red").sliceLogic().GetSliceCompositeNode().GetBackgroundVolumeID()
+        cellMaskNode = globalCellMask[scatterPlotRoi]
+        cellMaskArray = slicer.util.arrayFromVolume(cellMaskNode)
+        selectedCellsMask = np.copy(cellMaskArray)
+
+        # Remove cells in the array that aren't part of the selected cells
+        for cell in np.unique(selectedCellsMask):
+            if cell != 0:
+                if str(cell) not in cellLabels:
+                    selectedCellsMask[selectedCellsMask == cell] = 0
+
+        # Create new cell mask image
+        name = "Cell Mask: Selected Cells"
+
+        volumeNode = slicer.modules.volumes.logic().CloneVolume(cellMaskNode, name)
+        slicer.util.updateVolumeFromArray(volumeNode, selectedCellsMask)
+
+        # Change colormap of volume
+        labels = slicer.util.getFirstNodeByName("Labels")
+        maskDisplayNode = volumeNode.GetScalarVolumeDisplayNode()
+        maskDisplayNode.SetAndObserveColorNodeID(labels.GetID())
+        red_logic = slicer.app.layoutManager().sliceWidget("Red").sliceLogic()
+        red_logic.GetSliceCompositeNode().SetBackgroundVolumeID(volumeNode.GetID())
 
     def onScatPlotSaveTable(self):
         logic = HypModuleLogic()
@@ -1206,71 +1260,14 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         slicer.util.resetSliceViews()
 
-        # Scatter plot gating signal
-        layoutManager = slicer.app.layoutManager()
-        plotWidget = layoutManager.plotWidget(0)
-        plotView = plotWidget.plotView()
-        plotView.connect("dataSelected(vtkStringArray*, vtkCollection*)", self.onDataSelected)
+        # # Scatter plot gating signal
+        # layoutManager = slicer.app.layoutManager()
+        # plotWidget = layoutManager.plotWidget(0)
+        # plotView = plotWidget.plotView()
+        # plotView.connect("dataSelected(vtkStringArray*, vtkCollection*)", self.onDataSelected)
 
         global scatterPlotRoi
         scatterPlotRoi = roiName
-
-    def onDataSelected(self, mrmlPlotDataIDs, selectionCol):
-        """
-        Runs when user selects point on scatter plot
-        """
-
-        # Delete any existing selected cell masks
-        existingMasks = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
-
-        for img in existingMasks:
-            if "Cell Mask: Selected Cells" in img.GetName():
-                slicer.mrmlScene.RemoveNode(img)
-
-        for selectionIndex in range(mrmlPlotDataIDs.GetNumberOfValues()):
-            pointIdList = []
-            pointIds = selectionCol.GetItemAsObject(selectionIndex)
-            for pointIndex in range(pointIds.GetNumberOfValues()):
-                pointIdList.append(pointIds.GetValue(pointIndex))
-            # The value returned is the row number of that cell, however you need to add 2 to the value to get
-            # the correct number. eg. value 171 actually refers to the cell at row 173.
-            # BUT in the code, the incorrect row number returned actually works out to refer to the correct cell
-
-        # Get cell number
-        tables = slicer.util.getNodesByClass("vtkMRMLTableNode")
-        tableNode = tables[0]
-        cellLabels = []
-        for cell in pointIdList:
-            label = tableNode.GetCellText(cell, 2)
-            cellLabels.append(label)
-        cellCount = len(cellLabels)
-
-        # Get cell mask array
-        # cellMaskId = slicer.app.layoutManager().sliceWidget("Red").sliceLogic().GetSliceCompositeNode().GetBackgroundVolumeID()
-        cellMaskNode = globalCellMask[scatterPlotRoi]
-        cellMaskArray = slicer.util.arrayFromVolume(cellMaskNode)
-        selectedCellsMask = np.copy(cellMaskArray)
-
-        # Remove cells in the array that aren't part of the selected cells
-        for cell in np.unique(selectedCellsMask):
-            if cell != 0:
-                if str(cell) not in cellLabels:
-                    selectedCellsMask[selectedCellsMask == cell] = 0
-
-        # Create new cell mask image
-        name = "Cell Mask: Selected Cells"
-
-        volumeNode = slicer.modules.volumes.logic().CloneVolume(cellMaskNode, name)
-        slicer.util.updateVolumeFromArray(volumeNode, selectedCellsMask)
-
-        # Change colormap of volume
-        labels = slicer.util.getFirstNodeByName("Labels")
-        maskDisplayNode = volumeNode.GetScalarVolumeDisplayNode()
-        maskDisplayNode.SetAndObserveColorNodeID(labels.GetID())
-        red_logic = slicer.app.layoutManager().sliceWidget("Red").sliceLogic()
-        red_logic.GetSliceCompositeNode().SetBackgroundVolumeID(volumeNode.GetID())
-
-        return cellCount
 
 
     def saveTableData(self):
