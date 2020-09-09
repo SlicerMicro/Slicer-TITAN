@@ -391,7 +391,8 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
 
     def onDataSelected(self):
         logic = HypModuleLogic()
-        logic.gating(plotView.dataSelected())
+        cellCount = logic.gating(plotView.dataSelected())
+        self.ui.selectedCellsCount.text = cellCount
 
     def onScatPlotSaveTable(self):
         logic = HypModuleLogic()
@@ -1242,6 +1243,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         for cell in pointIdList:
             label = tableNode.GetCellText(cell, 2)
             cellLabels.append(label)
+        cellCount = len(cellLabels)
 
         # Get cell mask array
         # cellMaskId = slicer.app.layoutManager().sliceWidget("Red").sliceLogic().GetSliceCompositeNode().GetBackgroundVolumeID()
@@ -1267,6 +1269,8 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         maskDisplayNode.SetAndObserveColorNodeID(labels.GetID())
         red_logic = slicer.app.layoutManager().sliceWidget("Red").sliceLogic()
         red_logic.GetSliceCompositeNode().SetBackgroundVolumeID(volumeNode.GetID())
+
+        return cellCount
 
 
     def saveTableData(self):
