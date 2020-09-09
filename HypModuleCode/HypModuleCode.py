@@ -152,6 +152,7 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         self.ui.yellowSelect.connect("activated(int)", self.onVisualization)
         self.ui.cyanSelect.connect("activated(int)", self.onVisualization)
         self.ui.magentaSelect.connect("activated(int)", self.onVisualization)
+        self.ui.whiteSelect.connect("activated(int)", self.onVisualization)
 
         self.ui.threshMinSlider.connect('valueChanged(int)', self.onVisualization)
         self.ui.threshMaxSlider.connect('valueChanged(int)', self.onVisualization)
@@ -198,30 +199,35 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         logic.visualizationRun(self.ui.roiVisualization.currentText, self.ui.redSelect.currentText,
                                self.ui.greenSelect.currentText, self.ui.blueSelect.currentText,
                                self.ui.yellowSelect.currentText, self.ui.cyanSelect.currentText,
-                               self.ui.magentaSelect.currentText, self.ui.threshMinSlider.value,
+                               self.ui.magentaSelect.currentText, self.ui.whiteSelect.currentText, self.ui.threshMinSlider.value,
                                self.ui.threshMaxSlider.value)
 
         self.ui.fileNameLabel.text = nodeName + ".png"
+
         self.ui.saveImgButton.enabled = self.ui.roiVisualization.currentText or self.ui.redSelect.currentText or \
                                         self.ui.greenSelect.currentText or self.ui.blueSelect.currentText or \
                                         self.ui.yellowSelect.currentText or self.ui.cyanSelect.currentText or \
-                                        self.ui.magentaSelect.currentText
+                                        self.ui.magentaSelect.currentText or self.ui.whiteSelect.currentText
+
         self.ui.threshMinSlider.enabled = self.ui.roiVisualization.currentText or self.ui.redSelect.currentText or \
                                         self.ui.greenSelect.currentText or self.ui.blueSelect.currentText or \
                                         self.ui.yellowSelect.currentText or self.ui.cyanSelect.currentText or \
-                                        self.ui.magentaSelect.currentText
+                                        self.ui.magentaSelect.currentText or self.ui.whiteSelect.currentText
+
         self.ui.threshMaxSlider.enabled = self.ui.roiVisualization.currentText or self.ui.redSelect.currentText or \
                                         self.ui.greenSelect.currentText or self.ui.blueSelect.currentText or \
                                         self.ui.yellowSelect.currentText or self.ui.cyanSelect.currentText or \
-                                        self.ui.magentaSelect.currentText
+                                        self.ui.magentaSelect.currentText or self.ui.whiteSelect.currentText
+
         self.ui.threshMin.enabled = self.ui.roiVisualization.currentText or self.ui.redSelect.currentText or \
                                         self.ui.greenSelect.currentText or self.ui.blueSelect.currentText or \
                                         self.ui.yellowSelect.currentText or self.ui.cyanSelect.currentText or \
-                                        self.ui.magentaSelect.currentText
+                                        self.ui.magentaSelect.currentText or self.ui.whiteSelect.currentText
+
         self.ui.threshMax.enabled = self.ui.roiVisualization.currentText or self.ui.redSelect.currentText or \
                                         self.ui.greenSelect.currentText or self.ui.blueSelect.currentText or \
                                         self.ui.yellowSelect.currentText or self.ui.cyanSelect.currentText or \
-                                        self.ui.magentaSelect.currentText
+                                        self.ui.magentaSelect.currentText or self.ui.whiteSelect.currentText
         # self.ui.applyButton.enabled = self.ui.roiVisualization.currentText or self.ui.redSelect.currentText or \
         #                                 self.ui.greenSelect.currentText
 
@@ -284,6 +290,7 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         self.ui.yellowSelect.clear()
         self.ui.cyanSelect.clear()
         self.ui.magentaSelect.clear()
+        self.ui.whiteSelect.clear()
 
         self.ui.redSelect.addItem("None")
         self.ui.greenSelect.addItem("None")
@@ -291,6 +298,7 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         self.ui.yellowSelect.addItem("None")
         self.ui.cyanSelect.addItem("None")
         self.ui.magentaSelect.addItem("None")
+        self.ui.whiteSelect.addItem("None")
 
         for roi in roiNames:
             if roi != "Scene":
@@ -304,6 +312,7 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
             self.ui.yellowSelect.addItem(channel)
             self.ui.cyanSelect.addItem(channel)
             self.ui.magentaSelect.addItem(channel)
+            self.ui.whiteSelect.addItem(channel)
 
     # When "Save Image" is clicked, run saveVisualization function
     def onSaveButton(self):
@@ -422,7 +431,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         return True
 
 
-    def visualizationRun(self, roiSelect, redSelect, greenSelect, blueSelect, yellowSelect, cyanSelect, magentaSelect, threshMin, threshMax):
+    def visualizationRun(self, roiSelect, redSelect, greenSelect, blueSelect, yellowSelect, cyanSelect, magentaSelect, whiteSelect, threshMin, threshMax):
         """
         Runs the algorithm to display the volumes selected in "Visualization" in their respective colours
         """
@@ -477,6 +486,13 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                 roiName = shNode.GetItemName(parent)
                 if roiName == roiSelect:
                     selectChannels["magenta"] = channel
+            elif whiteSelect in name:
+                # Check if channel is the correct ROI
+                id = shNode.GetItemByDataNode(channel)
+                parent = shNode.GetItemParent(id)
+                roiName = shNode.GetItemName(parent)
+                if roiName == roiSelect:
+                    selectChannels["white"] = channel
         saveImageName = ""
         arrayList = []
         arraySize = None
@@ -543,6 +559,15 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                     arraySize = array.shape
                 stacked = np.stack((array,) * 3, axis=-1)
                 stacked[:, :, :, 1] = 0
+                arrayList.append(stacked)
+            elif colour == "white":
+                name = whiteSelect[:-4]
+                saveImageName += name
+                # Set bluescale array
+                array = slicer.util.arrayFromVolume(selectChannels[colour])
+                if arraySize == None:
+                    arraySize = array.shape
+                stacked = np.stack((array,) * 3, axis=-1)
                 arrayList.append(stacked)
 
         overlay = sum(arrayList)
