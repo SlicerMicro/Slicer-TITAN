@@ -383,8 +383,14 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
             return
         else:
             self.ui.analysisErrorMessage.text = ""
+
         logic = HypModuleLogic()
-        logic.scatterPlotRun()
+
+        # If check box is checked, use the selected cells mask for the scatter plot
+        if self.ui.checkBoxSelectedCells.checkState() == 0:
+            logic.scatterPlotRun(False)
+        else:
+            logic.scatterPlotRun(True)
 
         # Scatter plot gating signal
         layoutManager = slicer.app.layoutManager()
@@ -425,6 +431,8 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
 
         # Get cell mask array
         # cellMaskId = slicer.app.layoutManager().sliceWidget("Red").sliceLogic().GetSliceCompositeNode().GetBackgroundVolumeID()
+        global globalCellMask
+
         cellMaskNode = globalCellMask[scatterPlotRoi]
         cellMaskArray = slicer.util.arrayFromVolume(cellMaskNode)
         selectedCellsMask = np.copy(cellMaskArray)
@@ -440,6 +448,9 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
 
         volumeNode = slicer.modules.volumes.logic().CloneVolume(cellMaskNode, name)
         slicer.util.updateVolumeFromArray(volumeNode, selectedCellsMask)
+
+        # Add to global list of cell masks
+        globalCellMask["Selected Cells"] = volumeNode
 
         # Change colormap of volume
         labels = slicer.util.getFirstNodeByName("Labels")
@@ -1097,7 +1108,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         slicer.util.resetSliceViews()
 
-    def scatterPlotRun(self):
+    def scatterPlotRun(self, checkboxState):
 
         """
         Create scatter plot of channelOne x channelTwo, where data points are the cells, values are the mean intensity
@@ -1138,8 +1149,13 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                 break
 
         channels = list(parentDict.keys())
+        # Get ROI name or Selected Cells mask
+        if checkboxState == False:
+            roiName = parentDict[channels[0]]
+        else:
+            roiName = "Selected Cells"
         # Get array of channel
-        roiName = parentDict[channels[0]]
+
         channelOneName = shNode.GetItemName(channels[0])
         channelOneNode = slicer.util.getNode(channelOneName)
         channelOneArray = slicer.util.arrayFromVolume(channelOneNode)
