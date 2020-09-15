@@ -479,7 +479,15 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         logic.saveTableData()
 
     def onHeatmapPlot(self):
-        # if selectedRoi == None and selectedChannel == None:
+        if selectedChannel is None or len(selectedChannel) < 1:
+            self.ui.analysisErrorMessage.text = "ERROR: Minimum 1 channel should be selected."
+            return
+        elif selectedRoi is None or len(selectedRoi) < 1:
+            self.ui.analysisErrorMessage.text = "ERROR: Minimum 1 ROI should be selected."
+            return
+        else:
+            self.ui.analysisErrorMessage.text = ""
+
         logic = HypModuleLogic()
         logic.heatmapRun()
 
