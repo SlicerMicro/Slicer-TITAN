@@ -453,21 +453,20 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         self.ui.selectedCellsCount.text = cellCount
 
         # Get cell mask array
+        # global globalCellMask
+        #
         # cellMaskId = slicer.app.layoutManager().sliceWidget("Red").sliceLogic().GetSliceCompositeNode().GetBackgroundVolumeID()
-        global globalCellMask
+        # cellNode = slicer.util.getNode(cellMaskId)
+        # cellName = cellNode.GetName()
+        #
+        # roi = None
+        #
+        # if "Cell Mask: Selected Cells" in cellName:
+        #     roi = "Selected Cells"
+        # else:
+        #     roi = scatterPlotRoi
 
-        cellMaskId = slicer.app.layoutManager().sliceWidget("Red").sliceLogic().GetSliceCompositeNode().GetBackgroundVolumeID()
-        cellNode = slicer.util.getNode(cellMaskId)
-        cellName = cellNode.GetName()
-
-        roi = None
-
-        if "Cell Mask: Selected Cells" in cellName:
-            roi = "Selected Cells"
-        else:
-            roi = scatterPlotRoi
-
-        cellMaskNode = globalCellMask[roi]
+        cellMaskNode = globalCellMask[scatterPlotRoi]
         cellMaskArray = slicer.util.arrayFromVolume(cellMaskNode)
         selectedCellsMask = np.copy(cellMaskArray)
 
@@ -487,9 +486,9 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         globalCellMask["Selected Cells"] = volumeNode
 
         # Change colormap of volume
-        labels = slicer.util.getFirstNodeByName("Labels")
-        maskDisplayNode = volumeNode.GetScalarVolumeDisplayNode()
-        maskDisplayNode.SetAndObserveColorNodeID(labels.GetID())
+        # labels = slicer.util.getFirstNodeByName("Labels")
+        # maskDisplayNode = volumeNode.GetScalarVolumeDisplayNode()
+        # maskDisplayNode.SetAndObserveColorNodeID(labels.GetID())
         red_logic = slicer.app.layoutManager().sliceWidget("Red").sliceLogic()
         red_logic.GetSliceCompositeNode().SetBackgroundVolumeID(volumeNode.GetID())
 
