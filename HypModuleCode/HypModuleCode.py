@@ -157,6 +157,9 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         self.ui.threshMinSlider.connect('valueChanged(int)', self.onVisualization)
         self.ui.threshMaxSlider.connect('valueChanged(int)', self.onVisualization)
 
+        self.ui.getWLButton.connect("clicked(bool)", self.onGetWL)
+        self.ui.setWLButton.connect("clicked(bool)", self.onSetWL)
+
         self.ui.saveImgButton.connect('clicked(bool)', self.onSaveButton)
 
         # Add vertical spacer
@@ -227,6 +230,18 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
                                         self.ui.magentaSelect.currentText or self.ui.whiteSelect.currentText
         # self.ui.applyButton.enabled = self.ui.roiVisualization.currentText or self.ui.redSelect.currentText or \
         #                                 self.ui.greenSelect.currentText
+
+    def onGetWL(self):
+        currentId = slicer.app.layoutManager().sliceWidget("Red").sliceLogic().GetSliceCompositeNode().GetBackgroundVolumeID()
+        currentNode = slicer.util.getNode(currentId)
+        displayNode = currentNode.GetDisplayNode()
+        window = displayNode.GetWindow()
+        level = displayNode.GetLevel()
+        self.ui.getWindow.text = str(window)
+        self.ui.getLevel.text = str(level)
+
+    def onSetWL(self):
+        pass
 
     def onSelect(self):
         self.ui.crtPlotButton.enabled = self.ui.imageHistogramSelect.currentNode() \

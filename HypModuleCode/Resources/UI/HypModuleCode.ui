@@ -366,23 +366,79 @@
       </attribute>
       <layout class="QGridLayout" name="gridLayout">
        <item row="28" column="0">
-        <widget class="QPushButton" name="getWLButton">
+        <widget class="QLabel" name="label_28">
          <property name="text">
-          <string>Get Window/Level</string>
+          <string>Level:</string>
          </property>
         </widget>
        </item>
-       <item row="14" column="0">
-        <widget class="QLabel" name="label_23">
+       <item row="38" column="0">
+        <widget class="QLabel" name="label_16">
+         <property name="font">
+          <font>
+           <family>Montserrat</family>
+           <pointsize>10</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>SAVE IMAGE</string>
+         </property>
+        </widget>
+       </item>
+       <item row="34" column="0">
+        <widget class="QLabel" name="label_30">
+         <property name="text">
+          <string>Level:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="29" column="0">
+        <widget class="QLabel" name="getLevel">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="32" column="0">
+        <widget class="QLabel" name="label_29">
+         <property name="text">
+          <string>Window:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="39" column="0">
+        <widget class="QLabel" name="fileNameLabel">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="0">
+        <widget class="QComboBox" name="blueSelect"/>
+       </item>
+       <item row="20" column="0">
+        <widget class="QLabel" name="label_17">
+         <property name="text">
+          <string>Threshold Min</string>
+         </property>
+        </widget>
+       </item>
+       <item row="10" column="0">
+        <widget class="QLabel" name="label_21">
          <property name="palette">
           <palette>
            <active>
             <colorrole role="WindowText">
              <brush brushstyle="SolidPattern">
               <color alpha="255">
-               <red>255</red>
-               <green>85</green>
-               <blue>255</blue>
+               <red>222</red>
+               <green>222</green>
+               <blue>0</blue>
               </color>
              </brush>
             </colorrole>
@@ -391,9 +447,9 @@
             <colorrole role="WindowText">
              <brush brushstyle="SolidPattern">
               <color alpha="255">
-               <red>255</red>
-               <green>85</green>
-               <blue>255</blue>
+               <red>222</red>
+               <green>222</green>
+               <blue>0</blue>
               </color>
              </brush>
             </colorrole>
@@ -418,32 +474,47 @@
           </font>
          </property>
          <property name="text">
-          <string>Magenta image:</string>
+          <string>Yellow image:</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
-        <widget class="QPushButton" name="resetViewButton">
-         <property name="text">
-          <string>Reset Zoom</string>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="0">
-        <widget class="QComboBox" name="greenSelect"/>
-       </item>
-       <item row="3" column="0">
-        <spacer name="horizontalSpacer_4">
+       <item row="23" column="0">
+        <widget class="QSplitter" name="splitter_2">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
+         <widget class="QSpinBox" name="threshMax">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="maximum">
+           <number>254</number>
+          </property>
+          <property name="displayIntegerBase">
+           <number>10</number>
+          </property>
+         </widget>
+         <widget class="QSlider" name="threshMaxSlider">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="maximum">
+           <number>254</number>
+          </property>
+          <property name="pageStep">
+           <number>5</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="tickPosition">
+           <enum>QSlider::NoTicks</enum>
+          </property>
+         </widget>
+        </widget>
+       </item>
+       <item row="13" column="0">
+        <widget class="QComboBox" name="cyanSelect"/>
        </item>
        <item row="24" column="0">
         <spacer name="horizontalSpacer_6">
@@ -457,24 +528,6 @@
           </size>
          </property>
         </spacer>
-       </item>
-       <item row="11" column="0">
-        <widget class="QComboBox" name="yellowSelect"/>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_15">
-         <property name="font">
-          <font>
-           <family>Montserrat</family>
-           <pointsize>10</pointsize>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>IMAGE OVERLAY</string>
-         </property>
-        </widget>
        </item>
        <item row="6" column="0">
         <widget class="QLabel" name="greenImage">
@@ -539,10 +592,128 @@
          </property>
         </spacer>
        </item>
-       <item row="26" column="1">
-        <widget class="QLabel" name="getWindow">
+       <item row="30" column="0">
+        <widget class="QPushButton" name="getWLButton">
          <property name="text">
-          <string/>
+          <string>Get Window/Level</string>
+         </property>
+        </widget>
+       </item>
+       <item row="14" column="0">
+        <widget class="QLabel" name="label_23">
+         <property name="palette">
+          <palette>
+           <active>
+            <colorrole role="WindowText">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>255</red>
+               <green>85</green>
+               <blue>255</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </active>
+           <inactive>
+            <colorrole role="WindowText">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>255</red>
+               <green>85</green>
+               <blue>255</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </inactive>
+           <disabled>
+            <colorrole role="WindowText">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>120</red>
+               <green>120</green>
+               <blue>120</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </disabled>
+          </palette>
+         </property>
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Magenta image:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="37" column="0">
+        <spacer name="horizontalSpacer_7">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="22" column="0">
+        <widget class="QLabel" name="label_18">
+         <property name="text">
+          <string>Threshold Max</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QPushButton" name="resetViewButton">
+         <property name="text">
+          <string>Reset Zoom</string>
+         </property>
+        </widget>
+       </item>
+       <item row="11" column="0">
+        <widget class="QComboBox" name="yellowSelect"/>
+       </item>
+       <item row="26" column="0">
+        <widget class="QLabel" name="label_27">
+         <property name="text">
+          <string>Window:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <spacer name="horizontalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="7" column="0">
+        <widget class="QComboBox" name="greenSelect"/>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_15">
+         <property name="font">
+          <font>
+           <family>Montserrat</family>
+           <pointsize>10</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>IMAGE OVERLAY</string>
          </property>
         </widget>
        </item>
@@ -596,61 +767,15 @@
          </property>
         </widget>
        </item>
-       <item row="8" column="0">
-        <widget class="QLabel" name="blueImageLabel">
-         <property name="palette">
-          <palette>
-           <active>
-            <colorrole role="WindowText">
-             <brush brushstyle="SolidPattern">
-              <color alpha="255">
-               <red>0</red>
-               <green>0</green>
-               <blue>255</blue>
-              </color>
-             </brush>
-            </colorrole>
-           </active>
-           <inactive>
-            <colorrole role="WindowText">
-             <brush brushstyle="SolidPattern">
-              <color alpha="255">
-               <red>0</red>
-               <green>0</green>
-               <blue>255</blue>
-              </color>
-             </brush>
-            </colorrole>
-           </inactive>
-           <disabled>
-            <colorrole role="WindowText">
-             <brush brushstyle="SolidPattern">
-              <color alpha="255">
-               <red>120</red>
-               <green>120</green>
-               <blue>120</blue>
-              </color>
-             </brush>
-            </colorrole>
-           </disabled>
-          </palette>
-         </property>
-         <property name="font">
-          <font>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>Blue image:</string>
-         </property>
-        </widget>
-       </item>
        <item row="17" column="0">
         <widget class="QComboBox" name="whiteSelect"/>
        </item>
-       <item row="15" column="0">
-        <widget class="QComboBox" name="magentaSelect"/>
+       <item row="35" column="0">
+        <widget class="QSpinBox" name="setLevel">
+         <property name="maximum">
+          <number>500</number>
+         </property>
+        </widget>
        </item>
        <item row="19" column="0">
         <widget class="QLabel" name="label_14">
@@ -667,28 +792,6 @@
          </property>
         </widget>
        </item>
-       <item row="32" column="0">
-        <widget class="QLabel" name="label_16">
-         <property name="font">
-          <font>
-           <family>Montserrat</family>
-           <pointsize>10</pointsize>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>SAVE IMAGE</string>
-         </property>
-        </widget>
-       </item>
-       <item row="27" column="1">
-        <widget class="QLabel" name="getLevel">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label_13">
          <property name="text">
@@ -696,62 +799,7 @@
          </property>
         </widget>
        </item>
-       <item row="9" column="0">
-        <widget class="QComboBox" name="blueSelect"/>
-       </item>
-       <item row="33" column="0">
-        <widget class="QLabel" name="fileNameLabel">
-         <property name="text">
-          <string/>
-         </property>
-         <property name="wordWrap">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="23" column="0">
-        <widget class="QSplitter" name="splitter_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <widget class="QSpinBox" name="threshMax">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="maximum">
-           <number>254</number>
-          </property>
-          <property name="displayIntegerBase">
-           <number>10</number>
-          </property>
-         </widget>
-         <widget class="QSlider" name="threshMaxSlider">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="maximum">
-           <number>254</number>
-          </property>
-          <property name="pageStep">
-           <number>5</number>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="tickPosition">
-           <enum>QSlider::NoTicks</enum>
-          </property>
-         </widget>
-        </widget>
-       </item>
-       <item row="29" column="0">
-        <widget class="QLabel" name="label_29">
-         <property name="text">
-          <string>Window:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="34" column="0">
+       <item row="40" column="0">
         <widget class="QPushButton" name="saveImgButton">
          <property name="enabled">
           <bool>false</bool>
@@ -761,94 +809,21 @@
          </property>
         </widget>
        </item>
-       <item row="22" column="0">
-        <widget class="QLabel" name="label_18">
-         <property name="text">
-          <string>Threshold Max</string>
-         </property>
-        </widget>
-       </item>
-       <item row="27" column="0">
-        <widget class="QLabel" name="label_28">
-         <property name="text">
-          <string>Level:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QComboBox" name="roiVisualization"/>
-       </item>
        <item row="5" column="0">
         <widget class="QComboBox" name="redSelect"/>
        </item>
-       <item row="31" column="0">
-        <widget class="QPushButton" name="setWLButton">
-         <property name="text">
-          <string>Set Window/Level</string>
-         </property>
-        </widget>
-       </item>
-       <item row="20" column="0">
-        <widget class="QLabel" name="label_17">
-         <property name="text">
-          <string>Threshold Min</string>
-         </property>
-        </widget>
-       </item>
-       <item row="10" column="0">
-        <widget class="QLabel" name="label_21">
-         <property name="palette">
-          <palette>
-           <active>
-            <colorrole role="WindowText">
-             <brush brushstyle="SolidPattern">
-              <color alpha="255">
-               <red>222</red>
-               <green>222</green>
-               <blue>0</blue>
-              </color>
-             </brush>
-            </colorrole>
-           </active>
-           <inactive>
-            <colorrole role="WindowText">
-             <brush brushstyle="SolidPattern">
-              <color alpha="255">
-               <red>222</red>
-               <green>222</green>
-               <blue>0</blue>
-              </color>
-             </brush>
-            </colorrole>
-           </inactive>
-           <disabled>
-            <colorrole role="WindowText">
-             <brush brushstyle="SolidPattern">
-              <color alpha="255">
-               <red>120</red>
-               <green>120</green>
-               <blue>120</blue>
-              </color>
-             </brush>
-            </colorrole>
-           </disabled>
-          </palette>
-         </property>
+       <item row="25" column="0">
+        <widget class="QLabel" name="label_26">
          <property name="font">
           <font>
+           <family>Montserrat</family>
+           <pointsize>10</pointsize>
            <weight>75</weight>
            <bold>true</bold>
           </font>
          </property>
          <property name="text">
-          <string>Yellow image:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="26" column="0">
-        <widget class="QLabel" name="label_27">
-         <property name="text">
-          <string>Window:</string>
+          <string>WINDOW/LEVEL</string>
          </property>
         </widget>
        </item>
@@ -902,50 +877,6 @@
          </property>
         </widget>
        </item>
-       <item row="21" column="0">
-        <widget class="QSplitter" name="splitter">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <widget class="QSpinBox" name="threshMin">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="maximum">
-           <number>254</number>
-          </property>
-         </widget>
-         <widget class="QSlider" name="threshMinSlider">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="maximum">
-           <number>254</number>
-          </property>
-          <property name="pageStep">
-           <number>5</number>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="invertedAppearance">
-           <bool>false</bool>
-          </property>
-          <property name="invertedControls">
-           <bool>false</bool>
-          </property>
-          <property name="tickPosition">
-           <enum>QSlider::NoTicks</enum>
-          </property>
-          <property name="tickInterval">
-           <number>5</number>
-          </property>
-         </widget>
-        </widget>
-       </item>
-       <item row="13" column="0">
-        <widget class="QComboBox" name="cyanSelect"/>
-       </item>
        <item row="12" column="0">
         <widget class="QLabel" name="label_22">
          <property name="palette">
@@ -996,41 +927,136 @@
          </property>
         </widget>
        </item>
-       <item row="25" column="0">
-        <widget class="QLabel" name="label_26">
+       <item row="8" column="0">
+        <widget class="QLabel" name="blueImageLabel">
+         <property name="palette">
+          <palette>
+           <active>
+            <colorrole role="WindowText">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>0</red>
+               <green>0</green>
+               <blue>255</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </active>
+           <inactive>
+            <colorrole role="WindowText">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>0</red>
+               <green>0</green>
+               <blue>255</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </inactive>
+           <disabled>
+            <colorrole role="WindowText">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>120</red>
+               <green>120</green>
+               <blue>120</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </disabled>
+          </palette>
+         </property>
          <property name="font">
           <font>
-           <family>Montserrat</family>
-           <pointsize>10</pointsize>
            <weight>75</weight>
            <bold>true</bold>
           </font>
          </property>
          <property name="text">
-          <string>WINDOW/LEVEL</string>
+          <string>Blue image:</string>
          </property>
         </widget>
        </item>
-       <item row="30" column="0">
-        <widget class="QLabel" name="label_30">
+       <item row="21" column="0">
+        <widget class="QSplitter" name="splitter">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <widget class="QSpinBox" name="threshMin">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="maximum">
+           <number>254</number>
+          </property>
+         </widget>
+         <widget class="QSlider" name="threshMinSlider">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="maximum">
+           <number>254</number>
+          </property>
+          <property name="pageStep">
+           <number>5</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="invertedAppearance">
+           <bool>false</bool>
+          </property>
+          <property name="invertedControls">
+           <bool>false</bool>
+          </property>
+          <property name="tickPosition">
+           <enum>QSlider::NoTicks</enum>
+          </property>
+          <property name="tickInterval">
+           <number>5</number>
+          </property>
+         </widget>
+        </widget>
+       </item>
+       <item row="15" column="0">
+        <widget class="QComboBox" name="magentaSelect"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="QComboBox" name="roiVisualization"/>
+       </item>
+       <item row="36" column="0">
+        <widget class="QPushButton" name="setWLButton">
          <property name="text">
-          <string>Level:</string>
+          <string>Set Window/Level</string>
          </property>
         </widget>
        </item>
-       <item row="29" column="1">
+       <item row="33" column="0">
         <widget class="QSpinBox" name="setWindow">
          <property name="maximum">
           <number>500</number>
          </property>
         </widget>
        </item>
-       <item row="30" column="1">
-        <widget class="QSpinBox" name="setLevel">
-         <property name="maximum">
-          <number>500</number>
+       <item row="27" column="0">
+        <widget class="QLabel" name="getWindow">
+         <property name="text">
+          <string/>
          </property>
         </widget>
+       </item>
+       <item row="31" column="0">
+        <spacer name="horizontalSpacer_11">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </widget>
