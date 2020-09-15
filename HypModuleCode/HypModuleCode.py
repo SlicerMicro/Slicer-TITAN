@@ -241,7 +241,13 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         self.ui.getLevel.text = str(level)
 
     def onSetWL(self):
-        pass
+        currentId = slicer.app.layoutManager().sliceWidget("Red").sliceLogic().GetSliceCompositeNode().GetBackgroundVolumeID()
+        currentNode = slicer.util.getNode(currentId)
+        displayNode = currentNode.GetDisplayNode()
+        window = self.ui.setWindow.value
+        level = self.ui.setLevel.value
+        displayNode.SetWindow(window)
+        displayNode.SetLevel(level)
 
     def onSelect(self):
         self.ui.crtPlotButton.enabled = self.ui.imageHistogramSelect.currentNode() \
