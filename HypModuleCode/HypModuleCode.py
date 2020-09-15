@@ -239,6 +239,8 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         level = displayNode.GetLevel()
         self.ui.getWindow.text = str(window)
         self.ui.getLevel.text = str(level)
+        self.ui.setWindow.value = window
+        self.ui.setLevel.value = level
 
     def onSetWL(self):
         currentId = slicer.app.layoutManager().sliceWidget("Red").sliceLogic().GetSliceCompositeNode().GetBackgroundVolumeID()
