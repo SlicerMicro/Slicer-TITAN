@@ -372,6 +372,19 @@
          </property>
         </widget>
        </item>
+       <item row="29" column="0">
+        <widget class="QLabel" name="getLevel">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
        <item row="38" column="0">
         <widget class="QLabel" name="label_16">
          <property name="font">
@@ -394,13 +407,6 @@
          </property>
         </widget>
        </item>
-       <item row="29" column="0">
-        <widget class="QLabel" name="getLevel">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
        <item row="32" column="0">
         <widget class="QLabel" name="label_29">
          <property name="text">
@@ -417,6 +423,9 @@
           <bool>true</bool>
          </property>
         </widget>
+       </item>
+       <item row="33" column="0">
+        <widget class="QDoubleSpinBox" name="setWindow"/>
        </item>
        <item row="9" column="0">
         <widget class="QComboBox" name="blueSelect"/>
@@ -662,6 +671,9 @@
          </property>
         </spacer>
        </item>
+       <item row="35" column="0">
+        <widget class="QDoubleSpinBox" name="setLevel"/>
+       </item>
        <item row="22" column="0">
         <widget class="QLabel" name="label_18">
          <property name="text">
@@ -770,12 +782,18 @@
        <item row="17" column="0">
         <widget class="QComboBox" name="whiteSelect"/>
        </item>
-       <item row="35" column="0">
-        <widget class="QSpinBox" name="setLevel">
-         <property name="maximum">
-          <number>500</number>
+       <item row="31" column="0">
+        <spacer name="horizontalSpacer_11">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
          </property>
-        </widget>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
        <item row="19" column="0">
         <widget class="QLabel" name="label_14">
@@ -1031,32 +1049,18 @@
          </property>
         </widget>
        </item>
-       <item row="33" column="0">
-        <widget class="QSpinBox" name="setWindow">
-         <property name="maximum">
-          <number>500</number>
-         </property>
-        </widget>
-       </item>
        <item row="27" column="0">
         <widget class="QLabel" name="getWindow">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
          <property name="text">
           <string/>
          </property>
         </widget>
-       </item>
-       <item row="31" column="0">
-        <spacer name="horizontalSpacer_11">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
        </item>
       </layout>
      </widget>
