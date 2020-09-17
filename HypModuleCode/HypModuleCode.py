@@ -1307,7 +1307,15 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         plotSeriesNode.SetPlotType(slicer.vtkMRMLPlotSeriesNode.PlotTypeScatter)
         plotSeriesNode.SetLineStyle(slicer.vtkMRMLPlotSeriesNode.LineStyleNone)
         plotSeriesNode.SetMarkerStyle(slicer.vtkMRMLPlotSeriesNode.MarkerStyleCircle)
-        plotSeriesNode.SetColor(0.46, 0.67, 0.96)
+        # plotSeriesNode.SetColor(0.46, 0.67, 0.96)
+
+        # Set density colouring to the plot
+        from scipy.stats import gaussian_kde
+
+        xy = np.vstack([x,y])
+        densColour = gaussian_kde(xy)(xy)
+
+        plotSeriesNode.SetColor(densColour)
 
         # Create plot chart node
         plotChartNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotChartNode", roiName + ": " + channelOneName + " x " + channelTwoName)
