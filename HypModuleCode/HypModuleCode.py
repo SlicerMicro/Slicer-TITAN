@@ -1307,15 +1307,15 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         plotSeriesNode.SetPlotType(slicer.vtkMRMLPlotSeriesNode.PlotTypeScatter)
         plotSeriesNode.SetLineStyle(slicer.vtkMRMLPlotSeriesNode.LineStyleNone)
         plotSeriesNode.SetMarkerStyle(slicer.vtkMRMLPlotSeriesNode.MarkerStyleCircle)
-        # plotSeriesNode.SetColor(0.46, 0.67, 0.96)
+        plotSeriesNode.SetColor(0.46, 0.67, 0.96)
 
         # Set density colouring to the plot
-        from scipy.stats import gaussian_kde
-
-        xy = np.vstack([x,y])
-        densColour = gaussian_kde(xy)(xy)
-
-        plotSeriesNode.SetColor(densColour)
+        # from scipy.stats import gaussian_kde
+        #
+        # xy = np.vstack([x,y])
+        # densColour = gaussian_kde(xy)(xy)
+        #
+        # plotSeriesNode.SetPointLookupTable(densColour)
 
         # Create plot chart node
         plotChartNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotChartNode", roiName + ": " + channelOneName + " x " + channelTwoName)
@@ -1329,15 +1329,83 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         slicer.app.layoutManager().setLayout(
             slicer.vtkMRMLLayoutNode.SlicerLayoutFourUpPlotView)
 
-        # Set red slice to show the heatmap
+        # Set red slice to show the cell mask
         red_logic = slicer.app.layoutManager().sliceWidget("Red").sliceLogic()
         red_logic.GetSliceCompositeNode().SetBackgroundVolumeID(cellMask.GetID())
 
-        # Set yellow slice to show cloned, thresholded channel
+        # Create density plot with matplotlib
+        # Install necessary libraries
+        try:
+            import matplotlib
+        except ModuleNotFoundError:
+            import pip
+            pip_install("matplotlib")
+            import matplotlib
+
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        from pylab import savefig
+
+        from scipy.stats import gaussian_kde
+
+        # Calculate point density
+        xy = np.vstack([x,y])
+        densColour = gaussian_kde(xy)(xy)
+
+        # Sort points by density
+        # idx = densColour.argsort()
+        # x, y, densColour = x[idx], y[idx], densColour[idx]
+
+        fig, ax = plt.subplots()
+        ax.scatter(x, y, c=densColour)
+
+        # Display heatmap
+        savefig("densityScatter.jpg")
+        densScatterImg = sitk.ReadImage("densityScatter.jpg")
+        densScatterArray = sitk.GetArrayFromImage(densScatterImg)
+        arraySize = densScatterArray.shape
+        plt.close()
+
+        # Create new volume "Density Scatter Plot"
+        imageSize = [arraySize[1], arraySize[0], 1]
+        voxelType = vtk.VTK_UNSIGNED_CHAR
+        imageOrigin = [0.0, 0.0, 0.0]
+        imageSpacing = [1.0, 1.0, 1.0]
+        imageDirections = [[-1, 0, 0], [0, -1, 0], [0, 0, 1]]
+        fillVoxelValue = 0
+
+        # Create an empty image volume, filled with fillVoxelValue
+        imageData = vtk.vtkImageData()
+        imageData.SetDimensions(imageSize)
+        imageData.AllocateScalars(voxelType, 3)
+        imageData.GetPointData().GetScalars().Fill(fillVoxelValue)
+
+        # Create volume node
+        # Needs to be a vector volume in order to show in colour
+        volumeNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLVectorVolumeNode", roiName + ": " + channelOneName + " x " + channelTwoName + " Density Scatter")
+        volumeNode.SetOrigin(imageOrigin)
+        volumeNode.SetSpacing(imageSpacing)
+        volumeNode.SetIJKToRASDirections(imageDirections)
+        volumeNode.SetAndObserveImageData(imageData)
+        volumeNode.CreateDefaultDisplayNodes()
+        volumeNode.CreateDefaultStorageNode()
+
+        voxels = slicer.util.arrayFromVolume(volumeNode)
+        voxels[:] = densScatterArray
+
+        volumeNode.Modified()
+
+        # # Set yellow slice to show cloned, thresholded channel
+        # yellow_widget = slicer.app.layoutManager().sliceWidget("Yellow")
+        # yellow_widget.setSliceOrientation("Axial")
+        # yellowDisplayNode = channelOneNode.GetScalarVolumeDisplayNode()
+        # yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeRed")
+        # yellow_logic = yellow_widget.sliceLogic()
+        # yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(channelOneNode.GetID())
+
+        # Set yellow slice to display density scatter plot
         yellow_widget = slicer.app.layoutManager().sliceWidget("Yellow")
         yellow_widget.setSliceOrientation("Axial")
-        yellowDisplayNode = channelOneNode.GetScalarVolumeDisplayNode()
-        yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeRed")
         yellow_logic = yellow_widget.sliceLogic()
         yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(channelOneNode.GetID())
 
