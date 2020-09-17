@@ -1250,22 +1250,25 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                     blank, i, j = np.nonzero(cellMaskArray == cell)
                     cellPixels = channelOneArray[:, i, j]
                     sumIntens = np.sum(cellPixels)
+                    totalPixels = cellPixels.shape[1]
                     nonZeroes = np.where(cellPixels != 0)
                     numNonZeroes = nonZeroes[1].shape[0]
                     if numNonZeroes == 0:
                         avg = 0
                     else:
-                        avg = float(sumIntens) / float(numNonZeroes)
+                        avg = float(sumIntens) / float(totalPixels)
+                    # print("Sum Intensity: " + str(sumIntens) + " total pixels: " + str(totalPixels) + " avg: " + str(avg))
                     channelOneMeanIntens.append(avg)
                     # Channel two
                     cellPixelsTwo = channelTwoArray[:, i, j]
                     sumIntensTwo = np.sum(cellPixelsTwo)
+                    totalPixelsTwo = cellPixelsTwo.shape[1]
                     nonZeroesTwo = np.where(cellPixelsTwo != 0)
                     numNonZeroesTwo = nonZeroesTwo[1].shape[0]
                     if numNonZeroesTwo == 0:
                         avgTwo = 0
                     else:
-                        avgTwo = float(sumIntensTwo) / float(numNonZeroesTwo)
+                        avgTwo = float(sumIntensTwo) / float(totalPixelsTwo)
                     channelTwoMeanIntens.append(avgTwo)
                     # Cell label
                     cellLabels.append(cell)
