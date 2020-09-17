@@ -1394,6 +1394,8 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         voxels[:] = densScatterArray
 
         volumeNode.Modified()
+        volumeNode.GetDisplayNode().AutoWindowLevelOff()
+        volumeNode.GetDisplayNode().SetWindowLevel((arraySize[1] // 8), 127)
 
         # # Set yellow slice to show cloned, thresholded channel
         # yellow_widget = slicer.app.layoutManager().sliceWidget("Yellow")
@@ -1407,7 +1409,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         yellow_widget = slicer.app.layoutManager().sliceWidget("Yellow")
         yellow_widget.setSliceOrientation("Axial")
         yellow_logic = yellow_widget.sliceLogic()
-        yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(channelOneNode.GetID())
+        yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(volumeNode.GetID())
 
         # Set green slice to show cell mask
         green_widget = slicer.app.layoutManager().sliceWidget("Green")
