@@ -560,51 +560,72 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                 # Check if channel is the correct ROI
                 id = shNode.GetItemByDataNode(channel)
                 parent = shNode.GetItemParent(id)
-                roiName = shNode.GetItemName(parent)
-                if roiName == roiSelect:
+                if roiSelect == "ROI":
                     selectChannels["red"] = channel
+                else:
+                    roiName = shNode.GetItemName(parent)
+                    if roiName == roiSelect:
+                        selectChannels["red"] = channel
             elif greenSelect in name:
                 # Check if channel is the correct ROI
                 id = shNode.GetItemByDataNode(channel)
                 parent = shNode.GetItemParent(id)
-                roiName = shNode.GetItemName(parent)
-                if roiName == roiSelect:
+                if roiSelect == "ROI":
                     selectChannels["green"] = channel
+                else:
+                    roiName = shNode.GetItemName(parent)
+                    if roiName == roiSelect:
+                        selectChannels["green"] = channel
             elif blueSelect in name:
                 # Check if channel is the correct ROI
                 id = shNode.GetItemByDataNode(channel)
                 parent = shNode.GetItemParent(id)
-                roiName = shNode.GetItemName(parent)
-                if roiName == roiSelect:
+                if roiSelect == "ROI":
                     selectChannels["blue"] = channel
+                else:
+                    roiName = shNode.GetItemName(parent)
+                    if roiName == roiSelect:
+                        selectChannels["blue"] = channel
             elif yellowSelect in name:
                 # Check if channel is the correct ROI
                 id = shNode.GetItemByDataNode(channel)
                 parent = shNode.GetItemParent(id)
-                roiName = shNode.GetItemName(parent)
-                if roiName == roiSelect:
+                if roiSelect == "ROI":
                     selectChannels["yellow"] = channel
+                else:
+                    roiName = shNode.GetItemName(parent)
+                    if roiName == roiSelect:
+                        selectChannels["yellow"] = channel
             elif cyanSelect in name:
                 # Check if channel is the correct ROI
                 id = shNode.GetItemByDataNode(channel)
                 parent = shNode.GetItemParent(id)
-                roiName = shNode.GetItemName(parent)
-                if roiName == roiSelect:
+                if roiSelect == "ROI":
                     selectChannels["cyan"] = channel
+                else:
+                    roiName = shNode.GetItemName(parent)
+                    if roiName == roiSelect:
+                        selectChannels["cyan"] = channel
             elif magentaSelect in name:
                 # Check if channel is the correct ROI
                 id = shNode.GetItemByDataNode(channel)
                 parent = shNode.GetItemParent(id)
-                roiName = shNode.GetItemName(parent)
-                if roiName == roiSelect:
+                if roiSelect == "ROI":
                     selectChannels["magenta"] = channel
+                else:
+                    roiName = shNode.GetItemName(parent)
+                    if roiName == roiSelect:
+                        selectChannels["magenta"] = channel
             elif whiteSelect in name:
                 # Check if channel is the correct ROI
                 id = shNode.GetItemByDataNode(channel)
                 parent = shNode.GetItemParent(id)
-                roiName = shNode.GetItemName(parent)
-                if roiName == roiSelect:
+                if roiSelect == "ROI":
                     selectChannels["white"] = channel
+                else:
+                    roiName = shNode.GetItemName(parent)
+                    if roiName == roiSelect:
+                        selectChannels["white"] = channel
         saveImageName = ""
         arrayList = []
         arraySize = None
