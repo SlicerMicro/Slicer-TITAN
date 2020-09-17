@@ -1353,11 +1353,13 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         densColour = gaussian_kde(xy)(xy)
 
         # Sort points by density
-        # idx = densColour.argsort()
-        # x, y, densColour = x[idx], y[idx], densColour[idx]
+        idx = densColour.argsort()
+        xArr = np.array(x)
+        yArr = np.array(y)
+        xArr, yArr, densColour = xArr[idx], yArr[idx], densColour[idx]
 
         fig, ax = plt.subplots()
-        ax.scatter(x, y, c=densColour)
+        ax.scatter(xArr, yArr, c=densColour)
 
         # Display heatmap
         savefig("densityScatter.jpg")
