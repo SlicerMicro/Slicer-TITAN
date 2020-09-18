@@ -1311,6 +1311,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         plotSeriesNode.SetLineStyle(slicer.vtkMRMLPlotSeriesNode.LineStyleNone)
         plotSeriesNode.SetMarkerStyle(slicer.vtkMRMLPlotSeriesNode.MarkerStyleCircle)
         plotSeriesNode.SetColor(0.46, 0.67, 0.96)
+        # plotSeriesNode.SetColor(np.arange(nPoints), np.arange(nPoints), np.arange(nPoints))
 
         # Set density colouring to the plot
         # from scipy.stats import gaussian_kde
