@@ -131,7 +131,9 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
 
         # Data
         self.ui.subjectHierarchy.setMRMLScene(slicer.mrmlScene)
-        # self.ui.dataSelection.setMRMLScene(slicer.mrmlScene)
+
+        # Analysis
+        # self.ui.SegmentEditorWidget.setMRMLScene(slicer.mrmlScene)
 
         # Connections
 
@@ -182,6 +184,8 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         self.ui.saveScatPlotTable.connect('clicked(bool)', self.onScatPlotSaveTable)
 
         self.ui.crtHeatmapButton.connect('clicked(bool)', self.onHeatmapPlot)
+
+        self.ui.updPlotFromSel.connect("clicked(bool)", self.onUpdatePlotFromSelection)
 
     def cleanup(self):
         pass
@@ -496,6 +500,32 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         for img in existingMasks:
             if "Cell Mask: Selected Cells" in img.GetName():
                 slicer.mrmlScene.RemoveNode(img)
+
+    def onUpdatePlotFromSelection(self):
+        # Export segmentation into a labelmap
+        seg = getNode('Segmentation')
+        labelmap = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLLabelMapVolumeNode", "Selection on image")
+        slicer.modules.segmentations.logic().ExportAllSegmentsToLabelmapNode(seg, labelmap)
+
+        selectedCells = []
+
+        # Get values of cell labels
+        cellMask = globalCellMask[scatterPlotRoi]
+        cellMaskArray = slicer.util.arrayFromVolume(cellMask)
+        labelmapArray = slicer.util.arrayFromVolume(labelmap)
+        for selection in np.unique(labelmapArray):
+            if selection != 0:
+                points = np.where(labelmapArray == selection)
+                values = cellMaskArray[points]
+                cellLabels = list(np.unique(values))
+                for i in cellLabels:
+                    if i != 0:
+                        if i not in selectedCells:
+                            selectedCells.append(cellLabels)
+
+        
+
+
 
     def onScatPlotSaveTable(self):
         logic = HypModuleLogic()
