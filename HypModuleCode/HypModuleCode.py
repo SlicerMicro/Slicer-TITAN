@@ -521,22 +521,22 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
                 for i in cellLabels:
                     if i != 0:
                         # if np.any(i not in selectedCellLabels):
-                        selectedCellLabels.append(cellLabels)
+                        if i not in selectedCellLabels:
+                            selectedCellLabels.append(i)
 
         selectedCellsMask = np.copy(cellMaskArray)
-        print(selectedCellLabels)
 
         # Remove cells in the array that aren't part of the selected cells
         for cell in np.unique(selectedCellsMask):
             if cell != 0:
-                # if cell not in selectedCellLabels:
-                if np.any(cell not in selectedCellLabels):
+                if cell not in selectedCellLabels:
+                # if np.any(cell not in selectedCellLabels):
                     selectedCellsMask[selectedCellsMask == cell] = 0
 
         # Create new cell mask image
         name = "Cell Mask: Selected Cells"
 
-        volumeNode = slicer.modules.volumes.logic().CloneVolume(cellMaskNode, name)
+        volumeNode = slicer.modules.volumes.logic().CloneVolume(cellMask, name)
         slicer.util.updateVolumeFromArray(volumeNode, selectedCellsMask)
 
         # Add to global list of cell masks
