@@ -503,14 +503,17 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
 
     def onUpdatePlotFromSelection(self):
         # Export segmentation into a labelmap
+        cellMask = globalCellMask[scatterPlotRoi]
+
         seg = slicer.util.getNode('Segmentation')
         labelmap = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLLabelMapVolumeNode", "Selection on image")
-        slicer.modules.segmentations.logic().ExportAllSegmentsToLabelmapNode(seg, labelmap)
+        # slicer.modules.segmentations.logic().ExportAllSegmentsToLabelmapNode(seg, labelmap)
+        visibleIds = vtk.vtkStringArray()
+        slicer.modules.segmentations.logic().ExportSegmentsToLabelmapNode(seg, visibleIds, labelmap, cellMask)
 
         selectedCellLabels = []
 
         # Get values of cell labels
-        cellMask = globalCellMask[scatterPlotRoi]
         cellMaskArray = slicer.util.arrayFromVolume(cellMask)
         labelmapArray = slicer.util.arrayFromVolume(labelmap)
         for selection in np.unique(labelmapArray):
