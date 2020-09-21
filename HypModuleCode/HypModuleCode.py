@@ -503,11 +503,11 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
 
     def onUpdatePlotFromSelection(self):
         # Export segmentation into a labelmap
-        seg = getNode('Segmentation')
+        seg = slicer.util.getNode('Segmentation')
         labelmap = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLLabelMapVolumeNode", "Selection on image")
         slicer.modules.segmentations.logic().ExportAllSegmentsToLabelmapNode(seg, labelmap)
 
-        selectedCells = []
+        selectedCellLabels = []
 
         # Get values of cell labels
         cellMask = globalCellMask[scatterPlotRoi]
@@ -520,10 +520,30 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
                 cellLabels = list(np.unique(values))
                 for i in cellLabels:
                     if i != 0:
-                        if i not in selectedCells:
-                            selectedCells.append(cellLabels)
+                        # if np.any(i not in selectedCellLabels):
+                        selectedCellLabels.append(cellLabels)
 
-        
+        selectedCellsMask = np.copy(cellMaskArray)
+        print(selectedCellLabels)
+
+        # Remove cells in the array that aren't part of the selected cells
+        for cell in np.unique(selectedCellsMask):
+            if cell != 0:
+                # if cell not in selectedCellLabels:
+                if np.any(cell not in selectedCellLabels):
+                    selectedCellsMask[selectedCellsMask == cell] = 0
+
+        # Create new cell mask image
+        name = "Cell Mask: Selected Cells"
+
+        volumeNode = slicer.modules.volumes.logic().CloneVolume(cellMaskNode, name)
+        slicer.util.updateVolumeFromArray(volumeNode, selectedCellsMask)
+
+        # Add to global list of cell masks
+        globalCellMask["Selected Cells"] = volumeNode
+
+        logic = HypModuleLogic()
+        logic.scatterPlotRun(True)
 
 
 
