@@ -186,6 +186,8 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         self.ui.crtHeatmapButton.connect('clicked(bool)', self.onHeatmapPlot)
 
         self.ui.updPlotFromSel.connect("clicked(bool)", self.onUpdatePlotFromSelection)
+        self.ui.clearSelection.connect("clicked(bool)", self.onClearSelection)
+        
 
     def cleanup(self):
         pass
