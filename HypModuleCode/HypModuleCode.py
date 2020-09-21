@@ -1363,7 +1363,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         xArr, yArr, densColour = xArr[idx], yArr[idx], densColour[idx]
 
         fig, ax = plt.subplots()
-        ax.scatter(xArr, yArr, c=densColour)
+        ax.scatter(xArr, yArr, c=densColour, s=10)
 
         # Display heatmap
         savefig("densityScatter.jpg")
