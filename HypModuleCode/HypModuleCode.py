@@ -505,7 +505,8 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         # Export segmentation into a labelmap
         cellMask = globalCellMask[scatterPlotRoi]
 
-        seg = slicer.util.getNode('Segmentation')
+        segs = slicer.util.getNodesByClass("vtkMRMLSegmentationNode")
+        seg = segs[-1]
         labelmap = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLLabelMapVolumeNode", "Selection on image")
         # slicer.modules.segmentations.logic().ExportAllSegmentsToLabelmapNode(seg, labelmap)
         visibleIds = vtk.vtkStringArray()
@@ -548,7 +549,11 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         logic = HypModuleLogic()
         logic.scatterPlotRun(True)
 
+    def onClearSelection(self):
+        existingSegs = slicer.util.getNodesByClass("vtkMRMLSegmentationNode")
 
+        for seg in existingSegs:
+            slicer.mrmlScene.RemoveNode(seg)
 
     def onScatPlotSaveTable(self):
         logic = HypModuleLogic()
