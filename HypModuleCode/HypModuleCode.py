@@ -190,6 +190,7 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
 
         # Advanced
         self.ui.crtTsne.connect('clicked(bool)', self.onCreateTsne)
+        self.ui.crtPCA.connect('clicked(bool)', self.onCreatePCA)
         
 
     def cleanup(self):
@@ -588,7 +589,20 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
             self.ui.analysisErrorMessage.text = ""
 
         logic = HypModuleLogic()
-        logic.tsneRun()
+        logic.tsnePCARun("tsne")
+
+    def onCreatePCA(self):
+        if selectedChannel is None or len(selectedChannel) < 1:
+            self.ui.analysisErrorMessage.text = "ERROR: Minimum 1 channel should be selected."
+            return
+        elif selectedRoi is None or len(selectedRoi) != 1:
+            self.ui.analysisErrorMessage.text = "ERROR: Only 1 ROI should be selected."
+            return
+        else:
+            self.ui.analysisErrorMessage.text = ""
+
+        logic = HypModuleLogic()
+        logic.tsnePCARun("pca")
 
 #
 # HypModuleLogic
@@ -1916,7 +1930,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         # imgWidget.show()
         # return True
 
-    def tsneRun(self):
+    def tsnePCARun(self, plotType):
         """
         Create t-sne plot of selected channels
         """
@@ -2010,14 +2024,22 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             import pip
             pip_install("sklearn")
 
-        from sklearn.manifold import TSNE
+        if plotType == "tsne":
+            from sklearn.manifold import TSNE
 
-        tsne = TSNE().fit(meanIntensities)
+            plotValues = TSNE().fit_transform(meanIntensities)
+            name = "t-SNE"
+
+        else:
+            from sklearn.decomposition import PCA
+
+            plotValues = PCA().fit_transform(meanIntensities)
+            name = "PCA"
 
         x = []
         y = []
 
-        for i in tsne:
+        for i in plotValues:
             x.append(i[0])
             y.append(i[1])
         print(x)
@@ -2025,15 +2047,15 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         # Create table with x and y columns
         tableNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode",
-                                                       roiName + ": "  + "t-SNE data")
+                                                       roiName + ": "  + name + " data")
         table = tableNode.GetTable()
 
         arrX = vtk.vtkFloatArray()
-        arrX.SetName("t-SNE 1")
+        arrX.SetName(name + " 1")
         table.AddColumn(arrX)
 
         arrY = vtk.vtkFloatArray()
-        arrY.SetName("t-SNE 2")
+        arrY.SetName(name + " 2")
         table.AddColumn(arrY)
 
         # Fill in table with values
@@ -2047,10 +2069,10 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             table.RemoveRow(0)
 
         # Create plot series nodes
-        plotSeriesNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotSeriesNode", roiName + ": t-SNE Points")
+        plotSeriesNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotSeriesNode", roiName + ": " + name + " Points")
         plotSeriesNode.SetAndObserveTableNodeID(tableNode.GetID())
-        plotSeriesNode.SetXColumnName("t-SNE 1")
-        plotSeriesNode.SetYColumnName("t-SNE 2")
+        plotSeriesNode.SetXColumnName(name + " 1")
+        plotSeriesNode.SetYColumnName(name + " 2")
         plotSeriesNode.SetPlotType(slicer.vtkMRMLPlotSeriesNode.PlotTypeScatter)
         plotSeriesNode.SetLineStyle(slicer.vtkMRMLPlotSeriesNode.LineStyleNone)
         plotSeriesNode.SetMarkerStyle(slicer.vtkMRMLPlotSeriesNode.MarkerStyleCircle)
@@ -2058,11 +2080,11 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         # Create plot chart node
         plotChartNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotChartNode",
-                                                           roiName + ": t-SNE")
+                                                           roiName + name)
         plotChartNode.AddAndObservePlotSeriesNodeID(plotSeriesNode.GetID())
-        plotChartNode.SetTitle(roiName + ": t-SNE")
-        plotChartNode.SetXAxisTitle("t-SNE 1")
-        plotChartNode.SetYAxisTitle("t-SNE 2")
+        plotChartNode.SetTitle(roiName + name)
+        plotChartNode.SetXAxisTitle(name + " 1")
+        plotChartNode.SetYAxisTitle(name + " 2")
 
         # Show plot in layout
         slicer.modules.plots.logic().ShowChartInLayout(plotChartNode)
