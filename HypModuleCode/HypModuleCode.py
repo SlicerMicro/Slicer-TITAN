@@ -1972,7 +1972,6 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         # Create list of mean intensities for all cells for each channel
         # Create empty matrix of mean intensities
         meanIntensities = np.full((len(channels), len(cell)), 0.00)
-        cellLabels = []
         cellCount = 0
 
         for cell in range(cellMaskArray.max() + 1):
@@ -2001,8 +2000,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                         rowPos = channels.index(id)
                         columnPos = cellCount
                         meanIntensities[rowPos, columnPos] = round(avg, 2)
-                        # Cell label
-                        cellLabels.append(cell)
+
                     cellCount += 1
 
         # Create tsne array
@@ -2014,7 +2012,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         from sklearn.manifold import TSNE
 
-        tsne = TSNE().fit_transform(meanIntensities)
+        tsne = TSNE().fit(meanIntensities)
 
         x = []
         y = []
@@ -2022,8 +2020,8 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         for i in tsne:
             x.append(i[0])
             y.append(i[1])
-
         print(x)
+        print(y)
 
         # Create table with x and y columns
         tableNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode",
@@ -2038,16 +2036,39 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         arrY.SetName("t-SNE 2")
         table.AddColumn(arrY)
 
-        arrZ = vtk.vtkIntArray()
-        arrZ.SetName("Cell Label")
-        table.AddColumn(arrZ)
-
         # Fill in table with values
         table.SetNumberOfRows(len(tsne))
         for i in range(len(tsne)):
-            table.SetValue(i, 0, x[i])
-            table.SetValue(i, 1, y[i])
-            table.SetValue(i, 2, z[i])
+            arrX.InsertNextValue(x[i])
+            arrY.InsertNextValue(y[i])
+            # table.SetValue(i, 0, x[i])
+            # table.SetValue(i, 1, y[i])
+        for i in range(len(tsne)):
+            table.RemoveRow(0)
+
+        # Create plot series nodes
+        plotSeriesNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotSeriesNode", roiName + ": t-SNE Points")
+        plotSeriesNode.SetAndObserveTableNodeID(tableNode.GetID())
+        plotSeriesNode.SetXColumnName("t-SNE 1")
+        plotSeriesNode.SetYColumnName("t-SNE 2")
+        plotSeriesNode.SetPlotType(slicer.vtkMRMLPlotSeriesNode.PlotTypeScatter)
+        plotSeriesNode.SetLineStyle(slicer.vtkMRMLPlotSeriesNode.LineStyleNone)
+        plotSeriesNode.SetMarkerStyle(slicer.vtkMRMLPlotSeriesNode.MarkerStyleCircle)
+        plotSeriesNode.SetColor(0.46, 0.67, 0.96)
+
+        # Create plot chart node
+        plotChartNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotChartNode",
+                                                           roiName + ": t-SNE")
+        plotChartNode.AddAndObservePlotSeriesNodeID(plotSeriesNode.GetID())
+        plotChartNode.SetTitle(roiName + ": t-SNE")
+        plotChartNode.SetXAxisTitle("t-SNE 1")
+        plotChartNode.SetYAxisTitle("t-SNE 2")
+
+        # Show plot in layout
+        slicer.modules.plots.logic().ShowChartInLayout(plotChartNode)
+        slicer.app.layoutManager().setLayout(
+            slicer.vtkMRMLLayoutNode.SlicerLayoutOneUpPlotView)
+
 
 
 
