@@ -1749,6 +1749,13 @@
          </property>
         </widget>
        </item>
+       <item row="0" column="1">
+        <widget class="QPushButton" name="crtTsne">
+         <property name="text">
+          <string>Create t-SNE Plot</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </widget>
