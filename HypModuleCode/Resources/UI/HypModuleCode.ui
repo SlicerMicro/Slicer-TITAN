@@ -249,7 +249,7 @@
       <enum>QTabWidget::Triangular</enum>
      </property>
      <property name="currentIndex">
-      <number>4</number>
+      <number>5</number>
      </property>
      <property name="usesScrollButtons">
       <bool>false</bool>
@@ -1709,6 +1709,43 @@
         <widget class="QPushButton" name="clearSelection">
          <property name="text">
           <string>Clear Selection</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_3">
+      <attribute name="title">
+       <string>Advanced</string>
+      </attribute>
+      <layout class="QFormLayout" name="formLayout_3">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_31">
+         <property name="font">
+          <font>
+           <family>Montserrat</family>
+           <pointsize>10</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>t-SNE</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_32">
+         <property name="font">
+          <font>
+           <italic>true</italic>
+          </font>
+         </property>
+         <property name="text">
+          <string>Display t-SNE plot of a given ROI</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
