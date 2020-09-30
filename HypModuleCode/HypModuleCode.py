@@ -1954,10 +1954,9 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             # Check if the specific channel was selected
             if roiName in selectedRoi and channelName in selectedChannel:
                 parentDict[itemId] = roiName
-                # if channelName not in channelRows:
-                #     channelRows.append(channelName)
-                # if roiName not in roiColumns:
-                #     roiColumns.append(roiName)
+            # Break loop once all channels are added into dictionary
+            if len(parentDict) == len(selectedChannel):
+                break
 
         channels = list(parentDict.keys())
         roiName = parentDict[channels[0]]
@@ -2024,14 +2023,12 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             x.append(i[0])
             y.append(i[1])
 
+        print(x)
+
         # Create table with x and y columns
         tableNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode",
                                                        roiName + ": "  + "t-SNE data")
         table = tableNode.GetTable()
-
-        arrZ = vtk.vtkIntArray()
-        arrZ.SetName("Cell Label")
-        table.AddColumn(arrZ)
 
         arrX = vtk.vtkFloatArray()
         arrX.SetName("t-SNE 1")
@@ -2041,12 +2038,16 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         arrY.SetName("t-SNE 2")
         table.AddColumn(arrY)
 
+        arrZ = vtk.vtkIntArray()
+        arrZ.SetName("Cell Label")
+        table.AddColumn(arrZ)
+
         # Fill in table with values
         table.SetNumberOfRows(len(tsne))
         for i in range(len(tsne)):
-            table.SetValue(i, 0, cellLabels[i])
-            table.SetValue(i, 1, x[i])
-            table.SetValue(i, 2, y[i])
+            table.SetValue(i, 0, x[i])
+            table.SetValue(i, 1, y[i])
+            table.SetValue(i, 2, z[i])
 
 
 
