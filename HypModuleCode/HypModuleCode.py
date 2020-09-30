@@ -2059,13 +2059,13 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         table.AddColumn(arrY)
 
         # Fill in table with values
-        table.SetNumberOfRows(len(tsne))
-        for i in range(len(tsne)):
+        table.SetNumberOfRows(len(plotValues))
+        for i in range(len(plotValues)):
             arrX.InsertNextValue(x[i])
             arrY.InsertNextValue(y[i])
             # table.SetValue(i, 0, x[i])
             # table.SetValue(i, 1, y[i])
-        for i in range(len(tsne)):
+        for i in range(len(plotValues)):
             table.RemoveRow(0)
 
         # Create plot series nodes
