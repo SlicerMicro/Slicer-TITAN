@@ -187,6 +187,9 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
 
         self.ui.updPlotFromSel.connect("clicked(bool)", self.onUpdatePlotFromSelection)
         self.ui.clearSelection.connect("clicked(bool)", self.onClearSelection)
+
+        # Advanced
+        self.ui.crtTsne.connect('clicked(bool)', self.onCreateTsne)
         
 
     def cleanup(self):
@@ -573,6 +576,19 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
 
         logic = HypModuleLogic()
         logic.heatmapRun()
+
+    def onCreateTsne(self):
+        if selectedChannel is None or len(selectedChannel) < 1:
+            self.ui.analysisErrorMessage.text = "ERROR: Minimum 1 channel should be selected."
+            return
+        elif selectedRoi is None or len(selectedRoi) != 1:
+            self.ui.analysisErrorMessage.text = "ERROR: Only 1 ROI should be selected."
+            return
+        else:
+            self.ui.analysisErrorMessage.text = ""
+
+        logic = HypModuleLogic()
+        logic.tsneRun()
 
 #
 # HypModuleLogic
@@ -1905,6 +1921,45 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         # imgWidget.setScaledContents(True)
         # imgWidget.show()
         # return True
+
+    def tsneRun(self):
+        """
+        Create t-sne plot of selected channels
+        """
+
+        # Delete any existing t-sne plots
+        existingHeatmaps = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
+
+        for img in existingHeatmaps:
+            if "Heatmap" in img.GetName():
+                slicer.mrmlScene.RemoveNode(img)
+
+        channelRows = []
+        roiColumns = []
+
+        # Get list of all channels
+        allChannels = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
+
+        # Create dictionary of each channel with its respective ROI
+        shNode = slicer.vtkMRMLSubjectHierarchyNode.GetSubjectHierarchyNode(slicer.mrmlScene)
+        parentDict = {}
+        for channel in allChannels:
+            itemId = shNode.GetItemByDataNode(channel)  # Channel
+            parent = shNode.GetItemParent(itemId)  # ROI
+            roiName = shNode.GetItemName(parent)
+            channelName = shNode.GetItemName(itemId)
+            if re.findall(r"_[0-9]\b", channelName) != []:
+                channelName = channelName[:-2]
+            if roiName == "Scene":
+                roiName = "ROI"
+            # Check if the specific channel was selected
+            if roiName in selectedRoi and channelName in selectedChannel:
+                parentDict[itemId] = roiName
+                if channelName not in channelRows:
+                    channelRows.append(channelName)
+                if roiName not in roiColumns:
+                    roiColumns.append(roiName)
+
 
 
     def saveHeatmapChannelImg(self):
