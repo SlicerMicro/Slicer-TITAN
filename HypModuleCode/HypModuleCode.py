@@ -1779,9 +1779,6 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             if "Heatmap" in img.GetName():
                 slicer.mrmlScene.RemoveNode(img)
 
-        channelRows = []
-        roiColumns = []
-
         # Get list of all channels
         allChannels = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
 
@@ -1800,10 +1797,92 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             # Check if the specific channel was selected
             if roiName in selectedRoi and channelName in selectedChannel:
                 parentDict[itemId] = roiName
-                if channelName not in channelRows:
-                    channelRows.append(channelName)
-                if roiName not in roiColumns:
-                    roiColumns.append(roiName)
+
+        channels = list(parentDict.keys())
+        roiName = parentDict[channels[0]]
+
+        # Get arrays for cell mask and channels
+        cellMask = globalCellMask[roiName]
+        cellMaskArray = slicer.util.arrayFromVolume(cellMask)
+
+        # Get counts of pixels in each cell
+        cell, counts = np.unique(cellMaskArray, return_counts=True)
+        cellPixelCounts = dict(zip(cell, counts))
+
+        # Create list of mean intensities for all cells for each channel
+        channelOneMeanIntens = []
+        channelTwoMeanIntens = []
+        cellLabels = []
+
+        for cell in range(cellMaskArray.max() + 1):
+            if cell != 0:
+                if cell in cellPixelCounts.keys():
+                    # Channel one
+                    blank, i, j = np.nonzero(cellMaskArray == cell)
+                    cellPixels = channelOneArray[:, i, j]
+                    sumIntens = np.sum(cellPixels)
+                    totalPixels = cellPixels.shape[1]
+                    nonZeroes = np.where(cellPixels != 0)
+                    numNonZeroes = nonZeroes[1].shape[0]
+                    if numNonZeroes == 0:
+                        avg = 0
+                    else:
+                        avg = float(sumIntens) / float(totalPixels)
+                    # print("Sum Intensity: " + str(sumIntens) + " total pixels: " + str(totalPixels) + " avg: " + str(avg))
+                    channelOneMeanIntens.append(avg)
+                    # Channel two
+                    cellPixelsTwo = channelTwoArray[:, i, j]
+                    sumIntensTwo = np.sum(cellPixelsTwo)
+                    totalPixelsTwo = cellPixelsTwo.shape[1]
+                    nonZeroesTwo = np.where(cellPixelsTwo != 0)
+                    numNonZeroesTwo = nonZeroesTwo[1].shape[0]
+                    if numNonZeroesTwo == 0:
+                        avgTwo = 0
+                    else:
+                        avgTwo = float(sumIntensTwo) / float(totalPixelsTwo)
+                    channelTwoMeanIntens.append(avgTwo)
+                    # Cell label
+                    cellLabels.append(cell)
+
+        # Set x and y values
+        x = channelOneMeanIntens
+        y = channelTwoMeanIntens
+        z = cellLabels
+        nPoints = len(x)
+
+        # Create table with x and y columns
+        tableNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode",
+                                                       roiName + ": " + channelOneName + " x " + channelTwoName + " data")
+        table = tableNode.GetTable()
+
+        arrX = vtk.vtkFloatArray()
+        arrX.SetName(channelOneName)
+        table.AddColumn(arrX)
+
+        arrY = vtk.vtkFloatArray()
+        arrY.SetName(channelTwoName)
+        table.AddColumn(arrY)
+
+        arrZ = vtk.vtkIntArray()
+        arrZ.SetName("Cell Label")
+        table.AddColumn(arrZ)
+
+        # Fill in table with values
+        table.SetNumberOfRows(nPoints)
+        for i in range(nPoints):
+            table.SetValue(i, 0, x[i])
+            table.SetValue(i, 1, y[i])
+            table.SetValue(i, 2, z[i])
+
+
+
+
+
+
+
+
+
+
         # Create empty matrix of mean intensities
         meanIntensities = np.full((len(roiColumns), len(channelRows)), 0.00)
 
@@ -1927,12 +2006,17 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         Create t-sne plot of selected channels
         """
 
-        # Delete any existing t-sne plots
-        existingHeatmaps = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
+        # Delete any existing plots
+        existingPlots = slicer.util.getNodesByClass("vtkMRMLPlotChartNode")
+        existingSeriesNodes = slicer.util.getNodesByClass("vtkMRMLPlotSeriesNode")
+        existingTables = slicer.util.getNodesByClass("vtkMRMLTableNode")
 
-        for img in existingHeatmaps:
-            if "Heatmap" in img.GetName():
-                slicer.mrmlScene.RemoveNode(img)
+        for plot in existingPlots:
+            slicer.mrmlScene.RemoveNode(plot)
+        for seriesNode in existingSeriesNodes:
+            slicer.mrmlScene.RemoveNode(seriesNode)
+        for table in existingTables:
+            slicer.mrmlScene.RemoveNode(table)
 
         channelRows = []
         roiColumns = []
@@ -1959,6 +2043,27 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                     channelRows.append(channelName)
                 if roiName not in roiColumns:
                     roiColumns.append(roiName)
+
+        # Create empty matrix of mean intensities
+        meanIntensities = np.full((len(roiColumns), len(channelRows)), 0.00)
+
+        # Fill meanIntensities matrix with proper values
+        for i in parentDict:
+            # Get array of channel
+            channelName = shNode.GetItemName(i)
+            channelNode = slicer.util.getNode(channelName)
+            channelArray = slicer.util.arrayFromVolume(channelNode)
+            # Get mean intensity of channel
+            sumIntens = np.sum(channelArray)
+            nonZeroes = np.where(channelArray != 0)
+            numNonZeroes = nonZeroes[1].shape[0]
+            meanIntens = float(sumIntens) / float(numNonZeroes)
+            # Update meanIntensities matrix with this value
+            if re.findall(r"_[0-9]\b", channelName) != []:
+                channelName = channelName[:-2]
+            rowPos = channelRows.index(channelName)
+            columnPos = roiColumns.index(parentDict[i])
+            meanIntensities[columnPos, rowPos] = round(meanIntens, 2)
 
 
 
