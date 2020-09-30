@@ -2063,8 +2063,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         for i in range(len(plotValues)):
             arrX.InsertNextValue(x[i])
             arrY.InsertNextValue(y[i])
-            # table.SetValue(i, 0, x[i])
-            # table.SetValue(i, 1, y[i])
+
         for i in range(len(plotValues)):
             table.RemoveRow(0)
 
