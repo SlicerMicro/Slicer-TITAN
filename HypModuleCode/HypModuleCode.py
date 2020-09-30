@@ -1933,8 +1933,8 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         for table in existingTables:
             slicer.mrmlScene.RemoveNode(table)
 
-        channelRows = []
-        roiColumns = []
+        # channelRows = []
+        # roiColumns = []
 
         # Get list of all channels
         allChannels = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
@@ -1954,10 +1954,10 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             # Check if the specific channel was selected
             if roiName in selectedRoi and channelName in selectedChannel:
                 parentDict[itemId] = roiName
-                if channelName not in channelRows:
-                    channelRows.append(channelName)
-                if roiName not in roiColumns:
-                    roiColumns.append(roiName)
+                # if channelName not in channelRows:
+                #     channelRows.append(channelName)
+                # if roiName not in roiColumns:
+                #     roiColumns.append(roiName)
 
         channels = list(parentDict.keys())
         roiName = parentDict[channels[0]]
@@ -1981,9 +1981,9 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                 if cell in cellPixelCounts.keys():
                     # Channel one
                     blank, i, j = np.nonzero(cellMaskArray == cell)
-                    for channel in parentDict:
+                    for id in parentDict:
                         # Get array of channel
-                        channelName = shNode.GetItemName(channel)
+                        channelName = shNode.GetItemName(id)
                         channelNode = slicer.util.getNode(channelName)
                         channelArray = slicer.util.arrayFromVolume(channelNode)
                         # Get mean intensity of channel
@@ -1999,69 +1999,55 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                         # Update meanIntensities matrix with this value
                         if re.findall(r"_[0-9]\b", channelName) != []:
                             channelName = channelName[:-2]
-                        rowPos = channels.index(channelName)
+                        rowPos = channels.index(id)
                         columnPos = cellCount
                         meanIntensities[rowPos, columnPos] = round(avg, 2)
                         # Cell label
                         cellLabels.append(cell)
-                        cellCount += 1
+                    cellCount += 1
 
-        # Set x and y values
-        x = channelOneMeanIntens
-        y = channelTwoMeanIntens
-        z = cellLabels
-        nPoints = len(x)
+        # Create tsne array
+        try:
+            import sklearn
+        except ModuleNotFoundError:
+            import pip
+            pip_install("sklearn")
+
+        from sklearn.manifold import TSNE
+
+        tsne = TSNE().fit_transform(meanIntensities)
+
+        x = []
+        y = []
+
+        for i in tsne:
+            x.append(i[0])
+            y.append(i[1])
 
         # Create table with x and y columns
         tableNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode",
-                                                       roiName + ": " + channelOneName + " x " + channelTwoName + " data")
+                                                       roiName + ": "  + "t-SNE data")
         table = tableNode.GetTable()
-
-        arrX = vtk.vtkFloatArray()
-        arrX.SetName(channelOneName)
-        table.AddColumn(arrX)
-
-        arrY = vtk.vtkFloatArray()
-        arrY.SetName(channelTwoName)
-        table.AddColumn(arrY)
 
         arrZ = vtk.vtkIntArray()
         arrZ.SetName("Cell Label")
         table.AddColumn(arrZ)
 
+        arrX = vtk.vtkFloatArray()
+        arrX.SetName("t-SNE 1")
+        table.AddColumn(arrX)
+
+        arrY = vtk.vtkFloatArray()
+        arrY.SetName("t-SNE 2")
+        table.AddColumn(arrY)
+
         # Fill in table with values
-        table.SetNumberOfRows(nPoints)
-        for i in range(nPoints):
-            table.SetValue(i, 0, x[i])
-            table.SetValue(i, 1, y[i])
-            table.SetValue(i, 2, z[i])
+        table.SetNumberOfRows(len(tsne))
+        for i in range(len(tsne)):
+            table.SetValue(i, 0, cellLabels[i])
+            table.SetValue(i, 1, x[i])
+            table.SetValue(i, 2, y[i])
 
-
-
-
-
-
-
-        # Create empty matrix of mean intensities
-        meanIntensities = np.full((len(roiColumns), len(channelRows)), 0.00)
-
-        # Fill meanIntensities matrix with proper values
-        for i in parentDict:
-            # Get array of channel
-            channelName = shNode.GetItemName(i)
-            channelNode = slicer.util.getNode(channelName)
-            channelArray = slicer.util.arrayFromVolume(channelNode)
-            # Get mean intensity of channel
-            sumIntens = np.sum(channelArray)
-            nonZeroes = np.where(channelArray != 0)
-            numNonZeroes = nonZeroes[1].shape[0]
-            meanIntens = float(sumIntens) / float(numNonZeroes)
-            # Update meanIntensities matrix with this value
-            if re.findall(r"_[0-9]\b", channelName) != []:
-                channelName = channelName[:-2]
-            rowPos = channelRows.index(channelName)
-            columnPos = roiColumns.index(parentDict[i])
-            meanIntensities[columnPos, rowPos] = round(meanIntens, 2)
 
 
 
