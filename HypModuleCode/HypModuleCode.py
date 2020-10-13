@@ -1985,8 +1985,9 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         # Create list of mean intensities for all cells for each channel
         # Create empty matrix of mean intensities
-        meanIntensities = np.full((len(channels), len(cell)), 0.00)
+        meanIntensities = np.full((len(cell), len(channels)), 0.00)
         cellCount = 0
+        cellLabels = []
 
         for cell in range(cellMaskArray.max() + 1):
             if cell != 0:
@@ -2011,10 +2012,11 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                         # Update meanIntensities matrix with this value
                         if re.findall(r"_[0-9]\b", channelName) != []:
                             channelName = channelName[:-2]
-                        rowPos = channels.index(id)
-                        columnPos = cellCount
+                        columnPos = channels.index(id)
+                        rowPos = cellCount
                         meanIntensities[rowPos, columnPos] = round(avg, 2)
 
+                    cellLabels.append(cell)
                     cellCount += 1
 
         # Create tsne array
@@ -2038,6 +2040,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         x = []
         y = []
+        z = cellLabels
 
         for i in plotValues:
             x.append(i[0])
@@ -2058,11 +2061,16 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         arrY.SetName(name + " 2")
         table.AddColumn(arrY)
 
+        arrZ = vtk.vtkFloatArray()
+        arrZ.SetName("Cell Label")
+        table.AddColumn(arrZ)
+
         # Fill in table with values
         table.SetNumberOfRows(len(plotValues))
         for i in range(len(plotValues)):
             arrX.InsertNextValue(x[i])
             arrY.InsertNextValue(y[i])
+            arrZ.InsertNextValue(z[i])
 
         for i in range(len(plotValues)):
             table.RemoveRow(0)
