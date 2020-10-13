@@ -1985,7 +1985,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         # Create list of mean intensities for all cells for each channel
         # Create empty matrix of mean intensities
-        meanIntensities = np.full((len(cell), len(channels)), 0.00)
+        meanIntensities = np.full((len(cell)-1, len(channels)), 0.00)
         cellCount = 0
         cellLabels = []
 
@@ -2045,8 +2045,6 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         for i in plotValues:
             x.append(i[0])
             y.append(i[1])
-        print(x)
-        print(y)
 
         # Create table with x and y columns
         tableNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode",
