@@ -2183,18 +2183,18 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         # Get columns from t-sne/pca table
         tableNode = slicer.util.getNodesByClass("vtkMRMLTableNode")[0]
         nRows = tableNode.GetNumberOfRows()
-        kmeansArray = np.full((nRows-1, 2), 0)
+        kmeansArray = np.full((nRows, 2), 0.00)
         dim1 = []
         dim2 = []
         cellLabels = []
         for row in range(nRows):
-            dim1Val = tableNode.GetCellText(row, 0)
-            dim2Val = tableNode.GetCellText(row, 1)
+            dim1Val = float(tableNode.GetCellText(row, 0))
+            dim2Val = float(tableNode.GetCellText(row, 1))
             kmeansArray[row,0] = dim1Val
             kmeansArray[row, 1] = dim2Val
             dim1.append(dim1Val)
             dim2.append(dim2Val)
-            cellLabels.append(tableNode.GetCellText(row, 2))
+            cellLabels.append(int(tableNode.GetCellText(row, 2)))
 
         # Compute k-means
         try:
@@ -2216,9 +2216,8 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         #     y.append(i[1])
 
         # Create table with x and y columns
-        tableNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode",
-                                                       roiName + ": " + " K-Means Data")
-        table = tableNode.GetTable()
+        kMeansTableNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode", "K-Means Data")
+        table = kMeansTableNode.GetTable()
 
         arrX = vtk.vtkFloatArray()
         arrX.SetName("Dim 1")
@@ -2238,14 +2237,14 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
 
         # Fill in table with values
-        table.SetNumberOfRows(len(plotValues))
-        for i in range(len(plotValues)):
+        table.SetNumberOfRows(len(dim1))
+        for i in range(len(dim1)):
             arrX.InsertNextValue(dim1[i])
             arrY.InsertNextValue(dim2[i])
             arrZ.InsertNextValue(cellLabels[i])
             arrK.InsertNextValue(clusLabels[i])
 
-        for i in range(len(plotValues)):
+        for i in range(len(dim1)):
             table.RemoveRow(0)
 
         # # Create plot series nodes
@@ -2275,116 +2274,105 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         # red_logic = slicer.app.layoutManager().sliceWidget("Red").sliceLogic()
         # red_logic.GetSliceCompositeNode().SetBackgroundVolumeID(cellMask.GetID())
         #
-        # # Create density plot with matplotlib
-        # # Install necessary libraries
-        # try:
-        #     import matplotlib
-        # except ModuleNotFoundError:
-        #     import pip
-        #     pip_install("matplotlib")
-        #     import matplotlib
-        #
-        # matplotlib.use("Agg")
-        # import matplotlib.pyplot as plt
-        # from pylab import savefig
-        #
-        # from scipy.stats import gaussian_kde
-        #
-        # # Calculate point density
-        # xy = np.vstack([x, y])
-        # densColour = gaussian_kde(xy)(xy)
-        #
-        # # Sort points by density
-        # idx = densColour.argsort()
-        # xArr = np.array(x)
-        # yArr = np.array(y)
-        # xArr, yArr, densColour = xArr[idx], yArr[idx], densColour[idx]
-        #
-        # fig, ax = plt.subplots()
-        # ax.scatter(xArr, yArr, c=densColour, s=10)
-        #
-        # # Display heatmap
-        # savefig("densityScatter.jpg")
-        # densScatterImg = sitk.ReadImage("densityScatter.jpg")
-        # densScatterArray = sitk.GetArrayFromImage(densScatterImg)
-        # arraySize = densScatterArray.shape
-        # plt.close()
-        #
-        # # Create new volume "Density Scatter Plot"
-        # imageSize = [arraySize[1], arraySize[0], 1]
-        # voxelType = vtk.VTK_UNSIGNED_CHAR
-        # imageOrigin = [0.0, 0.0, 0.0]
-        # imageSpacing = [1.0, 1.0, 1.0]
-        # imageDirections = [[-1, 0, 0], [0, -1, 0], [0, 0, 1]]
-        # fillVoxelValue = 0
-        #
-        # # Create an empty image volume, filled with fillVoxelValue
-        # imageData = vtk.vtkImageData()
-        # imageData.SetDimensions(imageSize)
-        # imageData.AllocateScalars(voxelType, 3)
-        # imageData.GetPointData().GetScalars().Fill(fillVoxelValue)
-        #
-        # # Create volume node
-        # # Needs to be a vector volume in order to show in colour
-        # volumeNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLVectorVolumeNode",
-        #                                                 roiName + ": " + channelOneName + " x " + channelTwoName + " Density Scatter")
-        # volumeNode.SetOrigin(imageOrigin)
-        # volumeNode.SetSpacing(imageSpacing)
-        # volumeNode.SetIJKToRASDirections(imageDirections)
-        # volumeNode.SetAndObserveImageData(imageData)
-        # volumeNode.CreateDefaultDisplayNodes()
-        # volumeNode.CreateDefaultStorageNode()
-        #
-        # voxels = slicer.util.arrayFromVolume(volumeNode)
-        # voxels[:] = densScatterArray
-        #
-        # volumeNode.Modified()
-        # volumeNode.GetDisplayNode().AutoWindowLevelOff()
-        # volumeNode.GetDisplayNode().SetWindowLevel((arraySize[1] // 8), 127)
-        #
-        # # # Set yellow slice to show cloned, thresholded channel
-        # # yellow_widget = slicer.app.layoutManager().sliceWidget("Yellow")
-        # # yellow_widget.setSliceOrientation("Axial")
-        # # yellowDisplayNode = channelOneNode.GetScalarVolumeDisplayNode()
-        # # yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeRed")
-        # # yellow_logic = yellow_widget.sliceLogic()
-        # # yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(channelOneNode.GetID())
-        #
-        # # Set yellow slice to display density scatter plot
+
+
+        # Create density plot with matplotlib
+        # Install necessary libraries
+        try:
+            import matplotlib
+        except ModuleNotFoundError:
+            import pip
+            pip_install("matplotlib")
+            import matplotlib
+
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        from pylab import savefig
+
+        fig, ax = plt.subplots()
+        ax.scatter(dim1, dim2, c=clusLabels, s=10)
+
+        # Display heatmap
+        savefig("kMeans.jpg")
+        kMeansImg = sitk.ReadImage("kMeans.jpg")
+        kMeansArray = sitk.GetArrayFromImage(kMeansImg)
+        arraySize = kMeansArray.shape
+        plt.close()
+
+        # Create new volume "Density Scatter Plot"
+        imageSize = [arraySize[1], arraySize[0], 1]
+        voxelType = vtk.VTK_UNSIGNED_CHAR
+        imageOrigin = [0.0, 0.0, 0.0]
+        imageSpacing = [1.0, 1.0, 1.0]
+        imageDirections = [[-1, 0, 0], [0, -1, 0], [0, 0, 1]]
+        fillVoxelValue = 0
+
+        # Create an empty image volume, filled with fillVoxelValue
+        imageData = vtk.vtkImageData()
+        imageData.SetDimensions(imageSize)
+        imageData.AllocateScalars(voxelType, 3)
+        imageData.GetPointData().GetScalars().Fill(fillVoxelValue)
+
+        # Create volume node
+        # Needs to be a vector volume in order to show in colour
+        volumeNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLVectorVolumeNode", "K-Means Clustering")
+        volumeNode.SetOrigin(imageOrigin)
+        volumeNode.SetSpacing(imageSpacing)
+        volumeNode.SetIJKToRASDirections(imageDirections)
+        volumeNode.SetAndObserveImageData(imageData)
+        volumeNode.CreateDefaultDisplayNodes()
+        volumeNode.CreateDefaultStorageNode()
+
+        voxels = slicer.util.arrayFromVolume(volumeNode)
+        voxels[:] = kMeansArray
+
+        volumeNode.Modified()
+        volumeNode.GetDisplayNode().AutoWindowLevelOff()
+        volumeNode.GetDisplayNode().SetWindowLevel((arraySize[1] // 8), 127)
+
+        # # Set yellow slice to show cloned, thresholded channel
         # yellow_widget = slicer.app.layoutManager().sliceWidget("Yellow")
         # yellow_widget.setSliceOrientation("Axial")
+        # yellowDisplayNode = channelOneNode.GetScalarVolumeDisplayNode()
+        # yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeRed")
         # yellow_logic = yellow_widget.sliceLogic()
-        # yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(volumeNode.GetID())
+        # yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(channelOneNode.GetID())
+
+        # Set yellow slice to display density scatter plot
+        yellow_widget = slicer.app.layoutManager().sliceWidget("Yellow")
+        yellow_widget.setSliceOrientation("Axial")
+        yellow_logic = yellow_widget.sliceLogic()
+        yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(volumeNode.GetID())
+
+        # # Set green slice to show cell mask
+        # green_widget = slicer.app.layoutManager().sliceWidget("Green")
+        # green_widget.setSliceOrientation("Axial")
+        # if len(parentDict) > 1:
+        #     greenDisplayNode = displayList[1].GetScalarVolumeDisplayNode()
+        #     greenDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeGreen")
+        #     green_logic = green_widget.sliceLogic()
+        #     green_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[1].GetID())
+        # else:
+        #     greenDisplayNode = displayList[0].GetScalarVolumeDisplayNode()
+        #     greenDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeGreen")
+        #     green_logic = green_widget.sliceLogic()
+        #     green_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[0].GetID())
         #
-        # # # Set green slice to show cell mask
-        # # green_widget = slicer.app.layoutManager().sliceWidget("Green")
-        # # green_widget.setSliceOrientation("Axial")
-        # # if len(parentDict) > 1:
-        # #     greenDisplayNode = displayList[1].GetScalarVolumeDisplayNode()
-        # #     greenDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeGreen")
-        # #     green_logic = green_widget.sliceLogic()
-        # #     green_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[1].GetID())
-        # # else:
-        # #     greenDisplayNode = displayList[0].GetScalarVolumeDisplayNode()
-        # #     greenDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeGreen")
-        # #     green_logic = green_widget.sliceLogic()
-        # #     green_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[0].GetID())
-        # #
-        # # # Set yellow slice to show cloned, thresholded channel
-        # # yellow_widget = slicer.app.layoutManager().sliceWidget("Yellow")
-        # # yellow_widget.setSliceOrientation("Axial")
-        # # if len(displayList) > 2:
-        # #     yellowDisplayNode = displayList[2].GetScalarVolumeDisplayNode()
-        # #     yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeBlue")
-        # #     yellow_logic = yellow_widget.sliceLogic()
-        # #     yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[2].GetID())
-        # # else:
-        # #     yellowDisplayNode = displayList[0].GetScalarVolumeDisplayNode()
-        # #     yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeBlue")
-        # #     yellow_logic = yellow_widget.sliceLogic()
-        # #     yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[0].GetID())
-        #
-        # slicer.util.resetSliceViews()
+        # # Set yellow slice to show cloned, thresholded channel
+        # yellow_widget = slicer.app.layoutManager().sliceWidget("Yellow")
+        # yellow_widget.setSliceOrientation("Axial")
+        # if len(displayList) > 2:
+        #     yellowDisplayNode = displayList[2].GetScalarVolumeDisplayNode()
+        #     yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeBlue")
+        #     yellow_logic = yellow_widget.sliceLogic()
+        #     yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[2].GetID())
+        # else:
+        #     yellowDisplayNode = displayList[0].GetScalarVolumeDisplayNode()
+        #     yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeBlue")
+        #     yellow_logic = yellow_widget.sliceLogic()
+        #     yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[0].GetID())
+
+        slicer.util.resetSliceViews()
 
 
 
