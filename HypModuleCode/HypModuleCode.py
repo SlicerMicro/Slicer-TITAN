@@ -588,8 +588,22 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         else:
             self.ui.analysisErrorMessage.text = ""
 
+        self.ui.tsneSelectedCellsCount.text = ""
+
         logic = HypModuleLogic()
         logic.tsnePCARun("tsne")
+
+        # # If check box is checked, use the selected cells mask for the scatter plot
+        # if self.ui.checkBoxSelectedCells.checkState() == 0:
+        #     logic.scatterPlotRun(False)
+        # else:
+        #     logic.scatterPlotRun(True)
+
+        # Scatter plot gating signal
+        layoutManager = slicer.app.layoutManager()
+        plotWidget = layoutManager.plotWidget(0)
+        plotView = plotWidget.plotView()
+        plotView.connect("dataSelected(vtkStringArray*, vtkCollection*)", self.onDataSelected)
 
     def onCreatePCA(self):
         if selectedChannel is None or len(selectedChannel) < 1:
