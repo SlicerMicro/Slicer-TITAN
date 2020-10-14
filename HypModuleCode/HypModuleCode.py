@@ -462,6 +462,7 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
             cellLabels.append(label)
         cellCount = len(cellLabels)
         self.ui.selectedCellsCount.text = cellCount
+        self.ui.tsneSelectedCellsCount.text = cellCount
 
         # Get cell mask array
         # global globalCellMask
@@ -615,8 +616,22 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         else:
             self.ui.analysisErrorMessage.text = ""
 
+        self.ui.tsneSelectedCellsCount.text = ""
+
         logic = HypModuleLogic()
         logic.tsnePCARun("pca")
+
+        # # If check box is checked, use the selected cells mask for the scatter plot
+        # if self.ui.checkBoxSelectedCells.checkState() == 0:
+        #     logic.scatterPlotRun(False)
+        # else:
+        #     logic.scatterPlotRun(True)
+
+        # Scatter plot gating signal
+        layoutManager = slicer.app.layoutManager()
+        plotWidget = layoutManager.plotWidget(0)
+        plotView = plotWidget.plotView()
+        plotView.connect("dataSelected(vtkStringArray*, vtkCollection*)", self.onDataSelected)
 
 #
 # HypModuleLogic
