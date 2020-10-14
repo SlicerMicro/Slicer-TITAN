@@ -1988,6 +1988,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         meanIntensities = np.full((len(cell)-1, len(channels)), 0.00)
         cellCount = 0
         cellLabels = []
+        displayList = []
 
         for cell in range(cellMaskArray.max() + 1):
             if cell != 0:
@@ -1999,6 +2000,9 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                         channelName = shNode.GetItemName(id)
                         channelNode = slicer.util.getNode(channelName)
                         channelArray = slicer.util.arrayFromVolume(channelNode)
+                        if channelNode not in displayList:
+                            if len(displayList) < 2:
+                                displayList.append(channelNode)
                         # Get mean intensity of channel
                         cellPixels = channelArray[:, i, j]
                         sumIntens = np.sum(cellPixels)
@@ -2094,7 +2098,44 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         # Show plot in layout
         slicer.modules.plots.logic().ShowChartInLayout(plotChartNode)
         slicer.app.layoutManager().setLayout(
-            slicer.vtkMRMLLayoutNode.SlicerLayoutOneUpPlotView)
+            slicer.vtkMRMLLayoutNode.SlicerLayoutFourUpPlotView)
+
+        # Set red slice to show the cell mask
+        red_logic = slicer.app.layoutManager().sliceWidget("Red").sliceLogic()
+        red_logic.GetSliceCompositeNode().SetBackgroundVolumeID(cellMask.GetID())
+
+        # Set green slice to show cell mask
+        green_widget = slicer.app.layoutManager().sliceWidget("Green")
+        green_widget.setSliceOrientation("Axial")
+        if len(parentDict) > 1:
+            greenDisplayNode = displayList[1].GetScalarVolumeDisplayNode()
+            greenDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeGreen")
+            green_logic = green_widget.sliceLogic()
+            green_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[1].GetID())
+        else:
+            greenDisplayNode = displayList[0].GetScalarVolumeDisplayNode()
+            greenDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeGreen")
+            green_logic = green_widget.sliceLogic()
+            green_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[0].GetID())
+
+        # Set yellow slice to show cloned, thresholded channel
+        yellow_widget = slicer.app.layoutManager().sliceWidget("Yellow")
+        yellow_widget.setSliceOrientation("Axial")
+        if len(displayList) > 2:
+            yellowDisplayNode = displayList[2].GetScalarVolumeDisplayNode()
+            yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeBlue")
+            yellow_logic = yellow_widget.sliceLogic()
+            yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[2].GetID())
+        else:
+            yellowDisplayNode = displayList[0].GetScalarVolumeDisplayNode()
+            yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeBlue")
+            yellow_logic = yellow_widget.sliceLogic()
+            yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[0].GetID())
+
+        slicer.util.resetSliceViews()
+
+        global scatterPlotRoi
+        scatterPlotRoi = roiName
 
 
 
