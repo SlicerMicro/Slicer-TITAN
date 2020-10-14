@@ -191,6 +191,7 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         # Advanced
         self.ui.crtTsne.connect('clicked(bool)', self.onCreateTsne)
         self.ui.crtPCA.connect('clicked(bool)', self.onCreatePCA)
+        self.ui.crtKMeans.connect('clicked(bool)', self.onCreateKMeans)
         
 
     def cleanup(self):
@@ -632,6 +633,10 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         plotWidget = layoutManager.plotWidget(0)
         plotView = plotWidget.plotView()
         plotView.connect("dataSelected(vtkStringArray*, vtkCollection*)", self.onDataSelected)
+
+    def onCreateKMeans(self):
+        logic = HypModuleLogic()
+
 
 #
 # HypModuleLogic
@@ -2167,6 +2172,36 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         scatterPlotRoi = roiName
 
 
+    def kMeansRun(self, nClusters):
+        """
+        Create k-means clustering based on an already created t-sne or pca plot.
+        """
+
+        # Get columns from t-sne/pca table
+        tableNode = slicer.util.getNodesByClass("vtkMRMLTableNode")[0]
+        nRows = tableNode.GetNumberOfRows()
+        col1 = []
+        col2 = []
+        kmeansArray = np.full((nRows-1, 2), 0)
+        cellLabels = []
+        for row in range(nRows):
+            kmeansArray[row,0] = tableNode.GetCellText(row, 0)
+            kmeansArray[row, 1] = tableNode.GetCellText(row, 1)
+            # col1.append(tableNode.GetCellText(row, 0))
+            # col2.append(tableNode.GetCellText(row, 1))
+            cellLabels.append(tableNode.GetCellText(row, 2))
+
+        # Compute k-means
+        # Create tsne array
+        try:
+            import sklearn
+        except ModuleNotFoundError:
+            import pip
+            pip_install("sklearn")
+
+        from sklearn.cluster import KMeans
+
+        plotValues = KMeans(n_clusters = nClusters, random_state = 0).fit_transform(kmeansArray)
 
 
 
