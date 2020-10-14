@@ -2247,36 +2247,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         for i in range(len(dim1)):
             table.RemoveRow(0)
 
-        # # Create plot series nodes
-        # plotSeriesNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotSeriesNode", roiName + ": " + " K-Means Points")
-        # plotSeriesNode.SetAndObserveTableNodeID(tableNode.GetID())
-        # plotSeriesNode.SetXColumnName(name + " 1")
-        # plotSeriesNode.SetYColumnName(name + " 2")
-        # plotSeriesNode.SetPlotType(slicer.vtkMRMLPlotSeriesNode.PlotTypeScatter)
-        # plotSeriesNode.SetLineStyle(slicer.vtkMRMLPlotSeriesNode.LineStyleNone)
-        # plotSeriesNode.SetMarkerStyle(slicer.vtkMRMLPlotSeriesNode.MarkerStyleCircle)
-        # plotSeriesNode.SetColor(0.46, 0.67, 0.96)
-        #
-        # # Create plot chart node
-        # plotChartNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotChartNode",
-        #                                                    roiName + " K-Means")
-        # plotChartNode.AddAndObservePlotSeriesNodeID(plotSeriesNode.GetID())
-        # plotChartNode.SetTitle(roiName + " K-Means")
-        # plotChartNode.SetXAxisTitle("Dim 1")
-        # plotChartNode.SetYAxisTitle("Dim 2")
-
-        # # Show plot in layout
-        # slicer.modules.plots.logic().ShowChartInLayout(plotChartNode)
-        # slicer.app.layoutManager().setLayout(
-        #     slicer.vtkMRMLLayoutNode.SlicerLayoutFourUpPlotView)
-        #
-        # # Set red slice to show the cell mask
-        # red_logic = slicer.app.layoutManager().sliceWidget("Red").sliceLogic()
-        # red_logic.GetSliceCompositeNode().SetBackgroundVolumeID(cellMask.GetID())
-        #
-
-
-        # Create density plot with matplotlib
+        # Create cluster plot with matplotlib
         # Install necessary libraries
         try:
             import matplotlib
@@ -2292,14 +2263,14 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         fig, ax = plt.subplots()
         ax.scatter(dim1, dim2, c=clusLabels, s=10)
 
-        # Display heatmap
+        # Display cluster plot
         savefig("kMeans.jpg")
         kMeansImg = sitk.ReadImage("kMeans.jpg")
         kMeansArray = sitk.GetArrayFromImage(kMeansImg)
         arraySize = kMeansArray.shape
         plt.close()
 
-        # Create new volume "Density Scatter Plot"
+        # Create new volume "K-Means Clustering"
         imageSize = [arraySize[1], arraySize[0], 1]
         voxelType = vtk.VTK_UNSIGNED_CHAR
         imageOrigin = [0.0, 0.0, 0.0]
