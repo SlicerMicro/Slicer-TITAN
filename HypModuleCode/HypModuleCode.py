@@ -65,6 +65,7 @@ globalCellMask = {}
 roiNames = []
 channelNames = []
 selectedRoi = None
+roiDict = None
 selectedChannel = None
 scatterPlotRoi = None
 
@@ -289,6 +290,8 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         channelNames = []
         global roiNames
         roiNames = []
+        global roiDict
+        roiDict = {}
 
         # Get list of all channels
         allChannels = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
@@ -333,10 +336,13 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         self.ui.magentaSelect.addItem("None")
         self.ui.whiteSelect.addItem("None")
 
+        roiPosCount = 0
         for roi in roiNames:
             if roi != "Scene":
                 self.ui.roiList.addItem(roi)
                 self.ui.roiVisualization.addItem(roi)
+                roiDict[roi] = roiPosCount
+                roiPosCount += 1
         for channel in channelNames:
             self.ui.channelList.addItem(channel)
             self.ui.redSelect.addItem(channel)
@@ -924,28 +930,48 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         Perform threshold segmentation on the nucleiImageInput
         """
 
-        # Get list of all channels
-        allChannels = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
-
-        # Create dictionary of each channel with its respective ROI
+        positions = []
+        channelItems = []
         shNode = slicer.vtkMRMLSubjectHierarchyNode.GetSubjectHierarchyNode(slicer.mrmlScene)
-        parentDict = {}
-        for channel in allChannels:
-            itemId = shNode.GetItemByDataNode(channel)  # Channel
-            parent = shNode.GetItemParent(itemId)  # ROI
-            roiName = shNode.GetItemName(parent)
-            if roiName == "Scene":
-                roiName = "ROI"
-            if roiName not in selectedRoi:
-                continue
-            channelName = shNode.GetItemName(itemId)
-            if re.findall(r"_[0-9]\b", channelName) != []:
-                channelName = channelName[:-2]
-            # Check if the specific channel was selected
-            if roiName in selectedRoi and channelName in selectedChannel:
-                parentDict[itemId] = roiName
-            if len(parentDict) == len(selectedRoi):
-                break
+
+        for roi in selectedRoi:
+            positions.append(roiDict[roi])
+
+        for channel in selectedChannel:
+            for pos in positions:
+                if pos == 0:
+                    node = slicer.util.getNode(channel)
+                    itemId = shNode.GetItemByDataNode(node)
+                    channelItems.append(itemId)
+                else:
+                    suffix = "_" + str(pos)
+                    name = channel + suffix
+                    node = slicer.util.getNode(name)
+                    itemId = shNode.GetItemByDataNode(node)
+                    channelItems.append(itemId)
+
+        # # Get list of all channels
+        # allChannels = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
+        #
+        # # Create dictionary of each channel with its respective ROI
+        # shNode = slicer.vtkMRMLSubjectHierarchyNode.GetSubjectHierarchyNode(slicer.mrmlScene)
+        # parentDict = {}
+        # for channel in allChannels:
+        #     itemId = shNode.GetItemByDataNode(channel)  # Channel
+        #     parent = shNode.GetItemParent(itemId)  # ROI
+        #     roiName = shNode.GetItemName(parent)
+        #     if roiName == "Scene":
+        #         roiName = "ROI"
+        #     if roiName not in selectedRoi:
+        #         continue
+        #     channelName = shNode.GetItemName(itemId)
+        #     if re.findall(r"_[0-9]\b", channelName) != []:
+        #         channelName = channelName[:-2]
+        #     # Check if the specific channel was selected
+        #     if roiName in selectedRoi and channelName in selectedChannel:
+        #         parentDict[itemId] = roiName
+        #     if len(parentDict) == len(selectedRoi):
+        #         break
 
         # Set dictionary for number of cells of each mask
         nCells = {}
@@ -957,9 +983,10 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         dnaNode = None
 
         # For each nucleus mask, run this loop; parentDict length should be number of ROI's
-        for itemId in parentDict:
+        for itemId in channelItems:
             # Get array of channel
-            roiName = parentDict[itemId]
+            parent = shNode.GetItemParent(itemId)  # ROI
+            roiName = shNode.GetItemName(parent)
             dnaName = shNode.GetItemName(itemId)
             dnaNode = slicer.util.getNode(dnaName)
             dnaArray = slicer.util.arrayFromVolume(dnaNode)
@@ -1175,29 +1202,52 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         for table in existingTables:
             slicer.mrmlScene.RemoveNode(table)
 
-        # Get list of all channels
-        allChannels = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
-        nChannels = len(selectedRoi)*len(selectedChannel)
-
-        # Create dictionary of each channel with its respective ROI
+        positions = []
+        channelItems = []
         shNode = slicer.vtkMRMLSubjectHierarchyNode.GetSubjectHierarchyNode(slicer.mrmlScene)
-        parentDict = {}
-        for channel in allChannels:
-            itemId = shNode.GetItemByDataNode(channel)  # Channel
-            parent = shNode.GetItemParent(itemId)  # ROI
-            roiName = shNode.GetItemName(parent)
-            if roiName == "Scene":
-                roiName = "ROI"
-            if roiName not in selectedRoi:
-                continue
-            channelName = shNode.GetItemName(itemId)
-            if re.findall(r"_[0-9]\b", channelName) != []:
-                channelName = channelName[:-2]
-            # Check if the specific channel was selected
-            if channelName in selectedChannel:
-                parentDict[itemId] = roiName
-            if len(parentDict) == nChannels:
-                break
+
+        for roi in selectedRoi:
+            positions.append(roiDict[roi])
+
+        for channel in selectedChannel:
+            for pos in positions:
+                if pos == 0:
+                    node = slicer.util.getNode(channel)
+                    itemId = shNode.GetItemByDataNode(node)
+                    channelItems.append(itemId)
+                else:
+                    suffix = "_" + str(pos)
+                    name = channel + suffix
+                    node = slicer.util.getNode(name)
+                    itemId = shNode.GetItemByDataNode(node)
+                    channelItems.append(itemId)
+
+
+
+
+        # # Get list of all channels
+        # allChannels = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
+        # nChannels = len(selectedRoi)*len(selectedChannel)
+        #
+        # # Create dictionary of each channel with its respective ROI
+        # shNode = slicer.vtkMRMLSubjectHierarchyNode.GetSubjectHierarchyNode(slicer.mrmlScene)
+        # parentDict = {}
+        # for channel in allChannels:
+        #     itemId = shNode.GetItemByDataNode(channel)  # Channel
+        #     parent = shNode.GetItemParent(itemId)  # ROI
+        #     roiName = shNode.GetItemName(parent)
+        #     if roiName == "Scene":
+        #         roiName = "ROI"
+        #     if roiName not in selectedRoi:
+        #         continue
+        #     channelName = shNode.GetItemName(itemId)
+        #     if re.findall(r"_[0-9]\b", channelName) != []:
+        #         channelName = channelName[:-2]
+        #     # Check if the specific channel was selected
+        #     if channelName in selectedChannel:
+        #         parentDict[itemId] = roiName
+        #     if len(parentDict) == nChannels:
+        #         break
 
 
         # Set "global" variables in order to display later
@@ -1213,11 +1263,14 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         count = 0
 
         # For each channel, run this loop to create histogram; parentDict length should be number of channels to be plotted
-        for itemId in parentDict:
+
+        # for itemId in parentDict:
+        for itemId in channelItems:
 
             count +=1
             # Get array of channel
-            roiName = parentDict[itemId]
+            parent = shNode.GetItemParent(itemId)
+            roiName = shNode.GetItemName(parent)
             channelName = shNode.GetItemName(itemId)
             channelNode = slicer.util.getNode(channelName)
             channelArray = slicer.util.arrayFromVolume(channelNode)
