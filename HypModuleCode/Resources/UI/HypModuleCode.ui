@@ -1719,7 +1719,7 @@
        <string>Advanced</string>
       </attribute>
       <layout class="QFormLayout" name="formLayout_3">
-       <item row="0" column="0">
+       <item row="2" column="0">
         <widget class="QLabel" name="label_31">
          <property name="font">
           <font>
@@ -1734,14 +1734,14 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
+       <item row="2" column="1">
         <widget class="QPushButton" name="crtTsne">
          <property name="text">
           <string>Create t-SNE Plot</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="0">
+       <item row="5" column="0">
         <widget class="QLabel" name="label_33">
          <property name="font">
           <font>
@@ -1756,7 +1756,7 @@
          </property>
         </widget>
        </item>
-       <item row="4" column="0">
+       <item row="6" column="0">
         <widget class="QLabel" name="label_34">
          <property name="font">
           <font>
@@ -1768,14 +1768,14 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="1">
+       <item row="5" column="1">
         <widget class="QPushButton" name="crtPCA">
          <property name="text">
           <string>Create PCA Plot</string>
          </property>
         </widget>
        </item>
-       <item row="6" column="0">
+       <item row="8" column="0">
         <widget class="QLabel" name="label_35">
          <property name="font">
           <font>
@@ -1788,7 +1788,7 @@
          </property>
         </widget>
        </item>
-       <item row="6" column="1">
+       <item row="8" column="1">
         <widget class="QLabel" name="tsneSelectedCellsCount">
          <property name="font">
           <font>
@@ -1801,7 +1801,7 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
+       <item row="3" column="0">
         <widget class="QLabel" name="label_32">
          <property name="font">
           <font>
@@ -1816,7 +1816,7 @@
          </property>
         </widget>
        </item>
-       <item row="5" column="0">
+       <item row="7" column="0">
         <spacer name="horizontalSpacer_15">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -1829,7 +1829,7 @@
          </property>
         </spacer>
        </item>
-       <item row="2" column="0">
+       <item row="4" column="0">
         <spacer name="horizontalSpacer_16">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -1842,7 +1842,7 @@
          </property>
         </spacer>
        </item>
-       <item row="8" column="0">
+       <item row="12" column="0">
         <widget class="QLabel" name="label_36">
          <property name="font">
           <font>
@@ -1857,7 +1857,7 @@
          </property>
         </widget>
        </item>
-       <item row="9" column="0">
+       <item row="13" column="0">
         <widget class="QLabel" name="label_37">
          <property name="font">
           <font>
@@ -1872,14 +1872,14 @@
          </property>
         </widget>
        </item>
-       <item row="10" column="0">
+       <item row="14" column="0">
         <widget class="QLabel" name="label_38">
          <property name="text">
           <string>Number of Clusters:</string>
          </property>
         </widget>
        </item>
-       <item row="7" column="0">
+       <item row="9" column="0">
         <spacer name="horizontalSpacer_17">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -1892,21 +1892,21 @@
          </property>
         </spacer>
        </item>
-       <item row="10" column="1">
+       <item row="14" column="1">
         <widget class="QSpinBox" name="nClusters">
          <property name="value">
           <number>2</number>
          </property>
         </widget>
        </item>
-       <item row="11" column="1">
+       <item row="15" column="1">
         <widget class="QPushButton" name="crtKMeans">
          <property name="text">
           <string>Create K-Means Cluster</string>
          </property>
         </widget>
        </item>
-       <item row="11" column="0">
+       <item row="15" column="0">
         <widget class="QLabel" name="label_39">
          <property name="font">
           <font>
@@ -1920,7 +1920,7 @@
          </property>
         </widget>
        </item>
-       <item row="12" column="0">
+       <item row="16" column="0">
         <widget class="QLabel" name="label_40">
          <property name="font">
           <font>
@@ -1934,12 +1934,68 @@
          </property>
         </widget>
        </item>
-       <item row="12" column="1">
+       <item row="16" column="1">
         <widget class="QPushButton" name="crtHierarch">
          <property name="text">
           <string>Create Hierarchical Cluster</string>
          </property>
         </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_41">
+         <property name="font">
+          <font>
+           <family>Montserrat</family>
+           <pointsize>10</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>1)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="10" column="0">
+        <widget class="QLabel" name="label_42">
+         <property name="font">
+          <font>
+           <family>Montserrat</family>
+           <pointsize>10</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>2)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <spacer name="horizontalSpacer_18">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="11" column="0">
+        <spacer name="horizontalSpacer_19">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </widget>
