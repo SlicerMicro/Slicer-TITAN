@@ -934,14 +934,18 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             itemId = shNode.GetItemByDataNode(channel)  # Channel
             parent = shNode.GetItemParent(itemId)  # ROI
             roiName = shNode.GetItemName(parent)
+            if roiName == "Scene":
+                roiName = "ROI"
+            if roiName not in selectedRoi:
+                continue
             channelName = shNode.GetItemName(itemId)
             if re.findall(r"_[0-9]\b", channelName) != []:
                 channelName = channelName[:-2]
             # Check if the specific channel was selected
-            if roiName == "Scene":
-                roiName = "ROI"
             if roiName in selectedRoi and channelName in selectedChannel:
                 parentDict[itemId] = roiName
+            if len(parentDict) == len(selectedRoi):
+                break
 
         # Set dictionary for number of cells of each mask
         nCells = {}
@@ -1173,6 +1177,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         # Get list of all channels
         allChannels = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
+        nChannels = len(selectedRoi)*len(selectedChannel)
 
         # Create dictionary of each channel with its respective ROI
         shNode = slicer.vtkMRMLSubjectHierarchyNode.GetSubjectHierarchyNode(slicer.mrmlScene)
@@ -1181,14 +1186,18 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             itemId = shNode.GetItemByDataNode(channel)  # Channel
             parent = shNode.GetItemParent(itemId)  # ROI
             roiName = shNode.GetItemName(parent)
+            if roiName == "Scene":
+                roiName = "ROI"
+            if roiName not in selectedRoi:
+                continue
             channelName = shNode.GetItemName(itemId)
             if re.findall(r"_[0-9]\b", channelName) != []:
                 channelName = channelName[:-2]
             # Check if the specific channel was selected
-            if roiName == "Scene":
-                roiName = "ROI"
-            if roiName in selectedRoi and channelName in selectedChannel:
+            if channelName in selectedChannel:
                 parentDict[itemId] = roiName
+            if len(parentDict) == nChannels:
+                break
 
 
         # Set "global" variables in order to display later
