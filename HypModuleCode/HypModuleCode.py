@@ -192,6 +192,7 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         self.ui.crtTsne.connect('clicked(bool)', self.onCreateTsne)
         self.ui.crtPCA.connect('clicked(bool)', self.onCreatePCA)
         self.ui.crtKMeans.connect('clicked(bool)', self.onCreateKMeans)
+        self.ui.crtHierarch.connect('clicked(bool)', self.onHierarchicalCluster)
         
 
     def cleanup(self):
@@ -636,7 +637,11 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
 
     def onCreateKMeans(self):
         logic = HypModuleLogic()
-        logic.kMeansRun(nClusters=self.ui.nClusters.value)
+        logic.clusterRun(nClusters=self.ui.nClusters.value, clusterType="kmeans")
+
+    def onHierarchicalCluster(self):
+        logic = HypModuleLogic()
+        logic.clusterRun(nClusters=self.ui.nClusters.value, clusterType="hierarchical")
 
 
 #
@@ -2175,7 +2180,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         scatterPlotRoi = roiName
 
 
-    def kMeansRun(self, nClusters):
+    def clusterRun(self, nClusters, clusterType):
         """
         Create k-means clustering based on an already created t-sne or pca plot.
         """
@@ -2204,8 +2209,14 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             pip_install("sklearn")
 
         from sklearn.cluster import KMeans
+        from sklearn.cluster import AgglomerativeClustering
 
-        clusLabels = KMeans(n_clusters = nClusters, random_state = 0).fit_predict(kmeansArray)
+        if clusterType == "kmeans":
+            clusLabels = KMeans(n_clusters = nClusters, random_state = 0).fit_predict(kmeansArray)
+            name = "K-Means Clustering"
+        else:
+            clusLabels = AgglomerativeClustering(n_clusters=nClusters, random_state=0).fit_predict(kmeansArray)
+            name = "Hierarchical Clustering"
 
         # x = []
         # y = []
@@ -2216,7 +2227,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         #     y.append(i[1])
 
         # Create table with x and y columns
-        kMeansTableNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode", "K-Means Data")
+        kMeansTableNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode", name + " Data")
         table = kMeansTableNode.GetTable()
 
         arrX = vtk.vtkFloatArray()
@@ -2262,6 +2273,9 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         fig, ax = plt.subplots()
         ax.scatter(dim1, dim2, c=clusLabels, s=10)
+        ax.set_xlabel("Dimension 1")
+        ax.set_ylabel("Dimension 2")
+        ax.set_title(name)
 
         # Display cluster plot
         savefig("kMeans.jpg")
@@ -2286,7 +2300,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         # Create volume node
         # Needs to be a vector volume in order to show in colour
-        volumeNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLVectorVolumeNode", "K-Means Clustering")
+        volumeNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLVectorVolumeNode", name)
         volumeNode.SetOrigin(imageOrigin)
         volumeNode.SetSpacing(imageSpacing)
         volumeNode.SetIJKToRASDirections(imageDirections)
