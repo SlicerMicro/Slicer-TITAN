@@ -1851,79 +1851,79 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         slicer.util.resetSliceViews()
 
-    def sliceThreshold(self, channel, thresh, slice, rgb):
-
-        """
-        Peforms thresholding of "channel" given a threshold value "thresh" and slice window "slice" to be displayed in
-        """
-
-        # Delete any existing thresholded images
-        existingThresholds = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
-
-        array = slicer.util.arrayFromVolume(channel)
-
-        arraySize = array.shape
-        cloneArray = np.stack((array,) * 3, axis=-1)
-        if rgb == "Red":
-            cloneArray[:, :, :, 1] = 0
-            cloneArray[:, :, :, 2] = 0
-        elif rgb == "Green":
-            cloneArray[:,:,:,0] = 0
-            cloneArray[:,:,:,2] = 0
-        else:
-            cloneArray[:,:,:,0] = 0
-            cloneArray[:,:,:,1] = 0
-
-        threshVal = 255 - thresh
-        cloneArray[cloneArray > threshVal] = 255
-
-        # Create new vector volume in order to have 3-channel image
-        imageSize = [arraySize[2], arraySize[1], 1]
-        voxelType = vtk.VTK_UNSIGNED_CHAR
-        imageOrigin = [0.0, 0.0, 0.0]
-        imageSpacing = [1.0, 1.0, 1.0]
-        imageDirections = [[-1, 0, 0], [0, -1, 0], [0, 0, 1]]
-        fillVoxelValue = 0
-
-        # Create an empty image volume, filled with fillVoxelValue
-        imageData = vtk.vtkImageData()
-        imageData.SetDimensions(imageSize)
-        imageData.AllocateScalars(voxelType, 3)
-        imageData.GetPointData().GetScalars().Fill(fillVoxelValue)
-
-        # Create volume node
-        # Needs to be a vector volume in order to show in colour
-        name = channel.GetName()
-        if ".ome" in name:
-            name = name.replace(".ome", "")
-        volumeScatNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLVectorVolumeNode", "Thresholded " + slice + " " + name)
-        volumeScatNode.SetOrigin(imageOrigin)
-        volumeScatNode.SetSpacing(imageSpacing)
-        volumeScatNode.SetIJKToRASDirections(imageDirections)
-        volumeScatNode.SetAndObserveImageData(imageData)
-        volumeScatNode.CreateDefaultDisplayNodes()
-        volumeScatNode.CreateDefaultStorageNode()
-
-        voxels = slicer.util.arrayFromVolume(volumeScatNode)
-        voxels[:] = cloneArray
-
-        volumeScatNode.Modified()
-
-        volumeScatNode.GetDisplayNode().AutoWindowLevelOff()
-        volumeScatNode.GetDisplayNode().SetWindowLevel((arraySize[1] // 2), 127)
-
-        # Set slice to show cloned, thresholded channel
-        widget = slicer.app.layoutManager().sliceWidget(slice)
-        widget.setSliceOrientation("Axial")
-        logic = widget.sliceLogic()
-        logic.GetSliceCompositeNode().SetBackgroundVolumeID(volumeScatNode.GetID())
-
-        # Delete previous thresholded images
-        for img in existingThresholds:
-            if "Thresholded " + slice in img.GetName():
-                slicer.mrmlScene.RemoveNode(img)
-
-        slicer.util.resetSliceViews()
+    # def sliceThreshold(self, channel, thresh, slice, rgb):
+    #
+    #     """
+    #     Peforms thresholding of "channel" given a threshold value "thresh" and slice window "slice" to be displayed in
+    #     """
+    #
+    #     # Delete any existing thresholded images
+    #     existingThresholds = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
+    #
+    #     array = slicer.util.arrayFromVolume(channel)
+    #
+    #     arraySize = array.shape
+    #     cloneArray = np.stack((array,) * 3, axis=-1)
+    #     if rgb == "Red":
+    #         cloneArray[:, :, :, 1] = 0
+    #         cloneArray[:, :, :, 2] = 0
+    #     elif rgb == "Green":
+    #         cloneArray[:,:,:,0] = 0
+    #         cloneArray[:,:,:,2] = 0
+    #     else:
+    #         cloneArray[:,:,:,0] = 0
+    #         cloneArray[:,:,:,1] = 0
+    #
+    #     threshVal = 255 - thresh
+    #     cloneArray[cloneArray > threshVal] = 255
+    #
+    #     # Create new vector volume in order to have 3-channel image
+    #     imageSize = [arraySize[2], arraySize[1], 1]
+    #     voxelType = vtk.VTK_UNSIGNED_CHAR
+    #     imageOrigin = [0.0, 0.0, 0.0]
+    #     imageSpacing = [1.0, 1.0, 1.0]
+    #     imageDirections = [[-1, 0, 0], [0, -1, 0], [0, 0, 1]]
+    #     fillVoxelValue = 0
+    #
+    #     # Create an empty image volume, filled with fillVoxelValue
+    #     imageData = vtk.vtkImageData()
+    #     imageData.SetDimensions(imageSize)
+    #     imageData.AllocateScalars(voxelType, 3)
+    #     imageData.GetPointData().GetScalars().Fill(fillVoxelValue)
+    #
+    #     # Create volume node
+    #     # Needs to be a vector volume in order to show in colour
+    #     name = channel.GetName()
+    #     if ".ome" in name:
+    #         name = name.replace(".ome", "")
+    #     volumeScatNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLVectorVolumeNode", "Thresholded " + slice + " " + name)
+    #     volumeScatNode.SetOrigin(imageOrigin)
+    #     volumeScatNode.SetSpacing(imageSpacing)
+    #     volumeScatNode.SetIJKToRASDirections(imageDirections)
+    #     volumeScatNode.SetAndObserveImageData(imageData)
+    #     volumeScatNode.CreateDefaultDisplayNodes()
+    #     volumeScatNode.CreateDefaultStorageNode()
+    #
+    #     voxels = slicer.util.arrayFromVolume(volumeScatNode)
+    #     voxels[:] = cloneArray
+    #
+    #     volumeScatNode.Modified()
+    #
+    #     volumeScatNode.GetDisplayNode().AutoWindowLevelOff()
+    #     volumeScatNode.GetDisplayNode().SetWindowLevel((arraySize[1] // 2), 127)
+    #
+    #     # Set slice to show cloned, thresholded channel
+    #     widget = slicer.app.layoutManager().sliceWidget(slice)
+    #     widget.setSliceOrientation("Axial")
+    #     logic = widget.sliceLogic()
+    #     logic.GetSliceCompositeNode().SetBackgroundVolumeID(volumeScatNode.GetID())
+    #
+    #     # Delete previous thresholded images
+    #     for img in existingThresholds:
+    #         if "Thresholded " + slice in img.GetName():
+    #             slicer.mrmlScene.RemoveNode(img)
+    #
+    #     slicer.util.resetSliceViews()
 
     def heatmapRun(self):
 
@@ -1937,6 +1937,9 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         for img in existingHeatmaps:
             if "Heatmap" in img.GetName():
                 slicer.mrmlScene.RemoveNode(img)
+
+        channelRows = []
+        roiColumns = []
 
         # Get list of all channels
         allChannels = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
@@ -1956,6 +1959,10 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             # Check if the specific channel was selected
             if roiName in selectedRoi and channelName in selectedChannel:
                 parentDict[itemId] = roiName
+                if channelName not in channelRows:
+                    channelRows.append(channelName)
+                if roiName not in roiColumns:
+                    roiColumns.append(roiName)
 
         # Create empty matrix of mean intensities
         meanIntensities = np.full((len(roiColumns), len(channelRows)), 0.00)
