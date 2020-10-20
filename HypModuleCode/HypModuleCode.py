@@ -194,6 +194,7 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         self.ui.crtPCA.connect('clicked(bool)', self.onCreatePCA)
         self.ui.crtKMeans.connect('clicked(bool)', self.onCreateKMeans)
         self.ui.crtHierarch.connect('clicked(bool)', self.onHierarchicalCluster)
+        self.ui.crtRawData.connect('clicked(bool)', self.onCreateRawData)
         
 
     def cleanup(self):
@@ -648,6 +649,18 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
     def onHierarchicalCluster(self):
         logic = HypModuleLogic()
         logic.clusterRun(nClusters=self.ui.nClusters.value, clusterType="hierarchical")
+
+    def onCreateRawData(self):
+        if selectedChannel is None or len(selectedChannel) < 1:
+            self.ui.analysisErrorMessage.text = "ERROR: Minimum 1 channel should be selected."
+            return
+        elif selectedRoi is None or len(selectedRoi) < 1:
+            self.ui.analysisErrorMessage.text = "ERROR: Minimum 1 ROI should be selected."
+            return
+        else:
+            self.ui.analysisErrorMessage.text = ""
+        logic = HypModuleLogic()
+        logic.rawDataRun()
 
 
 #
@@ -2081,6 +2094,15 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         # imgWidget.setScaledContents(True)
         # imgWidget.show()
         # return True
+
+    def rawDataRun(self):
+        """
+        Generate raw data tables for the selected ROI and channels
+        """
+        existingTables = slicer.util.getNodesByClass("vtkMRMLTableNode")
+
+        for table in existingTables:
+            slicer.mrmlScene.RemoveNode(table)
 
     def tsnePCARun(self, plotType):
         """
