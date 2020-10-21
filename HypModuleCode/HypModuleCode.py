@@ -2104,6 +2104,49 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         for table in existingTables:
             slicer.mrmlScene.RemoveNode(table)
 
+        # Get list of all channels
+        allChannels = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
+        shNode = slicer.vtkMRMLSubjectHierarchyNode.GetSubjectHierarchyNode(slicer.mrmlScene)
+
+        # Create table
+        tableNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode",
+                                                       roiName + ": " + name + " data")
+        table = tableNode.GetTable()
+
+        arrROI = vtk.vtkFloatArray()
+        arrROI.SetName("ROI")
+        table.AddColumn(arrROI)
+
+        arrCellLabel = vtk.vtkFloatArray()
+        arrCellLabel.SetName("Cell Label")
+        table.AddColumn(arrCellLabel)
+
+        for channel in channelNames:
+            arr = vtk.vtkFloatArray()
+            arr.SetName(channel)
+            table.AddColumn(arr)
+
+        arrX = vtk.vtkFloatArray()
+        arrX.SetName(name + " 1")
+        table.AddColumn(arrX)
+
+        arrY = vtk.vtkFloatArray()
+        arrY.SetName(name + " 2")
+        table.AddColumn(arrY)
+
+        arrZ = vtk.vtkFloatArray()
+        arrZ.SetName("Cell Label")
+        table.AddColumn(arrZ)
+
+        # Fill in table with values
+        table.SetNumberOfRows(len(plotValues))
+        for i in range(len(plotValues)):
+            arrX.InsertNextValue(x[i])
+            arrY.InsertNextValue(y[i])
+            arrZ.InsertNextValue(z[i])
+
+
+
     def tsnePCARun(self, plotType):
         """
         Create t-sne plot of selected channels
