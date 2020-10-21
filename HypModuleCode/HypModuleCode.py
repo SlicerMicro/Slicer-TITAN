@@ -2131,7 +2131,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             cell, counts = np.unique(cellMaskArray, return_counts=True)
             cellPixelCounts = dict(zip(cell, counts))
             roiPixelCounts[roi] = cellPixelCounts
-            roiIntensitiesDict[roi] = np.full((len(cell), len(channelNames) + 1), 0.00)
+            roiIntensitiesDict[roi] = np.full((len(cell) - 1, len(channelNames) + 1), 0.00)
 
 
 
@@ -2171,7 +2171,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                         else:
                             avg = float(sumIntens) / float(totalPixels)
                         # Update meanIntensities matrix with this value
-                        rowPos = list(cellPixelCounts.keys()).index(cell)
+                        rowPos = list(cellPixelCounts.keys()).index(cell) - 1
                         roiIntensitiesDict[roiName][rowPos, columnPos] = avg
                         roiIntensitiesDict[roiName][rowPos, 0] = cell
 
@@ -2191,6 +2191,9 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             arrToDf = pd.DataFrame(data=arr)
             arrToDf.insert(0, "ROI", roi)
             df = df.append(arrToDf)
+
+        # Delete any columns with all zeros (these are DNA channels that we don't calculate for)
+        df = df.loc[:, (df != 0).any(axis=0)]
 
         # Save dataframe to .csv file
         filename = "hyperionAnalysis_rawData.csv"
