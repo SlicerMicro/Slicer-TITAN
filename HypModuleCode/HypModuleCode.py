@@ -2131,7 +2131,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             cell, counts = np.unique(cellMaskArray, return_counts=True)
             cellPixelCounts = dict(zip(cell, counts))
             roiPixelCounts[roi] = cellPixelCounts
-            roiIntensitiesDict[roi] = np.full((len(cell), len(channelNames) + 2), 0.00)
+            roiIntensitiesDict[roi] = np.full((len(cell), len(channelNames) + 1), 0.00)
 
 
 
@@ -2147,7 +2147,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             if roiName == "Scene":
                 roiName = "ROI"
             # Get column index for mean intensities array
-            columnPos = channelNames.index(channelName) + 2
+            columnPos = channelNames.index(channelName) + 1
             # Get arrays for cell mask and channels
             cellMaskArray = roiCellMaskArrays[roiName]
             # Get counts of pixels in each cell
@@ -2174,7 +2174,6 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                         rowPos = list(cellPixelCounts.keys()).index(cell)
                         roiIntensitiesDict[roiName][rowPos, columnPos] = avg
                         roiIntensitiesDict[roiName][rowPos, 0] = cell
-                        roiIntensitiesDict[roiName][rowPos, 1] = roiName
 
         # Create dataframe of all arrays
         try:
@@ -2189,6 +2188,17 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         for roi in roiIntensitiesDict:
             arr = roiIntensitiesDict[roi]
             # Convert array to dataframe
+            arrToDf = pd.DataFrame(data=arr)
+            arrToDf.insert(0, "ROI", roi)
+            df = df.append(arrToDf)
+
+        # Save dataframe to .csv file
+        filename = "hyperionAnalysis_rawData.csv"
+        pathName = os.getcwd() + '\\' + fileName
+        df.to_csv(filename, index=False)
+        # Open file location in explorer
+        import subprocess
+        subprocess.Popen(r'explorer /select,' + pathName)
 
 
 
