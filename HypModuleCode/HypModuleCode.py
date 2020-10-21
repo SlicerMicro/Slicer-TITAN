@@ -2140,10 +2140,10 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             parent = shNode.GetItemParent(itemId)  # ROI
             roiName = shNode.GetItemName(parent)
             channelName = shNode.GetItemName(itemId)
+            if "191" in channelName or "193" in channelName or ".ome" not in channelName:
+                continue
             if re.findall(r"_[0-9]\b", channelName) != []:
                 channelName = channelName[:-2]
-            if ".ome" not in channelName:
-                continue
             if roiName == "Scene":
                 roiName = "ROI"
             # Get column index for mean intensities array
@@ -2194,7 +2194,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         # Save dataframe to .csv file
         filename = "hyperionAnalysis_rawData.csv"
-        pathName = os.getcwd() + '\\' + fileName
+        pathName = os.getcwd() + '\\' + filename
         df.to_csv(filename, index=False)
         # Open file location in explorer
         import subprocess
