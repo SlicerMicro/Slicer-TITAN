@@ -2109,17 +2109,17 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         shNode = slicer.vtkMRMLSubjectHierarchyNode.GetSubjectHierarchyNode(slicer.mrmlScene)
 
         # Create pandas dataframe for raw data
-        try:
-            import pandas as pd
-        except ModuleNotFoundError:
-            import pip
-            pip_install("pandas")
-            import pandas as pd
-
-        df = pd.DataFrame(columns=["ROI", "Cell Label"])
-
-        for channel in channelNames:
-            df[channel] = ""
+        # try:
+        #     import pandas as pd
+        # except ModuleNotFoundError:
+        #     import pip
+        #     pip_install("pandas")
+        #     import pandas as pd
+        # 
+        # df = pd.DataFrame(columns=["ROI", "Cell Label"])
+        #
+        # for channel in channelNames:
+        #     df[channel] = ""
 
         # Create list of mean intensities for all cells for each channel
         # Create empty matrix of mean intensities
@@ -2135,52 +2135,49 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             cell, counts = np.unique(cellMaskArray, return_counts=True)
             cellPixelCounts = dict(zip(cell, counts))
             roiPixelCounts[roi] = cellPixelCounts
-            roiIntensitiesDict[roi] = np.full((len(cell) - 1, len(channels) + 1), 0.00)
+            roiIntensitiesDict[roi] = np.full((len(cell) - 1, len(channelNames) + 1), 0.00)
 
-        for roi in range(len(roiNames)):
-            for channelNode in allChannels:
-                itemId = shNode.GetItemByDataNode(channelNode)  # Channel
-                parent = shNode.GetItemParent(itemId)  # ROI
-                roiName = shNode.GetItemName(parent)
-                if roiName != roi:
-                    continue
-                channelName = shNode.GetItemName(itemId)
-                if re.findall(r"_[0-9]\b", channelName) != []:
-                    channelName = channelName[:-2]
-                if ".ome" not in channelName:
-                    continue
-                if roiName == "Scene":
-                    roiName = "ROI"
-                # Get column index for mean intensities array
-                columnPos = channelNames.index(channelName) + 1
-                # Get arrays for cell mask and channels
-                cellMask = globalCellMask[roiName]
-                cellMaskArray = slicer.util.arrayFromVolume(cellMask)
-                # Get counts of pixels in each cell
-                cell, counts = np.unique(cellMaskArray, return_counts=True)
-                cellPixelCounts = dict(zip(cell, counts))
-                # Get intensities for each cell
-                for cell in range(cellMaskArray.max() + 1):
-                    if cell != 0:
-                        if cell in cellPixelCounts.keys():
-                            # Channel one
-                            blank, i, j = np.nonzero(cellMaskArray == cell)
-                            # Get array of channel
-                            channelArray = slicer.util.arrayFromVolume(channelNode)
-                            # Get mean intensity of channel
-                            cellPixels = channelArray[:, i, j]
-                            sumIntens = np.sum(cellPixels)
-                            totalPixels = cellPixels.shape[1]
-                            nonZeroes = np.where(cellPixels != 0)
-                            numNonZeroes = nonZeroes[1].shape[0]
-                            if numNonZeroes == 0:
-                                avg = 0
-                            else:
-                                avg = float(sumIntens) / float(totalPixels)
-                            # Update meanIntensities matrix with this value
-                            rowPos = list(cellPixelCounts.keys()).index(cell)
-                            meanIntensities[rowPos, columnPos] = avg
-                            meanIntensities[rowPos, 0] = cell
+        for channelNode in allChannels:
+            itemId = shNode.GetItemByDataNode(channelNode)  # Channel
+            parent = shNode.GetItemParent(itemId)  # ROI
+            roiName = shNode.GetItemName(parent)
+            channelName = shNode.GetItemName(itemId)
+            if re.findall(r"_[0-9]\b", channelName) != []:
+                channelName = channelName[:-2]
+            if ".ome" not in channelName:
+                continue
+            if roiName == "Scene":
+                roiName = "ROI"
+            # Get column index for mean intensities array
+            columnPos = channelNames.index(channelName) + 1
+            # Get arrays for cell mask and channels
+            cellMaskArray = roiCellMaskArrays[roiName]
+            # Get counts of pixels in each cell
+            cellPixelCounts = roiPixelCounts[roiName]
+            # Get intensities for each cell
+            for cell in range(cellMaskArray.max() + 1):
+                if cell != 0:
+                    if cell in cellPixelCounts.keys():
+                        # Channel one
+                        blank, i, j = np.nonzero(cellMaskArray == cell)
+                        # Get array of channel
+                        channelArray = slicer.util.arrayFromVolume(channelNode)
+                        # Get mean intensity of channel
+                        cellPixels = channelArray[:, i, j]
+                        sumIntens = np.sum(cellPixels)
+                        totalPixels = cellPixels.shape[1]
+                        nonZeroes = np.where(cellPixels != 0)
+                        numNonZeroes = nonZeroes[1].shape[0]
+                        if numNonZeroes == 0:
+                            avg = 0
+                        else:
+                            avg = float(sumIntens) / float(totalPixels)
+                        # Update meanIntensities matrix with this value
+                        rowPos = list(cellPixelCounts.keys()).index(cell)
+                        roiIntensitiesDict[roiName][rowPos, columnPos] = avg
+                        roiIntensitiesDict[roiName][rowPos, 0] = cell
+
+        return roiIntensitiesDict
 
 
         # # Create table
