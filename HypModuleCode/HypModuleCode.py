@@ -2192,6 +2192,11 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             arrToDf.insert(0, "ROI", roi)
             df = df.append(arrToDf)
 
+        # Rename the columns
+        df = df.rename(columns = {0: "Cell Label"})
+        for i in range(len(channelNames)):
+            df = df.rename(columns = {i + 1: channelNames[i]})
+
         # Delete any columns with all zeros (these are DNA channels that we don't calculate for)
         df = df.loc[:, (df != 0).any(axis=0)]
 
