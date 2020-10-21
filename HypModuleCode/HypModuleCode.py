@@ -2108,26 +2108,41 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         allChannels = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
         shNode = slicer.vtkMRMLSubjectHierarchyNode.GetSubjectHierarchyNode(slicer.mrmlScene)
 
+        # Create pandas dataframe for raw data
+        try:
+            import pandas as pd
+        except ModuleNotFoundError:
+            import pip
+            pip_install("pandas")
+            import pandas as pd
 
-        # Create table
-        tableNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode", "Raw data")
-        table = tableNode.GetTable()
-
-        arrROI = vtk.vtkStringArray()
-        arrROI.SetName("ROI")
-        table.AddColumn(arrROI)
-
-        arrCellLabel = vtk.vtkIntArray()
-        arrCellLabel.SetName("Cell Label")
-        table.AddColumn(arrCellLabel)
-
-        channelDict = {}
+        df = pd.DataFrame(columns=["ROI", "Cell Label"])
 
         for channel in channelNames:
-            arr = vtk.vtkFloatArray()
-            arr.SetName(channel)
-            table.AddColumn(arr)
-            channelDict[channel] = arr
+            df[channel] = ""
+
+        
+
+
+        # # Create table
+        # tableNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode", "Raw data")
+        # table = tableNode.GetTable()
+        #
+        # arrROI = vtk.vtkStringArray()
+        # arrROI.SetName("ROI")
+        # table.AddColumn(arrROI)
+        #
+        # arrCellLabel = vtk.vtkIntArray()
+        # arrCellLabel.SetName("Cell Label")
+        # table.AddColumn(arrCellLabel)
+        #
+        # channelDict = {}
+        #
+        # for channel in channelNames:
+        #     arr = vtk.vtkFloatArray()
+        #     arr.SetName(channel)
+        #     table.AddColumn(arr)
+        #     channelDict[channel] = arr
 
         for channelNode in allChannels:
             itemId = shNode.GetItemByDataNode(channelNode)  # Channel
