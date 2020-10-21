@@ -2108,13 +2108,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         allChannels = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
         shNode = slicer.vtkMRMLSubjectHierarchyNode.GetSubjectHierarchyNode(slicer.mrmlScene)
 
-        # Create pandas dataframe for raw data
-        # try:
-        #     import pandas as pd
-        # except ModuleNotFoundError:
-        #     import pip
-        #     pip_install("pandas")
-        #     import pandas as pd
+
         #
         # df = pd.DataFrame(columns=["ROI", "Cell Label"])
         #
@@ -2137,11 +2131,9 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             cell, counts = np.unique(cellMaskArray, return_counts=True)
             cellPixelCounts = dict(zip(cell, counts))
             roiPixelCounts[roi] = cellPixelCounts
-            roiIntensitiesDict[roi] = np.full((len(cell) - 2, len(channelNames) + 1), 0.00)
+            roiIntensitiesDict[roi] = np.full((len(cell), len(channelNames) + 2), 0.00)
 
-        for roi in roiIntensitiesDict:
-            arr = roiIntensitiesDict[roi]
-            print(arr.shape)
+
 
         for channelNode in allChannels:
             itemId = shNode.GetItemByDataNode(channelNode)  # Channel
@@ -2155,7 +2147,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             if roiName == "Scene":
                 roiName = "ROI"
             # Get column index for mean intensities array
-            columnPos = channelNames.index(channelName) + 1
+            columnPos = channelNames.index(channelName) + 2
             # Get arrays for cell mask and channels
             cellMaskArray = roiCellMaskArrays[roiName]
             # Get counts of pixels in each cell
@@ -2182,8 +2174,21 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                         rowPos = list(cellPixelCounts.keys()).index(cell)
                         roiIntensitiesDict[roiName][rowPos, columnPos] = avg
                         roiIntensitiesDict[roiName][rowPos, 0] = cell
+                        roiIntensitiesDict[roiName][rowPos, 1] = roiName
 
-        print(roiIntensitiesDict)
+        # Create dataframe of all arrays
+        try:
+            import pandas as pd
+        except ModuleNotFoundError:
+            import pip
+            pip_install("pandas")
+            import pandas as pd
+
+        df = pd.DataFrame()
+
+        for roi in roiIntensitiesDict:
+            arr = roiIntensitiesDict[roi]
+            # Convert array to dataframe
 
 
 
