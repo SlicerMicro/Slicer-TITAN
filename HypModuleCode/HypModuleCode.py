@@ -2115,7 +2115,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         #     import pip
         #     pip_install("pandas")
         #     import pandas as pd
-        # 
+        #
         # df = pd.DataFrame(columns=["ROI", "Cell Label"])
         #
         # for channel in channelNames:
@@ -2127,6 +2127,8 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         roiCellMaskArrays = {}
         roiPixelCounts = {}
         for roi in roiNames:
+            if roi == "Scene":
+                continue
             # Get cell mask array
             cellMask = globalCellMask[roi]
             cellMaskArray = slicer.util.arrayFromVolume(cellMask)
@@ -2135,7 +2137,11 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             cell, counts = np.unique(cellMaskArray, return_counts=True)
             cellPixelCounts = dict(zip(cell, counts))
             roiPixelCounts[roi] = cellPixelCounts
-            roiIntensitiesDict[roi] = np.full((len(cell) - 1, len(channelNames) + 1), 0.00)
+            roiIntensitiesDict[roi] = np.full((len(cell) - 2, len(channelNames) + 1), 0.00)
+
+        for roi in roiIntensitiesDict:
+            arr = roiIntensitiesDict[roi]
+            print(arr.shape)
 
         for channelNode in allChannels:
             itemId = shNode.GetItemByDataNode(channelNode)  # Channel
@@ -2177,28 +2183,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                         roiIntensitiesDict[roiName][rowPos, columnPos] = avg
                         roiIntensitiesDict[roiName][rowPos, 0] = cell
 
-        return roiIntensitiesDict
-
-
-        # # Create table
-        # tableNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode", "Raw data")
-        # table = tableNode.GetTable()
-        #
-        # arrROI = vtk.vtkStringArray()
-        # arrROI.SetName("ROI")
-        # table.AddColumn(arrROI)
-        #
-        # arrCellLabel = vtk.vtkIntArray()
-        # arrCellLabel.SetName("Cell Label")
-        # table.AddColumn(arrCellLabel)
-        #
-        # channelDict = {}
-        #
-        # for channel in channelNames:
-        #     arr = vtk.vtkFloatArray()
-        #     arr.SetName(channel)
-        #     table.AddColumn(arr)
-        #     channelDict[channel] = arr
+        print(roiIntensitiesDict)
 
 
 
