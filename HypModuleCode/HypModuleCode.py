@@ -2519,7 +2519,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             volumeNode.CreateDefaultStorageNode()
 
             voxels = slicer.util.arrayFromVolume(volumeNode)
-            voxels[:] = kMeansArray
+            voxels[:] = dimRedArray
 
             volumeNode.Modified()
             volumeNode.GetDisplayNode().AutoWindowLevelOff()
