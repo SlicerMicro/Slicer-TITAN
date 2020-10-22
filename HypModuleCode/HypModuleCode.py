@@ -2468,18 +2468,64 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             from pylab import savefig
 
             fig, ax = plt.subplots()
-            ax.scatter(dim1, dim2, c=clusLabels, s=10)
+            ax.scatter(dim1, dim2, c=cellLabels, s=10)
             ax.set_xlabel("Dimension 1")
             ax.set_ylabel("Dimension 2")
             ax.set_title(name)
 
-            # Save dataframe to .csv file
-            filename = "hyperionAnalysis_rawData.csv"
-            pathName = os.getcwd() + '\\' + filename
-            df.to_csv(filename, index=False)
-            # Open file location in explorer
-            import subprocess
-            subprocess.Popen(r'explorer /select,' + pathName)
+            # Display cluster plot
+            savefig("dimReduction.jpg")
+            dimRedImg = sitk.ReadImage("dimReduction.jpg")
+            dimRedArray = sitk.GetArrayFromImage(dimRedImg)
+            arraySize = dimRedArray.shape
+            plt.close()
+
+            # Create new volume "K-Means Clustering"
+            imageSize = [arraySize[1], arraySize[0], 1]
+            voxelType = vtk.VTK_UNSIGNED_CHAR
+            imageOrigin = [0.0, 0.0, 0.0]
+            imageSpacing = [1.0, 1.0, 1.0]
+            imageDirections = [[-1, 0, 0], [0, -1, 0], [0, 0, 1]]
+            fillVoxelValue = 0
+
+            # Create an empty image volume, filled with fillVoxelValue
+            imageData = vtk.vtkImageData()
+            imageData.SetDimensions(imageSize)
+            imageData.AllocateScalars(voxelType, 3)
+            imageData.GetPointData().GetScalars().Fill(fillVoxelValue)
+
+            # Create volume node
+            # Needs to be a vector volume in order to show in colour
+            volumeNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLVectorVolumeNode", "Dimension Reduction Plot")
+            volumeNode.SetOrigin(imageOrigin)
+            volumeNode.SetSpacing(imageSpacing)
+            volumeNode.SetIJKToRASDirections(imageDirections)
+            volumeNode.SetAndObserveImageData(imageData)
+            volumeNode.CreateDefaultDisplayNodes()
+            volumeNode.CreateDefaultStorageNode()
+
+            voxels = slicer.util.arrayFromVolume(volumeNode)
+            voxels[:] = kMeansArray
+
+            volumeNode.Modified()
+            volumeNode.GetDisplayNode().AutoWindowLevelOff()
+            volumeNode.GetDisplayNode().SetWindowLevel((arraySize[1] // 8), 127)
+
+            # Show plot in layout
+            slicer.app.layoutManager().setLayout(
+                slicer.vtkMRMLLayoutNode.SlicerLayoutOneUpRedSliceView)
+
+            # Set red slice to show the cell mask
+            red_logic = slicer.app.layoutManager().sliceWidget("Red").sliceLogic()
+            red_logic.GetSliceCompositeNode().SetBackgroundVolumeID(volumeNode.GetID())
+
+            # # Save dataframe to .csv file
+            # filename = "hyperionAnalysis_rawData.csv"
+            # pathName = os.getcwd() + '\\' + filename
+            # df.to_csv(filename, index=False)
+            # # Open file location in explorer
+            # import subprocess
+            # subprocess.Popen(r'explorer /select,' + pathName)
 
 
     def clusterRun(self, nClusters, clusterType):
