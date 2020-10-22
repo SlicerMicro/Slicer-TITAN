@@ -2451,24 +2451,27 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                 pip_install("pandas")
                 import pandas as pd
 
-            df = pd.DataFrame(data = concatArray, columns = ["Dim 1", "Dim 2"])
+            df = pd.DataFrame(data = plotValues, columns = ["Dim 1", "Dim 2"])
             df.insert(0, "Cell Label", cellLabels)
             df.insert(0, "ROI", roiNamesList)
 
-            for roi in roiIntensitiesDict:
-                arr = roiIntensitiesDict[roi]
-                # Convert array to dataframe
-                arrToDf = pd.DataFrame(data=arr)
-                arrToDf.insert(0, "ROI", roi)
-                df = df.append(arrToDf)
+            # Create matplot scatter plot
+            try:
+                import matplotlib
+            except ModuleNotFoundError:
+                import pip
+                pip_install("matplotlib")
+                import matplotlib
 
-            # Rename the columns
-            df = df.rename(columns={0: "Cell Label"})
-            for i in range(len(channelNames)):
-                df = df.rename(columns={i + 1: channelNames[i]})
+            matplotlib.use("Agg")
+            import matplotlib.pyplot as plt
+            from pylab import savefig
 
-            # Delete any columns with all zeros (these are DNA channels that we don't calculate for)
-            df = df.loc[:, (df != 0).any(axis=0)]
+            fig, ax = plt.subplots()
+            ax.scatter(dim1, dim2, c=clusLabels, s=10)
+            ax.set_xlabel("Dimension 1")
+            ax.set_ylabel("Dimension 2")
+            ax.set_title(name)
 
             # Save dataframe to .csv file
             filename = "hyperionAnalysis_rawData.csv"
