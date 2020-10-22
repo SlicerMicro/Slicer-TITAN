@@ -2321,15 +2321,17 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         # Append the arrays for each ROI together
         concatArray = list(roiIntensitiesDict.values())[0]
         print(concatArray)
+        print(concatArray.shape)
         count = 0
-        for array in roiIntensitiesDict:
-            print(array)
+        for roi in roiIntensitiesDict:
             if count == 0:
                 count += 1
             else:
-                concatArray = np.append(concatArray, array)
+                array = roiIntensitiesDict[roi]
+                concatArray = np.append(concatArray, array, axis=0)
 
         print(concatArray)
+        print(concatArray.shape)
         # # Create tsne array
         # try:
         #     import sklearn
