@@ -2541,6 +2541,9 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             # import subprocess
             # subprocess.Popen(r'explorer /select,' + pathName)
 
+        slicer.util.resetSliceViews()
+
+
 
     def clusterRun(self, nClusters, clusterType):
         """
