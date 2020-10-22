@@ -619,8 +619,8 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         if selectedChannel is None or len(selectedChannel) < 1:
             self.ui.analysisErrorMessage.text = "ERROR: Minimum 1 channel should be selected."
             return
-        elif selectedRoi is None or len(selectedRoi) != 1:
-            self.ui.analysisErrorMessage.text = "ERROR: Only 1 ROI should be selected."
+        elif selectedRoi is None or len(selectedRoi) < 1:
+            self.ui.analysisErrorMessage.text = "ERROR: Minimum 1 ROI should be selected."
             return
         else:
             self.ui.analysisErrorMessage.text = ""
@@ -2268,7 +2268,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             cell, counts = np.unique(cellMaskArray, return_counts=True)
             cellPixelCounts = dict(zip(cell, counts))
             roiPixelCounts[roi] = cellPixelCounts
-            roiIntensitiesDict[roi] = np.full((len(cell) - 1, len(selectedChannel)), 0.00)
+            roiIntensitiesDict[roi] = np.full((len(cell) - 1, len(selectedChannel)+1), 0.00)
 
         # cellLabels = []
 
@@ -2286,7 +2286,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             # Check if the specific channel was selected
             if roiName in selectedRoi and channelName in selectedChannel:
                 # Get column index for mean intensities array
-                columnPos = channelNames.index(channelName)
+                columnPos = channelNames.index(channelName) + 1
                 # Get arrays for cell mask and channels
                 cellMaskArray = roiCellMaskArrays[roiName]
                 # Get counts of pixels in each cell
@@ -2485,7 +2485,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             ax.set_xlabel("Dimension 1")
             ax.set_ylabel("Dimension 2")
             ax.set_title(name)
-            # ax.legend()
+            ax.legend()
 
             # Display cluster plot
             savefig("dimReduction.jpg")
@@ -2523,7 +2523,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
             volumeNode.Modified()
             volumeNode.GetDisplayNode().AutoWindowLevelOff()
-            volumeNode.GetDisplayNode().SetWindowLevel((arraySize[1] // 8), 127)
+            volumeNode.GetDisplayNode().SetWindowLevel((arraySize[1] // 6), 127)
 
             # Show plot in layout
             slicer.app.layoutManager().setLayout(
