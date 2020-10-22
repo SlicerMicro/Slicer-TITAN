@@ -2271,6 +2271,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             roiIntensitiesDict[roi] = np.full((len(cell) - 1, len(channelNames)), 0.00)
 
         cellLabels = []
+        roiNamesList = []
 
         for channel in allChannels:
             itemId = shNode.GetItemByDataNode(channel)  # Channel
@@ -2314,65 +2315,16 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                             roiIntensitiesDict[roiName][rowPos, columnPos] = avg
                             # roiIntensitiesDict[roiName][rowPos, 0] = cell
                             cellLabels.append(cell)
+                            roiNamesList.append(roiName)
 
         # Append the arrays for each ROI together
         concatArray = list(roiIntensitiesDict.values())[0]
-        for pos in range(len(roiIntensitiesDict)):
-            if pos != 0:
-                array = 
-
-
-
-        # channels = list(parentDict.keys())
-        # roiName = parentDict[channels[0]]
-        #
-        # # Get arrays for cell mask and channels
-        # cellMask = globalCellMask[roiName]
-        # cellMaskArray = slicer.util.arrayFromVolume(cellMask)
-        #
-        # # Get counts of pixels in each cell
-        # cell, counts = np.unique(cellMaskArray, return_counts=True)
-        # cellPixelCounts = dict(zip(cell, counts))
-        #
-        # # Create list of mean intensities for all cells for each channel
-        # # Create empty matrix of mean intensities
-        # meanIntensities = np.full((len(cell)-1, len(channels)), 0.00)
-        # cellCount = 0
-        # cellLabels = []
-        # displayList = []
-        #
-        # for cell in range(cellMaskArray.max() + 1):
-        #     if cell != 0:
-        #         if cell in cellPixelCounts.keys():
-        #             # Channel one
-        #             blank, i, j = np.nonzero(cellMaskArray == cell)
-        #             for id in parentDict:
-        #                 # Get array of channel
-        #                 channelName = shNode.GetItemName(id)
-        #                 channelNode = slicer.util.getNode(channelName)
-        #                 channelArray = slicer.util.arrayFromVolume(channelNode)
-        #                 if channelNode not in displayList:
-        #                     if len(displayList) < 2:
-        #                         displayList.append(channelNode)
-        #                 # Get mean intensity of channel
-        #                 cellPixels = channelArray[:, i, j]
-        #                 sumIntens = np.sum(cellPixels)
-        #                 totalPixels = cellPixels.shape[1]
-        #                 nonZeroes = np.where(cellPixels != 0)
-        #                 numNonZeroes = nonZeroes[1].shape[0]
-        #                 if numNonZeroes == 0:
-        #                     avg = 0
-        #                 else:
-        #                     avg = float(sumIntens) / float(totalPixels)
-        #                 # Update meanIntensities matrix with this value
-        #                 if re.findall(r"_[0-9]\b", channelName) != []:
-        #                     channelName = channelName[:-2]
-        #                 columnPos = channels.index(id)
-        #                 rowPos = cellCount
-        #                 meanIntensities[rowPos, columnPos] = round(avg, 2)
-        #
-        #             cellLabels.append(cell)
-        #             cellCount += 1
+        count = 0
+        for array in roiIntensitiesDict:
+            if count == 0:
+                count += 1
+            else:
+                concatArray = np.append(concatArray, array)
 
         # Create tsne array
         try:
@@ -2384,111 +2336,147 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         if plotType == "tsne":
             from sklearn.manifold import TSNE
 
-            plotValues = TSNE().fit_transform(meanIntensities)
+            plotValues = TSNE().fit_transform(concatArray)
             name = "t-SNE"
 
         else:
             from sklearn.decomposition import PCA
 
-            plotValues = PCA().fit_transform(meanIntensities)
+            plotValues = PCA().fit_transform(concatArray)
             name = "PCA"
 
-        x = []
-        y = []
-        z = cellLabels
+        # If only one ROI in t-sne, create plot that allows gating
+        if len(selectedRoi) == 1:
+            x = []
+            y = []
+            z = cellLabels
 
-        for i in plotValues:
-            x.append(i[0])
-            y.append(i[1])
+            for i in plotValues:
+                x.append(i[0])
+                y.append(i[1])
 
-        # Create table with x and y columns
-        tableNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode",
-                                                       roiName + ": "  + name + " data")
-        table = tableNode.GetTable()
+            # Create table with x and y columns
+            tableNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode",
+                                                           roiName + ": "  + name + " data")
+            table = tableNode.GetTable()
 
-        arrX = vtk.vtkFloatArray()
-        arrX.SetName(name + " 1")
-        table.AddColumn(arrX)
+            arrX = vtk.vtkFloatArray()
+            arrX.SetName(name + " 1")
+            table.AddColumn(arrX)
 
-        arrY = vtk.vtkFloatArray()
-        arrY.SetName(name + " 2")
-        table.AddColumn(arrY)
+            arrY = vtk.vtkFloatArray()
+            arrY.SetName(name + " 2")
+            table.AddColumn(arrY)
 
-        arrZ = vtk.vtkFloatArray()
-        arrZ.SetName("Cell Label")
-        table.AddColumn(arrZ)
+            arrZ = vtk.vtkFloatArray()
+            arrZ.SetName("Cell Label")
+            table.AddColumn(arrZ)
 
-        # Fill in table with values
-        table.SetNumberOfRows(len(plotValues))
-        for i in range(len(plotValues)):
-            arrX.InsertNextValue(x[i])
-            arrY.InsertNextValue(y[i])
-            arrZ.InsertNextValue(z[i])
+            # Fill in table with values
+            table.SetNumberOfRows(len(plotValues))
+            for i in range(len(plotValues)):
+                arrX.InsertNextValue(x[i])
+                arrY.InsertNextValue(y[i])
+                arrZ.InsertNextValue(z[i])
 
-        for i in range(len(plotValues)):
-            table.RemoveRow(0)
+            for i in range(len(plotValues)):
+                table.RemoveRow(0)
 
-        # Create plot series nodes
-        plotSeriesNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotSeriesNode", roiName + ": " + name + " Points")
-        plotSeriesNode.SetAndObserveTableNodeID(tableNode.GetID())
-        plotSeriesNode.SetXColumnName(name + " 1")
-        plotSeriesNode.SetYColumnName(name + " 2")
-        plotSeriesNode.SetPlotType(slicer.vtkMRMLPlotSeriesNode.PlotTypeScatter)
-        plotSeriesNode.SetLineStyle(slicer.vtkMRMLPlotSeriesNode.LineStyleNone)
-        plotSeriesNode.SetMarkerStyle(slicer.vtkMRMLPlotSeriesNode.MarkerStyleCircle)
-        plotSeriesNode.SetColor(0.46, 0.67, 0.96)
+            # Create plot series nodes
+            plotSeriesNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotSeriesNode", roiName + ": " + name + " Points")
+            plotSeriesNode.SetAndObserveTableNodeID(tableNode.GetID())
+            plotSeriesNode.SetXColumnName(name + " 1")
+            plotSeriesNode.SetYColumnName(name + " 2")
+            plotSeriesNode.SetPlotType(slicer.vtkMRMLPlotSeriesNode.PlotTypeScatter)
+            plotSeriesNode.SetLineStyle(slicer.vtkMRMLPlotSeriesNode.LineStyleNone)
+            plotSeriesNode.SetMarkerStyle(slicer.vtkMRMLPlotSeriesNode.MarkerStyleCircle)
+            plotSeriesNode.SetColor(0.46, 0.67, 0.96)
 
-        # Create plot chart node
-        plotChartNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotChartNode",
-                                                           roiName + name)
-        plotChartNode.AddAndObservePlotSeriesNodeID(plotSeriesNode.GetID())
-        plotChartNode.SetTitle(roiName + name)
-        plotChartNode.SetXAxisTitle(name + " 1")
-        plotChartNode.SetYAxisTitle(name + " 2")
+            # Create plot chart node
+            plotChartNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotChartNode",
+                                                               roiName + name)
+            plotChartNode.AddAndObservePlotSeriesNodeID(plotSeriesNode.GetID())
+            plotChartNode.SetTitle(roiName + name)
+            plotChartNode.SetXAxisTitle(name + " 1")
+            plotChartNode.SetYAxisTitle(name + " 2")
 
-        # Show plot in layout
-        slicer.modules.plots.logic().ShowChartInLayout(plotChartNode)
-        slicer.app.layoutManager().setLayout(
-            slicer.vtkMRMLLayoutNode.SlicerLayoutFourUpPlotView)
+            # Show plot in layout
+            slicer.modules.plots.logic().ShowChartInLayout(plotChartNode)
+            slicer.app.layoutManager().setLayout(
+                slicer.vtkMRMLLayoutNode.SlicerLayoutFourUpPlotView)
 
-        # Set red slice to show the cell mask
-        red_logic = slicer.app.layoutManager().sliceWidget("Red").sliceLogic()
-        red_logic.GetSliceCompositeNode().SetBackgroundVolumeID(cellMask.GetID())
+            # Set red slice to show the cell mask
+            red_logic = slicer.app.layoutManager().sliceWidget("Red").sliceLogic()
+            red_logic.GetSliceCompositeNode().SetBackgroundVolumeID(cellMask.GetID())
 
+            # Set green slice to show cell mask
+            green_widget = slicer.app.layoutManager().sliceWidget("Green")
+            green_widget.setSliceOrientation("Axial")
+            if len(parentDict) > 1:
+                greenDisplayNode = displayList[1].GetScalarVolumeDisplayNode()
+                greenDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeGreen")
+                green_logic = green_widget.sliceLogic()
+                green_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[1].GetID())
+            else:
+                greenDisplayNode = displayList[0].GetScalarVolumeDisplayNode()
+                greenDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeGreen")
+                green_logic = green_widget.sliceLogic()
+                green_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[0].GetID())
 
+            # Set yellow slice to show cloned, thresholded channel
+            yellow_widget = slicer.app.layoutManager().sliceWidget("Yellow")
+            yellow_widget.setSliceOrientation("Axial")
+            if len(displayList) > 2:
+                yellowDisplayNode = displayList[2].GetScalarVolumeDisplayNode()
+                yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeBlue")
+                yellow_logic = yellow_widget.sliceLogic()
+                yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[2].GetID())
+            else:
+                yellowDisplayNode = displayList[0].GetScalarVolumeDisplayNode()
+                yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeBlue")
+                yellow_logic = yellow_widget.sliceLogic()
+                yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[0].GetID())
 
-        # Set green slice to show cell mask
-        green_widget = slicer.app.layoutManager().sliceWidget("Green")
-        green_widget.setSliceOrientation("Axial")
-        if len(parentDict) > 1:
-            greenDisplayNode = displayList[1].GetScalarVolumeDisplayNode()
-            greenDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeGreen")
-            green_logic = green_widget.sliceLogic()
-            green_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[1].GetID())
+            slicer.util.resetSliceViews()
+
+            global scatterPlotRoi
+            scatterPlotRoi = roiName
+        # If multiple ROI, create matplotlib plot and pandas excel table
         else:
-            greenDisplayNode = displayList[0].GetScalarVolumeDisplayNode()
-            greenDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeGreen")
-            green_logic = green_widget.sliceLogic()
-            green_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[0].GetID())
+            # Create dataframe of all arrays
+            try:
+                import pandas as pd
+            except ModuleNotFoundError:
+                import pip
+                pip_install("pandas")
+                import pandas as pd
 
-        # Set yellow slice to show cloned, thresholded channel
-        yellow_widget = slicer.app.layoutManager().sliceWidget("Yellow")
-        yellow_widget.setSliceOrientation("Axial")
-        if len(displayList) > 2:
-            yellowDisplayNode = displayList[2].GetScalarVolumeDisplayNode()
-            yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeBlue")
-            yellow_logic = yellow_widget.sliceLogic()
-            yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[2].GetID())
-        else:
-            yellowDisplayNode = displayList[0].GetScalarVolumeDisplayNode()
-            yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeBlue")
-            yellow_logic = yellow_widget.sliceLogic()
-            yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[0].GetID())
+            df = pd.DataFrame(data = concatArray, columns = ["Dim 1", "Dim 2"])
+            df.insert(0, "Cell Label", cellLabels)
+            df.insert(0, "ROI", roiNamesList)
 
-        slicer.util.resetSliceViews()
+            for roi in roiIntensitiesDict:
+                arr = roiIntensitiesDict[roi]
+                # Convert array to dataframe
+                arrToDf = pd.DataFrame(data=arr)
+                arrToDf.insert(0, "ROI", roi)
+                df = df.append(arrToDf)
 
-        global scatterPlotRoi
-        scatterPlotRoi = roiName
+            # Rename the columns
+            df = df.rename(columns={0: "Cell Label"})
+            for i in range(len(channelNames)):
+                df = df.rename(columns={i + 1: channelNames[i]})
+
+            # Delete any columns with all zeros (these are DNA channels that we don't calculate for)
+            df = df.loc[:, (df != 0).any(axis=0)]
+
+            # Save dataframe to .csv file
+            filename = "hyperionAnalysis_rawData.csv"
+            pathName = os.getcwd() + '\\' + filename
+            df.to_csv(filename, index=False)
+            # Open file location in explorer
+            import subprocess
+            subprocess.Popen(r'explorer /select,' + pathName)
 
 
     def clusterRun(self, nClusters, clusterType):
