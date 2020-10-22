@@ -2268,7 +2268,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             cell, counts = np.unique(cellMaskArray, return_counts=True)
             cellPixelCounts = dict(zip(cell, counts))
             roiPixelCounts[roi] = cellPixelCounts
-            roiIntensitiesDict[roi] = np.full((len(cell) - 1, len(channelNames)), 0.00)
+            roiIntensitiesDict[roi] = np.full((len(cell) - 1, len(selectedChannel)), 0.00)
 
         cellLabels = []
         roiNamesList = []
@@ -2317,207 +2317,211 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                             cellLabels.append(cell)
                             roiNamesList.append(roiName)
 
+
         # Append the arrays for each ROI together
         concatArray = list(roiIntensitiesDict.values())[0]
+        print(concatArray)
         count = 0
         for array in roiIntensitiesDict:
+            print(array)
             if count == 0:
                 count += 1
             else:
                 concatArray = np.append(concatArray, array)
 
-        # Create tsne array
-        try:
-            import sklearn
-        except ModuleNotFoundError:
-            import pip
-            pip_install("sklearn")
-
-        if plotType == "tsne":
-            from sklearn.manifold import TSNE
-
-            plotValues = TSNE().fit_transform(concatArray)
-            name = "t-SNE"
-
-        else:
-            from sklearn.decomposition import PCA
-
-            plotValues = PCA(n_components=2).fit_transform(concatArray)
-            name = "PCA"
-
-        # If only one ROI in t-sne, create plot that allows gating
-        if len(selectedRoi) == 1:
-            x = []
-            y = []
-            z = cellLabels
-
-            for i in plotValues:
-                x.append(i[0])
-                y.append(i[1])
-
-            # Create table with x and y columns
-            tableNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode",
-                                                           roiName + ": "  + name + " data")
-            table = tableNode.GetTable()
-
-            arrX = vtk.vtkFloatArray()
-            arrX.SetName(name + " 1")
-            table.AddColumn(arrX)
-
-            arrY = vtk.vtkFloatArray()
-            arrY.SetName(name + " 2")
-            table.AddColumn(arrY)
-
-            arrZ = vtk.vtkFloatArray()
-            arrZ.SetName("Cell Label")
-            table.AddColumn(arrZ)
-
-            # Fill in table with values
-            table.SetNumberOfRows(len(plotValues))
-            for i in range(len(plotValues)):
-                arrX.InsertNextValue(x[i])
-                arrY.InsertNextValue(y[i])
-                arrZ.InsertNextValue(z[i])
-
-            for i in range(len(plotValues)):
-                table.RemoveRow(0)
-
-            # Create plot series nodes
-            plotSeriesNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotSeriesNode", roiName + ": " + name + " Points")
-            plotSeriesNode.SetAndObserveTableNodeID(tableNode.GetID())
-            plotSeriesNode.SetXColumnName(name + " 1")
-            plotSeriesNode.SetYColumnName(name + " 2")
-            plotSeriesNode.SetPlotType(slicer.vtkMRMLPlotSeriesNode.PlotTypeScatter)
-            plotSeriesNode.SetLineStyle(slicer.vtkMRMLPlotSeriesNode.LineStyleNone)
-            plotSeriesNode.SetMarkerStyle(slicer.vtkMRMLPlotSeriesNode.MarkerStyleCircle)
-            plotSeriesNode.SetColor(0.46, 0.67, 0.96)
-
-            # Create plot chart node
-            plotChartNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotChartNode",
-                                                               roiName + name)
-            plotChartNode.AddAndObservePlotSeriesNodeID(plotSeriesNode.GetID())
-            plotChartNode.SetTitle(roiName + name)
-            plotChartNode.SetXAxisTitle(name + " 1")
-            plotChartNode.SetYAxisTitle(name + " 2")
-
-            # Show plot in layout
-            slicer.modules.plots.logic().ShowChartInLayout(plotChartNode)
-            slicer.app.layoutManager().setLayout(
-                slicer.vtkMRMLLayoutNode.SlicerLayoutFourUpPlotView)
-
-            # Set red slice to show the cell mask
-            red_logic = slicer.app.layoutManager().sliceWidget("Red").sliceLogic()
-            red_logic.GetSliceCompositeNode().SetBackgroundVolumeID(cellMask.GetID())
-
-            # Set green slice to show cell mask
-            green_widget = slicer.app.layoutManager().sliceWidget("Green")
-            green_widget.setSliceOrientation("Axial")
-            if len(parentDict) > 1:
-                greenDisplayNode = displayList[1].GetScalarVolumeDisplayNode()
-                greenDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeGreen")
-                green_logic = green_widget.sliceLogic()
-                green_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[1].GetID())
-            else:
-                greenDisplayNode = displayList[0].GetScalarVolumeDisplayNode()
-                greenDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeGreen")
-                green_logic = green_widget.sliceLogic()
-                green_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[0].GetID())
-
-            # Set yellow slice to show cloned, thresholded channel
-            yellow_widget = slicer.app.layoutManager().sliceWidget("Yellow")
-            yellow_widget.setSliceOrientation("Axial")
-            if len(displayList) > 2:
-                yellowDisplayNode = displayList[2].GetScalarVolumeDisplayNode()
-                yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeBlue")
-                yellow_logic = yellow_widget.sliceLogic()
-                yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[2].GetID())
-            else:
-                yellowDisplayNode = displayList[0].GetScalarVolumeDisplayNode()
-                yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeBlue")
-                yellow_logic = yellow_widget.sliceLogic()
-                yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[0].GetID())
-
-            slicer.util.resetSliceViews()
-
-            global scatterPlotRoi
-            scatterPlotRoi = roiName
-        # If multiple ROI, create matplotlib plot and pandas excel table
-        else:
-            # Create dataframe of all arrays
-            try:
-                import pandas as pd
-            except ModuleNotFoundError:
-                import pip
-                pip_install("pandas")
-                import pandas as pd
-
-            df = pd.DataFrame(data = plotValues, columns = ["Dim 1", "Dim 2"])
-            df.insert(0, "Cell Label", cellLabels)
-            df.insert(0, "ROI", roiNamesList)
-
-            # Create matplot scatter plot
-            try:
-                import matplotlib
-            except ModuleNotFoundError:
-                import pip
-                pip_install("matplotlib")
-                import matplotlib
-
-            matplotlib.use("Agg")
-            import matplotlib.pyplot as plt
-            from pylab import savefig
-
-            fig, ax = plt.subplots()
-            ax.scatter(dim1, dim2, c=cellLabels, s=10)
-            ax.set_xlabel("Dimension 1")
-            ax.set_ylabel("Dimension 2")
-            ax.set_title(name)
-
-            # Display cluster plot
-            savefig("dimReduction.jpg")
-            dimRedImg = sitk.ReadImage("dimReduction.jpg")
-            dimRedArray = sitk.GetArrayFromImage(dimRedImg)
-            arraySize = dimRedArray.shape
-            plt.close()
-
-            # Create new volume "K-Means Clustering"
-            imageSize = [arraySize[1], arraySize[0], 1]
-            voxelType = vtk.VTK_UNSIGNED_CHAR
-            imageOrigin = [0.0, 0.0, 0.0]
-            imageSpacing = [1.0, 1.0, 1.0]
-            imageDirections = [[-1, 0, 0], [0, -1, 0], [0, 0, 1]]
-            fillVoxelValue = 0
-
-            # Create an empty image volume, filled with fillVoxelValue
-            imageData = vtk.vtkImageData()
-            imageData.SetDimensions(imageSize)
-            imageData.AllocateScalars(voxelType, 3)
-            imageData.GetPointData().GetScalars().Fill(fillVoxelValue)
-
-            # Create volume node
-            # Needs to be a vector volume in order to show in colour
-            volumeNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLVectorVolumeNode", "Dimension Reduction Plot")
-            volumeNode.SetOrigin(imageOrigin)
-            volumeNode.SetSpacing(imageSpacing)
-            volumeNode.SetIJKToRASDirections(imageDirections)
-            volumeNode.SetAndObserveImageData(imageData)
-            volumeNode.CreateDefaultDisplayNodes()
-            volumeNode.CreateDefaultStorageNode()
-
-            voxels = slicer.util.arrayFromVolume(volumeNode)
-            voxels[:] = kMeansArray
-
-            volumeNode.Modified()
-            volumeNode.GetDisplayNode().AutoWindowLevelOff()
-            volumeNode.GetDisplayNode().SetWindowLevel((arraySize[1] // 8), 127)
-
-            # Show plot in layout
-            slicer.app.layoutManager().setLayout(
-                slicer.vtkMRMLLayoutNode.SlicerLayoutOneUpRedSliceView)
-
-            # Set red slice to show the cell mask
-            red_logic = slicer.app.layoutManager().sliceWidget("Red").sliceLogic()
-            red_logic.GetSliceCompositeNode().SetBackgroundVolumeID(volumeNode.GetID())
+        print(concatArray)
+        # # Create tsne array
+        # try:
+        #     import sklearn
+        # except ModuleNotFoundError:
+        #     import pip
+        #     pip_install("sklearn")
+        #
+        # if plotType == "tsne":
+        #     from sklearn.manifold import TSNE
+        #
+        #     plotValues = TSNE().fit_transform(concatArray)
+        #     name = "t-SNE"
+        #
+        # else:
+        #     from sklearn.decomposition import PCA
+        #
+        #     plotValues = PCA(n_components=2).fit_transform(concatArray)
+        #     name = "PCA"
+        #
+        # # If only one ROI in t-sne, create plot that allows gating
+        # if len(selectedRoi) == 1:
+        #     x = []
+        #     y = []
+        #     z = cellLabels
+        #
+        #     for i in plotValues:
+        #         x.append(i[0])
+        #         y.append(i[1])
+        #
+        #     # Create table with x and y columns
+        #     tableNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode",
+        #                                                    roiName + ": "  + name + " data")
+        #     table = tableNode.GetTable()
+        #
+        #     arrX = vtk.vtkFloatArray()
+        #     arrX.SetName(name + " 1")
+        #     table.AddColumn(arrX)
+        #
+        #     arrY = vtk.vtkFloatArray()
+        #     arrY.SetName(name + " 2")
+        #     table.AddColumn(arrY)
+        #
+        #     arrZ = vtk.vtkFloatArray()
+        #     arrZ.SetName("Cell Label")
+        #     table.AddColumn(arrZ)
+        #
+        #     # Fill in table with values
+        #     table.SetNumberOfRows(len(plotValues))
+        #     for i in range(len(plotValues)):
+        #         arrX.InsertNextValue(x[i])
+        #         arrY.InsertNextValue(y[i])
+        #         arrZ.InsertNextValue(z[i])
+        #
+        #     for i in range(len(plotValues)):
+        #         table.RemoveRow(0)
+        #
+        #     # Create plot series nodes
+        #     plotSeriesNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotSeriesNode", roiName + ": " + name + " Points")
+        #     plotSeriesNode.SetAndObserveTableNodeID(tableNode.GetID())
+        #     plotSeriesNode.SetXColumnName(name + " 1")
+        #     plotSeriesNode.SetYColumnName(name + " 2")
+        #     plotSeriesNode.SetPlotType(slicer.vtkMRMLPlotSeriesNode.PlotTypeScatter)
+        #     plotSeriesNode.SetLineStyle(slicer.vtkMRMLPlotSeriesNode.LineStyleNone)
+        #     plotSeriesNode.SetMarkerStyle(slicer.vtkMRMLPlotSeriesNode.MarkerStyleCircle)
+        #     plotSeriesNode.SetColor(0.46, 0.67, 0.96)
+        #
+        #     # Create plot chart node
+        #     plotChartNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotChartNode",
+        #                                                        roiName + name)
+        #     plotChartNode.AddAndObservePlotSeriesNodeID(plotSeriesNode.GetID())
+        #     plotChartNode.SetTitle(roiName + name)
+        #     plotChartNode.SetXAxisTitle(name + " 1")
+        #     plotChartNode.SetYAxisTitle(name + " 2")
+        #
+        #     # Show plot in layout
+        #     slicer.modules.plots.logic().ShowChartInLayout(plotChartNode)
+        #     slicer.app.layoutManager().setLayout(
+        #         slicer.vtkMRMLLayoutNode.SlicerLayoutFourUpPlotView)
+        #
+        #     # Set red slice to show the cell mask
+        #     red_logic = slicer.app.layoutManager().sliceWidget("Red").sliceLogic()
+        #     red_logic.GetSliceCompositeNode().SetBackgroundVolumeID(cellMask.GetID())
+        #
+        #     # Set green slice to show cell mask
+        #     green_widget = slicer.app.layoutManager().sliceWidget("Green")
+        #     green_widget.setSliceOrientation("Axial")
+        #     if len(parentDict) > 1:
+        #         greenDisplayNode = displayList[1].GetScalarVolumeDisplayNode()
+        #         greenDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeGreen")
+        #         green_logic = green_widget.sliceLogic()
+        #         green_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[1].GetID())
+        #     else:
+        #         greenDisplayNode = displayList[0].GetScalarVolumeDisplayNode()
+        #         greenDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeGreen")
+        #         green_logic = green_widget.sliceLogic()
+        #         green_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[0].GetID())
+        #
+        #     # Set yellow slice to show cloned, thresholded channel
+        #     yellow_widget = slicer.app.layoutManager().sliceWidget("Yellow")
+        #     yellow_widget.setSliceOrientation("Axial")
+        #     if len(displayList) > 2:
+        #         yellowDisplayNode = displayList[2].GetScalarVolumeDisplayNode()
+        #         yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeBlue")
+        #         yellow_logic = yellow_widget.sliceLogic()
+        #         yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[2].GetID())
+        #     else:
+        #         yellowDisplayNode = displayList[0].GetScalarVolumeDisplayNode()
+        #         yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeBlue")
+        #         yellow_logic = yellow_widget.sliceLogic()
+        #         yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[0].GetID())
+        #
+        #     slicer.util.resetSliceViews()
+        #
+        #     global scatterPlotRoi
+        #     scatterPlotRoi = roiName
+        # # If multiple ROI, create matplotlib plot and pandas excel table
+        # else:
+        #     # Create dataframe of all arrays
+        #     try:
+        #         import pandas as pd
+        #     except ModuleNotFoundError:
+        #         import pip
+        #         pip_install("pandas")
+        #         import pandas as pd
+        #
+        #     df = pd.DataFrame(data = plotValues, columns = ["Dim 1", "Dim 2"])
+        #     df.insert(0, "Cell Label", cellLabels)
+        #     df.insert(0, "ROI", roiNamesList)
+        #
+        #     # Create matplot scatter plot
+        #     try:
+        #         import matplotlib
+        #     except ModuleNotFoundError:
+        #         import pip
+        #         pip_install("matplotlib")
+        #         import matplotlib
+        #
+        #     matplotlib.use("Agg")
+        #     import matplotlib.pyplot as plt
+        #     from pylab import savefig
+        #
+        #     fig, ax = plt.subplots()
+        #     ax.scatter(dim1, dim2, c=cellLabels, s=10)
+        #     ax.set_xlabel("Dimension 1")
+        #     ax.set_ylabel("Dimension 2")
+        #     ax.set_title(name)
+        #
+        #     # Display cluster plot
+        #     savefig("dimReduction.jpg")
+        #     dimRedImg = sitk.ReadImage("dimReduction.jpg")
+        #     dimRedArray = sitk.GetArrayFromImage(dimRedImg)
+        #     arraySize = dimRedArray.shape
+        #     plt.close()
+        #
+        #     # Create new volume "K-Means Clustering"
+        #     imageSize = [arraySize[1], arraySize[0], 1]
+        #     voxelType = vtk.VTK_UNSIGNED_CHAR
+        #     imageOrigin = [0.0, 0.0, 0.0]
+        #     imageSpacing = [1.0, 1.0, 1.0]
+        #     imageDirections = [[-1, 0, 0], [0, -1, 0], [0, 0, 1]]
+        #     fillVoxelValue = 0
+        #
+        #     # Create an empty image volume, filled with fillVoxelValue
+        #     imageData = vtk.vtkImageData()
+        #     imageData.SetDimensions(imageSize)
+        #     imageData.AllocateScalars(voxelType, 3)
+        #     imageData.GetPointData().GetScalars().Fill(fillVoxelValue)
+        #
+        #     # Create volume node
+        #     # Needs to be a vector volume in order to show in colour
+        #     volumeNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLVectorVolumeNode", "Dimension Reduction Plot")
+        #     volumeNode.SetOrigin(imageOrigin)
+        #     volumeNode.SetSpacing(imageSpacing)
+        #     volumeNode.SetIJKToRASDirections(imageDirections)
+        #     volumeNode.SetAndObserveImageData(imageData)
+        #     volumeNode.CreateDefaultDisplayNodes()
+        #     volumeNode.CreateDefaultStorageNode()
+        #
+        #     voxels = slicer.util.arrayFromVolume(volumeNode)
+        #     voxels[:] = kMeansArray
+        #
+        #     volumeNode.Modified()
+        #     volumeNode.GetDisplayNode().AutoWindowLevelOff()
+        #     volumeNode.GetDisplayNode().SetWindowLevel((arraySize[1] // 8), 127)
+        #
+        #     # Show plot in layout
+        #     slicer.app.layoutManager().setLayout(
+        #         slicer.vtkMRMLLayoutNode.SlicerLayoutOneUpRedSliceView)
+        #
+        #     # Set red slice to show the cell mask
+        #     red_logic = slicer.app.layoutManager().sliceWidget("Red").sliceLogic()
+        #     red_logic.GetSliceCompositeNode().SetBackgroundVolumeID(volumeNode.GetID())
 
             # # Save dataframe to .csv file
             # filename = "hyperionAnalysis_rawData.csv"
