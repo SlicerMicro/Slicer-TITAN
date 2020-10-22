@@ -592,8 +592,8 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         if selectedChannel is None or len(selectedChannel) < 1:
             self.ui.analysisErrorMessage.text = "ERROR: Minimum 1 channel should be selected."
             return
-        elif selectedRoi is None or len(selectedRoi) != 1:
-            self.ui.analysisErrorMessage.text = "ERROR: Only 1 ROI should be selected."
+        elif selectedRoi is None or len(selectedRoi) < 1:
+            self.ui.analysisErrorMessage.text = "ERROR: Minimum 1 ROI should be selected."
             return
         else:
             self.ui.analysisErrorMessage.text = ""
@@ -2342,7 +2342,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         else:
             from sklearn.decomposition import PCA
 
-            plotValues = PCA().fit_transform(concatArray)
+            plotValues = PCA(n_components=2).fit_transform(concatArray)
             name = "PCA"
 
         # If only one ROI in t-sne, create plot that allows gating
