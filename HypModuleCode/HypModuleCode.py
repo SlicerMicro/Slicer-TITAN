@@ -2249,59 +2249,130 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             if roiName in selectedRoi and channelName in selectedChannel:
                 parentDict[itemId] = roiName
             # Break loop once all channels are added into dictionary
-            if len(parentDict) == len(selectedChannel):
+            if len(parentDict) == len(selectedChannel)*len(selectedRoi):
                 break
-
-        channels = list(parentDict.keys())
-        roiName = parentDict[channels[0]]
-
-        # Get arrays for cell mask and channels
-        cellMask = globalCellMask[roiName]
-        cellMaskArray = slicer.util.arrayFromVolume(cellMask)
-
-        # Get counts of pixels in each cell
-        cell, counts = np.unique(cellMaskArray, return_counts=True)
-        cellPixelCounts = dict(zip(cell, counts))
 
         # Create list of mean intensities for all cells for each channel
         # Create empty matrix of mean intensities
-        meanIntensities = np.full((len(cell)-1, len(channels)), 0.00)
-        cellCount = 0
+        roiIntensitiesDict = {}
+        roiCellMaskArrays = {}
+        roiPixelCounts = {}
+        for roi in selectedRoi:
+            # if roi == "Scene":
+            #     continue
+            # Get cell mask array
+            cellMask = globalCellMask[roi]
+            cellMaskArray = slicer.util.arrayFromVolume(cellMask)
+            roiCellMaskArrays[roi] = cellMaskArray
+            # Get counts of pixels in each cell
+            cell, counts = np.unique(cellMaskArray, return_counts=True)
+            cellPixelCounts = dict(zip(cell, counts))
+            roiPixelCounts[roi] = cellPixelCounts
+            roiIntensitiesDict[roi] = np.full((len(cell) - 1, len(channelNames)), 0.00)
+
         cellLabels = []
-        displayList = []
 
-        for cell in range(cellMaskArray.max() + 1):
-            if cell != 0:
-                if cell in cellPixelCounts.keys():
-                    # Channel one
-                    blank, i, j = np.nonzero(cellMaskArray == cell)
-                    for id in parentDict:
-                        # Get array of channel
-                        channelName = shNode.GetItemName(id)
-                        channelNode = slicer.util.getNode(channelName)
-                        channelArray = slicer.util.arrayFromVolume(channelNode)
-                        if channelNode not in displayList:
-                            if len(displayList) < 2:
-                                displayList.append(channelNode)
-                        # Get mean intensity of channel
-                        cellPixels = channelArray[:, i, j]
-                        sumIntens = np.sum(cellPixels)
-                        totalPixels = cellPixels.shape[1]
-                        nonZeroes = np.where(cellPixels != 0)
-                        numNonZeroes = nonZeroes[1].shape[0]
-                        if numNonZeroes == 0:
-                            avg = 0
-                        else:
-                            avg = float(sumIntens) / float(totalPixels)
-                        # Update meanIntensities matrix with this value
-                        if re.findall(r"_[0-9]\b", channelName) != []:
-                            channelName = channelName[:-2]
-                        columnPos = channels.index(id)
-                        rowPos = cellCount
-                        meanIntensities[rowPos, columnPos] = round(avg, 2)
+        for channel in allChannels:
+            itemId = shNode.GetItemByDataNode(channel)  # Channel
+            parent = shNode.GetItemParent(itemId)  # ROI
+            roiName = shNode.GetItemName(parent)
+            channelName = shNode.GetItemName(itemId)
+            if "191" in channelName or "193" in channelName or ".ome" not in channelName:
+                continue
+            if re.findall(r"_[0-9]\b", channelName) != []:
+                channelName = channelName[:-2]
+            if roiName == "Scene":
+                roiName = "ROI"
+            # Check if the specific channel was selected
+            if roiName in selectedRoi and channelName in selectedChannel:
+                # Get column index for mean intensities array
+                columnPos = channelNames.index(channelName)
+                # Get arrays for cell mask and channels
+                cellMaskArray = roiCellMaskArrays[roiName]
+                # Get counts of pixels in each cell
+                cellPixelCounts = roiPixelCounts[roiName]
+                # Get intensities for each cell
+                for cell in range(cellMaskArray.max() + 1):
+                    if cell != 0:
+                        if cell in cellPixelCounts.keys():
+                            # Channel one
+                            blank, i, j = np.nonzero(cellMaskArray == cell)
+                            # Get array of channel
+                            channelArray = slicer.util.arrayFromVolume(channel)
+                            # Get mean intensity of channel
+                            cellPixels = channelArray[:, i, j]
+                            sumIntens = np.sum(cellPixels)
+                            totalPixels = cellPixels.shape[1]
+                            nonZeroes = np.where(cellPixels != 0)
+                            numNonZeroes = nonZeroes[1].shape[0]
+                            if numNonZeroes == 0:
+                                avg = 0
+                            else:
+                                avg = float(sumIntens) / float(totalPixels)
+                            # Update meanIntensities matrix with this value
+                            rowPos = list(cellPixelCounts.keys()).index(cell) - 1
+                            roiIntensitiesDict[roiName][rowPos, columnPos] = avg
+                            # roiIntensitiesDict[roiName][rowPos, 0] = cell
+                            cellLabels.append(cell)
 
-                    cellLabels.append(cell)
-                    cellCount += 1
+        # Append the arrays for each ROI together
+        concatArray = list(roiIntensitiesDict.values())[0]
+        for pos in range(len(roiIntensitiesDict)):
+            if pos != 0:
+                array = 
+
+
+
+        # channels = list(parentDict.keys())
+        # roiName = parentDict[channels[0]]
+        #
+        # # Get arrays for cell mask and channels
+        # cellMask = globalCellMask[roiName]
+        # cellMaskArray = slicer.util.arrayFromVolume(cellMask)
+        #
+        # # Get counts of pixels in each cell
+        # cell, counts = np.unique(cellMaskArray, return_counts=True)
+        # cellPixelCounts = dict(zip(cell, counts))
+        #
+        # # Create list of mean intensities for all cells for each channel
+        # # Create empty matrix of mean intensities
+        # meanIntensities = np.full((len(cell)-1, len(channels)), 0.00)
+        # cellCount = 0
+        # cellLabels = []
+        # displayList = []
+        #
+        # for cell in range(cellMaskArray.max() + 1):
+        #     if cell != 0:
+        #         if cell in cellPixelCounts.keys():
+        #             # Channel one
+        #             blank, i, j = np.nonzero(cellMaskArray == cell)
+        #             for id in parentDict:
+        #                 # Get array of channel
+        #                 channelName = shNode.GetItemName(id)
+        #                 channelNode = slicer.util.getNode(channelName)
+        #                 channelArray = slicer.util.arrayFromVolume(channelNode)
+        #                 if channelNode not in displayList:
+        #                     if len(displayList) < 2:
+        #                         displayList.append(channelNode)
+        #                 # Get mean intensity of channel
+        #                 cellPixels = channelArray[:, i, j]
+        #                 sumIntens = np.sum(cellPixels)
+        #                 totalPixels = cellPixels.shape[1]
+        #                 nonZeroes = np.where(cellPixels != 0)
+        #                 numNonZeroes = nonZeroes[1].shape[0]
+        #                 if numNonZeroes == 0:
+        #                     avg = 0
+        #                 else:
+        #                     avg = float(sumIntens) / float(totalPixels)
+        #                 # Update meanIntensities matrix with this value
+        #                 if re.findall(r"_[0-9]\b", channelName) != []:
+        #                     channelName = channelName[:-2]
+        #                 columnPos = channels.index(id)
+        #                 rowPos = cellCount
+        #                 meanIntensities[rowPos, columnPos] = round(avg, 2)
+        #
+        #             cellLabels.append(cell)
+        #             cellCount += 1
 
         # Create tsne array
         try:
