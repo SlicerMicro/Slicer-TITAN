@@ -616,8 +616,8 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         plotView.connect("dataSelected(vtkStringArray*, vtkCollection*)", self.onDataSelected)
 
     def onCreatePCA(self):
-        if selectedChannel is None or len(selectedChannel) < 1:
-            self.ui.analysisErrorMessage.text = "ERROR: Minimum 1 channel should be selected."
+        if selectedChannel is None or len(selectedChannel) < 2:
+            self.ui.analysisErrorMessage.text = "ERROR: Minimum 2 channels should be selected."
             return
         elif selectedRoi is None or len(selectedRoi) < 1:
             self.ui.analysisErrorMessage.text = "ERROR: Minimum 1 ROI should be selected."
@@ -2268,6 +2268,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             roiIntensitiesDict[roi] = np.full((len(cell) - 1, len(selectedChannel)+1), 0.00)
 
         # cellLabels = []
+        displayList = []
 
         for channel in allChannels:
             itemId = shNode.GetItemByDataNode(channel)  # Channel
@@ -2282,6 +2283,9 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                 roiName = "ROI"
             # Check if the specific channel was selected
             if roiName in selectedRoi and channelName in selectedChannel:
+                # Add to display list
+                if len(displayList) <= 2:
+                    displayList.append(channel)
                 # Get column index for mean intensities array
                 columnPos = channelNames.index(channelName) + 1
                 # Get arrays for cell mask and channels
@@ -2410,22 +2414,16 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             # Set green slice to show cell mask
             green_widget = slicer.app.layoutManager().sliceWidget("Green")
             green_widget.setSliceOrientation("Axial")
-            if len(parentDict) > 1:
-                greenDisplayNode = displayList[1].GetScalarVolumeDisplayNode()
-                greenDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeGreen")
-                green_logic = green_widget.sliceLogic()
-                green_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[1].GetID())
-            else:
-                greenDisplayNode = displayList[0].GetScalarVolumeDisplayNode()
-                greenDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeGreen")
-                green_logic = green_widget.sliceLogic()
-                green_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[0].GetID())
+            greenDisplayNode = displayList[0].GetScalarVolumeDisplayNode()
+            greenDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeGreen")
+            green_logic = green_widget.sliceLogic()
+            green_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[0].GetID())
 
             # Set yellow slice to show cloned, thresholded channel
             yellow_widget = slicer.app.layoutManager().sliceWidget("Yellow")
             yellow_widget.setSliceOrientation("Axial")
-            if len(displayList) > 2:
-                yellowDisplayNode = displayList[2].GetScalarVolumeDisplayNode()
+            if len(displayList) == 2:
+                yellowDisplayNode = displayList[1].GetScalarVolumeDisplayNode()
                 yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeBlue")
                 yellow_logic = yellow_widget.sliceLogic()
                 yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[2].GetID())
@@ -2529,6 +2527,28 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             # Set red slice to show the cell mask
             red_logic = slicer.app.layoutManager().sliceWidget("Red").sliceLogic()
             red_logic.GetSliceCompositeNode().SetBackgroundVolumeID(volumeNode.GetID())
+
+            # Set green slice to show cell mask
+            green_widget = slicer.app.layoutManager().sliceWidget("Green")
+            green_widget.setSliceOrientation("Axial")
+            greenDisplayNode = displayList[0].GetScalarVolumeDisplayNode()
+            greenDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeGreen")
+            green_logic = green_widget.sliceLogic()
+            green_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[0].GetID())
+
+            # Set yellow slice to show cloned, thresholded channel
+            yellow_widget = slicer.app.layoutManager().sliceWidget("Yellow")
+            yellow_widget.setSliceOrientation("Axial")
+            if len(displayList) == 2:
+                yellowDisplayNode = displayList[1].GetScalarVolumeDisplayNode()
+                yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeBlue")
+                yellow_logic = yellow_widget.sliceLogic()
+                yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[2].GetID())
+            else:
+                yellowDisplayNode = displayList[0].GetScalarVolumeDisplayNode()
+                yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeBlue")
+                yellow_logic = yellow_widget.sliceLogic()
+                yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[0].GetID())
 
             # # Save dataframe to .csv file
             # filename = "hyperionAnalysis_rawData.csv"
