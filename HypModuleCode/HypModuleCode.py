@@ -2528,28 +2528,6 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             red_logic = slicer.app.layoutManager().sliceWidget("Red").sliceLogic()
             red_logic.GetSliceCompositeNode().SetBackgroundVolumeID(volumeNode.GetID())
 
-            # Set green slice to show cell mask
-            green_widget = slicer.app.layoutManager().sliceWidget("Green")
-            green_widget.setSliceOrientation("Axial")
-            greenDisplayNode = displayList[0].GetScalarVolumeDisplayNode()
-            greenDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeGreen")
-            green_logic = green_widget.sliceLogic()
-            green_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[0].GetID())
-
-            # Set yellow slice to show cloned, thresholded channel
-            yellow_widget = slicer.app.layoutManager().sliceWidget("Yellow")
-            yellow_widget.setSliceOrientation("Axial")
-            if len(displayList) == 2:
-                yellowDisplayNode = displayList[1].GetScalarVolumeDisplayNode()
-                yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeBlue")
-                yellow_logic = yellow_widget.sliceLogic()
-                yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[2].GetID())
-            else:
-                yellowDisplayNode = displayList[0].GetScalarVolumeDisplayNode()
-                yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeBlue")
-                yellow_logic = yellow_widget.sliceLogic()
-                yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[0].GetID())
-
             # # Save dataframe to .csv file
             # filename = "hyperionAnalysis_rawData.csv"
             # pathName = os.getcwd() + '\\' + filename
