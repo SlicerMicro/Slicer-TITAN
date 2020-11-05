@@ -2194,8 +2194,8 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             df = df.rename(columns = {0: "Cell Label"})
             for i in range(len(channelNames)):
                 df = df.rename(columns = {i + 1: channelNames[i]})
-            # Delete any columns with all zeros (these are DNA channels that we don't calculate for)
-            df = df.loc[:, (df != 0).any(axis=0)]
+            # # Delete any columns with all zeros (these are DNA channels that we don't calculate for)
+            # df = df.loc[:, (df != 0).any(axis=0)]
             # Save dataframe to .csv file
             filename = "rawData_" + roi + ".csv"
             pathName = os.getcwd() + '\\' + filename
