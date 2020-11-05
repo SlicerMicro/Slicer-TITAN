@@ -68,6 +68,7 @@ selectedRoi = None
 roiDict = None
 selectedChannel = None
 scatterPlotRoi = None
+tsnePcaData = None
 
 
 #
@@ -2531,13 +2532,16 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             red_logic = slicer.app.layoutManager().sliceWidget("Red").sliceLogic()
             red_logic.GetSliceCompositeNode().SetBackgroundVolumeID(volumeNode.GetID())
 
-            # # Save dataframe to .csv file
-            # filename = "hyperionAnalysis_rawData.csv"
-            # pathName = os.getcwd() + '\\' + filename
-            # df.to_csv(filename, index=False)
-            # # Open file location in explorer
-            # import subprocess
-            # subprocess.Popen(r'explorer /select,' + pathName)
+            # Save dataframe to .csv file
+            filename = name + " plot.csv"
+            pathName = os.getcwd() + '\\' + filename
+            df.to_csv(filename, index=False)
+            # Open file location in explorer
+            import subprocess
+            subprocess.Popen(r'explorer /select,' + pathName)
+
+            global tsnePcaData
+            tsnePcaData = df
 
         slicer.util.resetSliceViews()
 
@@ -2549,20 +2553,27 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         """
 
         # Get columns from t-sne/pca table
-        tableNode = slicer.util.getNodesByClass("vtkMRMLTableNode")[0]
-        nRows = tableNode.GetNumberOfRows()
-        kmeansArray = np.full((nRows, 2), 0.00)
-        dim1 = []
-        dim2 = []
-        cellLabels = []
-        for row in range(nRows):
-            dim1Val = float(tableNode.GetCellText(row, 0))
-            dim2Val = float(tableNode.GetCellText(row, 1))
-            kmeansArray[row,0] = dim1Val
-            kmeansArray[row, 1] = dim2Val
-            dim1.append(dim1Val)
-            dim2.append(dim2Val)
-            cellLabels.append(int(tableNode.GetCellText(row, 2)))
+        if slicer.util.getNodesByClass("vtkMRMLTableNode") != []:
+            tableNode = slicer.util.getNodesByClass("vtkMRMLTableNode")[0]
+            nRows = tableNode.GetNumberOfRows()
+            kmeansArray = np.full((nRows, 2), 0.00)
+            dim1 = []
+            dim2 = []
+            cellLabels = []
+            for row in range(nRows):
+                dim1Val = float(tableNode.GetCellText(row, 0))
+                dim2Val = float(tableNode.GetCellText(row, 1))
+                kmeansArray[row,0] = dim1Val
+                kmeansArray[row, 1] = dim2Val
+                dim1.append(dim1Val)
+                dim2.append(dim2Val)
+                cellLabels.append(int(tableNode.GetCellText(row, 2)))
+
+        else:
+            kmeansArray = tsnePcaData.iloc[:,2:]
+            dim1 = tsnePcaData["Dim 1"]
+            dim2 = tsnePcaData["Dim 2"]
+            cellLabels = tsnePcaData["Cell Label"]
 
         # Compute k-means
         try:
@@ -2578,7 +2589,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             clusLabels = KMeans(n_clusters = nClusters, random_state = 0).fit_predict(kmeansArray)
             name = "K-Means Clustering"
         else:
-            clusLabels = AgglomerativeClustering(n_clusters=nClusters, random_state=0).fit_predict(kmeansArray)
+            clusLabels = AgglomerativeClustering(n_clusters=nClusters).fit_predict(kmeansArray)
             name = "Hierarchical Clustering"
 
         # x = []
@@ -2588,6 +2599,8 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         # for i in plotValues:
         #     x.append(i[0])
         #     y.append(i[1])
+
+        print(clusLabels)
 
         # Create table with x and y columns
         kMeansTableNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode", name + " Data")
@@ -2634,7 +2647,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         import matplotlib.pyplot as plt
         from pylab import savefig
 
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(15,10))
         ax.scatter(dim1, dim2, c=clusLabels, s=10)
         ax.set_xlabel("Dimension 1")
         ax.set_ylabel("Dimension 2")
@@ -2678,47 +2691,11 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         volumeNode.GetDisplayNode().AutoWindowLevelOff()
         volumeNode.GetDisplayNode().SetWindowLevel((arraySize[1] // 8), 127)
 
-        # # Set yellow slice to show cloned, thresholded channel
-        # yellow_widget = slicer.app.layoutManager().sliceWidget("Yellow")
-        # yellow_widget.setSliceOrientation("Axial")
-        # yellowDisplayNode = channelOneNode.GetScalarVolumeDisplayNode()
-        # yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeRed")
-        # yellow_logic = yellow_widget.sliceLogic()
-        # yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(channelOneNode.GetID())
-
         # Set yellow slice to display density scatter plot
-        yellow_widget = slicer.app.layoutManager().sliceWidget("Yellow")
-        yellow_widget.setSliceOrientation("Axial")
-        yellow_logic = yellow_widget.sliceLogic()
-        yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(volumeNode.GetID())
-
-        # # Set green slice to show cell mask
-        # green_widget = slicer.app.layoutManager().sliceWidget("Green")
-        # green_widget.setSliceOrientation("Axial")
-        # if len(parentDict) > 1:
-        #     greenDisplayNode = displayList[1].GetScalarVolumeDisplayNode()
-        #     greenDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeGreen")
-        #     green_logic = green_widget.sliceLogic()
-        #     green_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[1].GetID())
-        # else:
-        #     greenDisplayNode = displayList[0].GetScalarVolumeDisplayNode()
-        #     greenDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeGreen")
-        #     green_logic = green_widget.sliceLogic()
-        #     green_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[0].GetID())
-        #
-        # # Set yellow slice to show cloned, thresholded channel
-        # yellow_widget = slicer.app.layoutManager().sliceWidget("Yellow")
-        # yellow_widget.setSliceOrientation("Axial")
-        # if len(displayList) > 2:
-        #     yellowDisplayNode = displayList[2].GetScalarVolumeDisplayNode()
-        #     yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeBlue")
-        #     yellow_logic = yellow_widget.sliceLogic()
-        #     yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[2].GetID())
-        # else:
-        #     yellowDisplayNode = displayList[0].GetScalarVolumeDisplayNode()
-        #     yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeBlue")
-        #     yellow_logic = yellow_widget.sliceLogic()
-        #     yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[0].GetID())
+        red_widget = slicer.app.layoutManager().sliceWidget("Red")
+        red_widget.setSliceOrientation("Axial")
+        red_logic = red_widget.sliceLogic()
+        red_logic.GetSliceCompositeNode().SetBackgroundVolumeID(volumeNode.GetID())
 
         slicer.util.resetSliceViews()
 
