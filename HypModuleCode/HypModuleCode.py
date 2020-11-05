@@ -2476,11 +2476,13 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             from pylab import savefig
 
             fig, ax = plt.subplots()
-            ax.scatter(df["Dim 1"], df["Dim 2"], c=df["ROI"].apply(lambda x: roiColourLabels[x]), s=10)
+            scatter = ax.scatter(df["Dim 1"], df["Dim 2"], c=df["ROI"].apply(lambda x: roiColourLabels[x]), s=10)
             ax.set_xlabel("Dimension 1")
             ax.set_ylabel("Dimension 2")
             ax.set_title(name)
-            ax.legend()
+
+            legend1 = ax.legend(*scatter.legend_elements(), loc = "upper right", title = "ROI")
+            ax.add_artist(legend1)
 
             # Display cluster plot
             savefig("dimReduction.jpg")
