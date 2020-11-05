@@ -2232,22 +2232,22 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         # Create dictionary of each channel with its respective ROI
         shNode = slicer.vtkMRMLSubjectHierarchyNode.GetSubjectHierarchyNode(slicer.mrmlScene)
-        parentDict = {}
-        for channel in allChannels:
-            itemId = shNode.GetItemByDataNode(channel)  # Channel
-            parent = shNode.GetItemParent(itemId)  # ROI
-            roiName = shNode.GetItemName(parent)
-            channelName = shNode.GetItemName(itemId)
-            if re.findall(r"_[0-9]\b", channelName) != []:
-                channelName = channelName[:-2]
-            if roiName == "Scene":
-                roiName = "ROI"
-            # Check if the specific channel was selected
-            if roiName in selectedRoi and channelName in selectedChannel:
-                parentDict[itemId] = roiName
-            # Break loop once all channels are added into dictionary
-            if len(parentDict) == len(selectedChannel)*len(selectedRoi):
-                break
+        # parentDict = {}
+        # for channel in allChannels:
+        #     itemId = shNode.GetItemByDataNode(channel)  # Channel
+        #     parent = shNode.GetItemParent(itemId)  # ROI
+        #     roiName = shNode.GetItemName(parent)
+        #     channelName = shNode.GetItemName(itemId)
+        #     if re.findall(r"_[0-9]\b", channelName) != []:
+        #         channelName = channelName[:-2]
+        #     if roiName == "Scene":
+        #         roiName = "ROI"
+        #     # Check if the specific channel was selected
+        #     if roiName in selectedRoi and channelName in selectedChannel:
+        #         parentDict[itemId] = roiName
+        #     # Break loop once all channels are added into dictionary
+        #     if len(parentDict) == len(selectedChannel)*len(selectedRoi):
+        #         break
 
         # Create list of mean intensities for all cells for each channel
         # Create empty matrix of mean intensities
@@ -2385,7 +2385,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                 table.RemoveRow(0)
 
             # Create plot series nodes
-            plotSeriesNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotSeriesNode", roiName + ": " + name + " Points")
+            plotSeriesNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotSeriesNode", selectedRoi[0] + ": " + name + " Points")
             plotSeriesNode.SetAndObserveTableNodeID(tableNode.GetID())
             plotSeriesNode.SetXColumnName(name + " 1")
             plotSeriesNode.SetYColumnName(name + " 2")
@@ -2396,9 +2396,9 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
             # Create plot chart node
             plotChartNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotChartNode",
-                                                               roiName + name)
+                                                               selectedRoi[0] + name)
             plotChartNode.AddAndObservePlotSeriesNodeID(plotSeriesNode.GetID())
-            plotChartNode.SetTitle(roiName + name)
+            plotChartNode.SetTitle(selectedRoi[0] + " " + name)
             plotChartNode.SetXAxisTitle(name + " 1")
             plotChartNode.SetYAxisTitle(name + " 2")
 
@@ -2426,7 +2426,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                 yellowDisplayNode = displayList[1].GetScalarVolumeDisplayNode()
                 yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeBlue")
                 yellow_logic = yellow_widget.sliceLogic()
-                yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[2].GetID())
+                yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[1].GetID())
             else:
                 yellowDisplayNode = displayList[0].GetScalarVolumeDisplayNode()
                 yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeBlue")
@@ -2436,7 +2436,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             slicer.util.resetSliceViews()
 
             global scatterPlotRoi
-            scatterPlotRoi = roiName
+            scatterPlotRoi = selectedRoi[0]
         # If multiple ROI, create matplotlib plot and pandas excel table
         else:
             # Create dataframe of all arrays
