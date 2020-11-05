@@ -2097,7 +2097,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
     def rawDataRun(self):
         """
-        Generate raw data tables for the selected ROI and channels
+        Generate raw data tables for all ROI and channels
         """
         existingTables = slicer.util.getNodesByClass("vtkMRMLTableNode")
 
@@ -2183,27 +2183,24 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             pip_install("pandas")
             import pandas as pd
 
-        df = pd.DataFrame()
+        pathName = ""
 
         for roi in roiIntensitiesDict:
             arr = roiIntensitiesDict[roi]
             # Convert array to dataframe
-            arrToDf = pd.DataFrame(data=arr)
-            arrToDf.insert(0, "ROI", roi)
-            df = df.append(arrToDf)
+            df = pd.DataFrame(data=arr)
+            df.insert(0, "ROI", roi)
+            # Rename the columns
+            df = df.rename(columns = {0: "Cell Label"})
+            for i in range(len(channelNames)):
+                df = df.rename(columns = {i + 1: channelNames[i]})
+            # Delete any columns with all zeros (these are DNA channels that we don't calculate for)
+            df = df.loc[:, (df != 0).any(axis=0)]
+            # Save dataframe to .csv file
+            filename = "rawData_" + roi + ".csv"
+            pathName = os.getcwd() + '\\' + filename
+            df.to_csv(filename, index=False)
 
-        # Rename the columns
-        df = df.rename(columns = {0: "Cell Label"})
-        for i in range(len(channelNames)):
-            df = df.rename(columns = {i + 1: channelNames[i]})
-
-        # Delete any columns with all zeros (these are DNA channels that we don't calculate for)
-        df = df.loc[:, (df != 0).any(axis=0)]
-
-        # Save dataframe to .csv file
-        filename = "hyperionAnalysis_rawData.csv"
-        pathName = os.getcwd() + '\\' + filename
-        df.to_csv(filename, index=False)
         # Open file location in explorer
         import subprocess
         subprocess.Popen(r'explorer /select,' + pathName)
