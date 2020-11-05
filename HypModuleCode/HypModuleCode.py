@@ -2600,8 +2600,6 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         #     x.append(i[0])
         #     y.append(i[1])
 
-        print(clusLabels)
-
         # Create table with x and y columns
         kMeansTableNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode", name + " Data")
         table = kMeansTableNode.GetTable()
