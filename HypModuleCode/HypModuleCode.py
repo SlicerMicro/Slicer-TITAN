@@ -2140,7 +2140,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             parent = shNode.GetItemParent(itemId)  # ROI
             roiName = shNode.GetItemName(parent)
             channelName = shNode.GetItemName(itemId)
-            if "191" in channelName or "193" in channelName or ".ome" not in channelName:
+            if ".ome" not in channelName:
                 continue
             if re.findall(r"_[0-9]\b", channelName) != []:
                 channelName = channelName[:-2]
@@ -2275,7 +2275,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             parent = shNode.GetItemParent(itemId)  # ROI
             roiName = shNode.GetItemName(parent)
             channelName = shNode.GetItemName(itemId)
-            if "191" in channelName or "193" in channelName or ".ome" not in channelName:
+            if ".ome" not in channelName:
                 continue
             if re.findall(r"_[0-9]\b", channelName) != []:
                 channelName = channelName[:-2]
