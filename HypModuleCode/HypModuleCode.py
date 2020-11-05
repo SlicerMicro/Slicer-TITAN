@@ -2475,14 +2475,15 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             import matplotlib.pyplot as plt
             from pylab import savefig
 
-            fig, ax = plt.subplots()
+            fig, ax = plt.subplots(figsize = (15,10))
+
             scatter = ax.scatter(df["Dim 1"], df["Dim 2"], c=df["ROI"].apply(lambda x: roiColourLabels[x]), s=10)
+
             ax.set_xlabel("Dimension 1")
             ax.set_ylabel("Dimension 2")
             ax.set_title(name)
 
-            legend1 = ax.legend(*scatter.legend_elements(), loc = "upper right", title = "ROI")
-            ax.add_artist(legend1)
+            legend1 = ax.legend(handles = scatter.legend_elements()[0], loc = "best", title = "ROI", labels = selectedRoi)
 
             # Display cluster plot
             savefig("dimReduction.jpg")
