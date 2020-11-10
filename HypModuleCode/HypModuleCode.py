@@ -10,52 +10,6 @@ import math
 import SimpleITK as sitk
 import re
 
-# Need to run Slicer as an administrator in order to install matplotlib
-# try:
-#   import matplotlib
-# except:
-#   main(["install", "matplotlib"])
-# from matplotlib import pyplot as plt
-
-# # Install sklearn
-# main(["install", "sklearn"])
-# # Install seaborn
-# main(["install", "seaborn"])
-
-# load the python wrapped OpenCV module
-# Taken from Slicer github
-# try:
-#     print 'Trying to import cv2'
-#     # the module is in the python path
-#     import cv2
-#
-#     print 'Imported!'
-# except ImportError:
-#     print 'Trying to import from file'
-#     # for the build directory, load from the file
-#     import imp, platform
-#
-#     if platform.system() == 'Windows':
-#         cv2File = 'cv2.pyd'
-#         cv2Path = '../../../../OpenCV-build/lib/Release/' + cv2File
-#     else:
-#         cv2File = 'cv2.so'
-#         cv2Path = '../../../../OpenCV-build/lib/' + cv2File
-#     cv2Path = os.path.abspath(os.path.join(scriptPath, cv2Path))
-#     # in the build directory, this path should exist, but in the installed extension
-#     # it should be in the python path, so only use the short file name
-#     if not os.path.isfile(cv2Path):
-#         print 'Full path not found: ', cv2Path
-#         cv2Path = cv2File
-#     print 'Loading cv2 from ', cv2Path
-#     cv2 = imp.load_dynamic('cv2', cv2File)
-
-
-# TO DO:
-# Analysis: figure out what they want to see in the yellow and green windows
-# Stretch out graph so that points aren't all in one end
-# For PCA plot, use sklearn.decomposition to create the data, then plot this data
-# Add all ROI's for one channel into a volume by just making a [501, 500, 5] (if 5 ROI's)
 
 # Define global variables
 import time
