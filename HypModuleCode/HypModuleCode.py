@@ -739,6 +739,9 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                 saveImageName += name
                 # Set redscale array
                 array = slicer.util.arrayFromVolume(selectChannels[colour])
+                if array.shape[0] != 1:
+                    array = array[49]
+                    array = np.expand_dims(array, axis=0)
                 # Scale the array
                 scaled = np.interp(array, (array.min(), array.max()), (0, 255))
                 if arraySize == None:
@@ -957,7 +960,8 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             roiName = shNode.GetItemName(parent)
             dnaName = shNode.GetItemName(itemId)
             dnaNode = slicer.util.getNode(dnaName)
-            dnaArray = slicer.util.arrayFromVolume(dnaNode)
+            dnaArray = slicer.util.arrayFromVolume(dnaNode)[47]
+            dnaArray = np.expand_dims(dnaArray, axis=0)
             dnaImg = sitk.GetImageFromArray(dnaArray)
 
             # Delete any existing masks
