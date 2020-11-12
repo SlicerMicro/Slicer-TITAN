@@ -517,6 +517,8 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         # Add to global list of cell masks
         globalCellMask["Selected Cells"] = volumeNode
 
+        self.ui.selectedCellsCount.text = len(cellLabels)
+
         logic = HypModuleLogic()
         logic.scatterPlotRun(True)
 
@@ -960,8 +962,8 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             roiName = shNode.GetItemName(parent)
             dnaName = shNode.GetItemName(itemId)
             dnaNode = slicer.util.getNode(dnaName)
-            dnaArray = slicer.util.arrayFromVolume(dnaNode)[47]
-            dnaArray = np.expand_dims(dnaArray, axis=0)
+            dnaArray = slicer.util.arrayFromVolume(dnaNode)#[47]
+            # dnaArray = np.expand_dims(dnaArray, axis=0)
             dnaImg = sitk.GetImageFromArray(dnaArray)
 
             # Delete any existing masks
@@ -2381,7 +2383,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             # Set yellow slice to show cloned, thresholded channel
             yellow_widget = slicer.app.layoutManager().sliceWidget("Yellow")
             yellow_widget.setSliceOrientation("Axial")
-            if len(displayList) == 2:
+            if len(displayList) >= 2:
                 yellowDisplayNode = displayList[1].GetScalarVolumeDisplayNode()
                 yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeBlue")
                 yellow_logic = yellow_widget.sliceLogic()
@@ -2653,6 +2655,8 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         red_logic = red_widget.sliceLogic()
         red_logic.GetSliceCompositeNode().SetBackgroundVolumeID(volumeNode.GetID())
 
+        slicer.app.layoutManager().setLayout(
+            slicer.vtkMRMLLayoutNode.SlicerLayoutOneUpRedSliceView)
         slicer.util.resetSliceViews()
 
 
