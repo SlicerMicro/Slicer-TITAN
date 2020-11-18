@@ -1552,6 +1552,10 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         fig, ax = plt.subplots()
         ax.scatter(xArr, yArr, c=densColour, s=10)
 
+        ax.set_xlabel(channelOneName)
+        ax.set_ylabel(channelTwoName)
+        ax.set_title(roiName + ": " + channelOneName + " x " + channelTwoName, wrap=True)
+
         # Display heatmap
         savefig("densityScatter.jpg")
         densScatterImg = sitk.ReadImage("densityScatter.jpg")
@@ -2437,14 +2441,15 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             from pylab import savefig
 
             fig, ax = plt.subplots(figsize = (15,10))
+            axis_font = {'fontname': 'Arial', 'size': '18'}
 
             scatter = ax.scatter(df["Dim 1"], df["Dim 2"], c=df["ROI"].apply(lambda x: roiColourLabels[x]), s=10)
 
-            ax.set_xlabel("Dimension 1")
-            ax.set_ylabel("Dimension 2")
-            ax.set_title(name)
+            ax.set_xlabel("Dimension 1", **axis_font)
+            ax.set_ylabel("Dimension 2", **axis_font)
+            ax.set_title(name, **axis_font)
 
-            legend1 = ax.legend(handles = scatter.legend_elements()[0], loc = "best", title = "ROI", labels = selectedRoi)
+            legend1 = ax.legend(handles = scatter.legend_elements()[0], loc = "best", title = "ROI", labels = selectedRoi, fontsize = 14)
 
             # Display cluster plot
             savefig("dimReduction.jpg")
