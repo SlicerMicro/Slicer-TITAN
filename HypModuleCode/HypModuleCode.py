@@ -10,6 +10,19 @@ import math
 import SimpleITK as sitk
 import re
 
+# Install necessary libraries
+try:
+    import matplotlib
+except ModuleNotFoundError:
+    import pip
+
+    pip_install("matplotlib")
+    import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from pylab import savefig
+
 
 # Define global variables
 import time
@@ -894,9 +907,54 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         """
         from PIL import Image
         allChannels = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
+        size = 128,128
+        thumbnailArrays = []
         for node in allChannels:
             array = slicer.util.arrayFromVolume(node)
             img = Image.fromarray(array[0])
+            img = img.convert("L")
+            img.thumbnail(size)
+            thumbArr = np.array(img)
+            thumbnailArrays.append(thumbArr)
+
+        from skimage.util import montage
+        arrIn = np.array(thumbnailArrays)
+        grid = montage(arrIn)
+        arraySize = grid.shape
+
+        # Create image node out of array
+        imageSize = [arraySize[2], arraySize[1], 1]
+        voxelType = vtk.VTK_UNSIGNED_CHAR
+        imageOrigin = [0.0, 0.0, 0.0]
+        imageSpacing = [1.0, 1.0, 1.0]
+        imageDirections = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+        fillVoxelValue = 0
+
+        # Create an empty image volume, filled with fillVoxelValue
+        imageData = vtk.vtkImageData()
+        imageData.SetDimensions(imageSize)
+        imageData.AllocateScalars(voxelType, 1)
+        imageData.GetPointData().GetScalars().Fill(fillVoxelValue)
+
+        # Create volume node
+        # Needs to be a vector volume in order to show in colour
+        volumeNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLScalarVolumeNode", "Thumbnail Overview")
+        volumeNode.SetOrigin(imageOrigin)
+        volumeNode.SetSpacing(imageSpacing)
+        volumeNode.SetIJKToRASDirections(imageDirections)
+        volumeNode.SetAndObserveImageData(imageData)
+        volumeNode.CreateDefaultDisplayNodes()
+        volumeNode.CreateDefaultStorageNode()
+
+        voxels = slicer.util.arrayFromVolume(volumeNode)
+        voxels[:] = grid
+
+        volumeNode.Modified()
+
+        # volumeNode.GetDisplayNode().AutoWindowLevelOff()
+        # volumeNode.GetDisplayNode().SetWindowLevel((arraySize[1] // 4), 127)
+
+        slicer.util.setSliceViewerLayers(background=volumeNode, foreground=None)
 
     def saveVisualization(self, fileName):
         viewNodeID = 'vtkMRMLSliceNodeRed'
