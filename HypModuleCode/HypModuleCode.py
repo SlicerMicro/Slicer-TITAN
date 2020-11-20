@@ -115,6 +115,8 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         # Visualization
         self.ui.resetViewButton.connect("clicked(bool)", self.onReset)
 
+        self.ui.crtThumbnails.connect("clicked(bool)", self.onThumbnails)
+
         self.ui.roiVisualization.connect("activated(int)", self.onVisualization)
 
         self.ui.redSelect.connect("activated(int)", self.onVisualization)
@@ -173,6 +175,10 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
 
     def onSubjectHierarchy(self):
         print(self.ui.subjectHierarchy.currentItems)
+
+    def onThumbnails(self):
+        logic = HypModuleLogic()
+        logic.thumbnails()
 
     # Whenever something is updated in Visualization tab, this function runs
     def onVisualization(self):
@@ -955,6 +961,11 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         # volumeNode.GetDisplayNode().SetWindowLevel((arraySize[1] // 4), 127)
 
         slicer.util.setSliceViewerLayers(background=volumeNode, foreground=None)
+
+        # Set slice view to display Red window only
+        lm = slicer.app.layoutManager()
+        lm.setLayout(slicer.vtkMRMLLayoutNode.SlicerLayoutOneUpRedSliceView)
+
 
     def saveVisualization(self, fileName):
         viewNodeID = 'vtkMRMLSliceNodeRed'
