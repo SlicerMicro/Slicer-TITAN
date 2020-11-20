@@ -888,6 +888,16 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         # Reset field of view to show entire image
         slicer.util.resetSliceViews()
 
+    def thumbnails(self):
+        """
+        Generate thumbnails for all loaded images
+        """
+        from PIL import Image
+        allChannels = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
+        for node in allChannels:
+            array = slicer.util.arrayFromVolume(node)
+            img = Image.fromarray(array[0])
+
     def saveVisualization(self, fileName):
         viewNodeID = 'vtkMRMLSliceNodeRed'
         import ScreenCapture
