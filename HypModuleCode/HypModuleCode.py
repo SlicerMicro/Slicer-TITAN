@@ -912,17 +912,36 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         Generate thumbnails for all loaded images
         """
         from PIL import Image, ImageOps
+
         existingOverviews = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
 
         for node in existingOverviews:
             if "Thumbnail Overview" in node.GetName():
                 slicer.mrmlScene.RemoveNode(node)
 
-        allChannels = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
+        positions = []
+        channelNodes = []
+        # shNode = slicer.vtkMRMLSubjectHierarchyNode.GetSubjectHierarchyNode(slicer.mrmlScene)
+
+        for roi in selectedRoi:
+            positions.append(roiDict[roi])
+
+        for channel in selectedChannel:
+            for pos in positions:
+                if pos == 0:
+                    node = slicer.util.getNode(channel)
+                    # itemId = shNode.GetItemByDataNode(node)
+                    channelNodes.append(node)
+                else:
+                    suffix = "_" + str(pos)
+                    name = channel + suffix
+                    node = slicer.util.getNode(name)
+                    # itemId = shNode.GetItemByDataNode(node)
+                    channelNodes.append(node)
 
         size = 200,200
         thumbnailArrays = []
-        for node in allChannels:
+        for node in channelNodes:
             array = slicer.util.arrayFromVolume(node)
             img = Image.fromarray(array[0])
             img = img.convert("L")
