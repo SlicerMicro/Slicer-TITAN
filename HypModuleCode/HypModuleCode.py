@@ -177,6 +177,14 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         print(self.ui.subjectHierarchy.currentItems)
 
     def onThumbnails(self):
+        if selectedChannel is None or len(selectedChannel) <= 1:
+            self.ui.thumbErrorMessage.text = "ERROR: Minimum 1 channel should be selected."
+            return
+        elif selectedRoi is None or len(selectedRoi) != 1:
+            self.ui.thumbErrorMessage.text = "ERROR: 1 ROI should be selected."
+            return
+        else:
+            self.ui.thumbErrorMessage.text = ""
         logic = HypModuleLogic()
         logic.thumbnails()
 
