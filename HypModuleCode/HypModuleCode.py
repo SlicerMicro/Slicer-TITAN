@@ -911,29 +911,41 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         """
         Generate thumbnails for all loaded images
         """
-        from PIL import Image
+        from PIL import Image, ImageOps
+        existingOverviews = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
+
+        for node in existingOverviews:
+            if "Thumbnail Overview" in node.GetName():
+                slicer.mrmlScene.RemoveNode(node)
+
         allChannels = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
-        size = 128,128
+
+        size = 200,200
         thumbnailArrays = []
         for node in allChannels:
             array = slicer.util.arrayFromVolume(node)
             img = Image.fromarray(array[0])
             img = img.convert("L")
             img.thumbnail(size)
+            img = ImageOps.autocontrast(img)
             thumbArr = np.array(img)
             thumbnailArrays.append(thumbArr)
 
         from skimage.util import montage
-        arrIn = np.array(thumbnailArrays)
-        grid = montage(arrIn)
+        arrIn = np.stack(thumbnailArrays, axis=0)
+        mont = montage(arrIn)
+        img = Image.fromarray(mont)
+        img = img.convert("L")
+        img = ImageOps.equalize(img)
+        grid = np.array(img)
         arraySize = grid.shape
 
         # Create image node out of array
-        imageSize = [arraySize[2], arraySize[1], 1]
+        imageSize = [arraySize[1], arraySize[0], 1]
         voxelType = vtk.VTK_UNSIGNED_CHAR
         imageOrigin = [0.0, 0.0, 0.0]
         imageSpacing = [1.0, 1.0, 1.0]
-        imageDirections = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+        imageDirections = [[-1, 0, 0], [0, -1, 0], [0, 0, 1]]
         fillVoxelValue = 0
 
         # Create an empty image volume, filled with fillVoxelValue
@@ -957,14 +969,16 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         volumeNode.Modified()
 
-        # volumeNode.GetDisplayNode().AutoWindowLevelOff()
-        # volumeNode.GetDisplayNode().SetWindowLevel((arraySize[1] // 4), 127)
+        volumeNode.GetDisplayNode().AutoWindowLevelOff()
+        volumeNode.GetDisplayNode().SetWindowLevel((arraySize[1] // 4), 127)
 
         slicer.util.setSliceViewerLayers(background=volumeNode, foreground=None)
 
         # Set slice view to display Red window only
         lm = slicer.app.layoutManager()
         lm.setLayout(slicer.vtkMRMLLayoutNode.SlicerLayoutOneUpRedSliceView)
+
+        slicer.util.resetSliceViews()
 
 
     def saveVisualization(self, fileName):
