@@ -955,6 +955,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             img = img.convert("L")
             img.thumbnail(size)
             img = ImageOps.autocontrast(img)
+            img = ImageOps.equalize(img)
             thumbArr = np.array(img)
             thumbnailArrays.append(thumbArr)
 
@@ -963,7 +964,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         mont = montage(arrIn)
         img = Image.fromarray(mont)
         img = img.convert("L")
-        img = ImageOps.equalize(img)
+        # img = ImageOps.equalize(img)
         grid = np.array(img)
         arraySize = grid.shape
 
