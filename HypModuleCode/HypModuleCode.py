@@ -49,7 +49,7 @@ class HypModuleCode(ScriptedLoadableModule):
 
     def __init__(self, parent):
         ScriptedLoadableModule.__init__(self, parent)
-        self.parent.title = "Hyperion Analysis"  # TODO make this more human readable by adding spaces
+        self.parent.title = "TITAN"  # TODO make this more human readable by adding spaces
         self.parent.categories = ["Analysis"]
         self.parent.dependencies = []
         self.parent.contributors = [
