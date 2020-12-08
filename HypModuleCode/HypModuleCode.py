@@ -16,7 +16,7 @@ try:
 except ModuleNotFoundError:
     import pip
 
-    pip_install("matplotlib")
+    slicer.util.pip_install("matplotlib")
     import matplotlib
 
 matplotlib.use("Agg")
@@ -1651,7 +1651,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             import matplotlib
         except ModuleNotFoundError:
             import pip
-            pip_install("matplotlib")
+            slicer.util.pip_install("matplotlib")
             import matplotlib
 
         matplotlib.use("Agg")
@@ -2094,7 +2094,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             import matplotlib
         except ModuleNotFoundError:
             import pip
-            pip_install("matplotlib")
+            slicer.util.pip_install("matplotlib")
             import matplotlib
 
         matplotlib.use("Agg")
@@ -2266,7 +2266,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             import pandas as pd
         except ModuleNotFoundError:
             import pip
-            pip_install("pandas")
+            slicer.util.pip_install("pandas")
             import pandas as pd
 
         pathName = ""
@@ -2419,7 +2419,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             import sklearn
         except ModuleNotFoundError:
             import pip
-            pip_install("sklearn")
+            slicer.util.pip_install("sklearn")
 
         if plotType == "tsne":
             from sklearn.manifold import TSNE
@@ -2530,7 +2530,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                 import pandas as pd
             except ModuleNotFoundError:
                 import pip
-                pip_install("pandas")
+                slicer.util.pip_install("pandas")
                 import pandas as pd
 
             roiNamesList = []
@@ -2554,7 +2554,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                 import matplotlib
             except ModuleNotFoundError:
                 import pip
-                pip_install("matplotlib")
+                slicer.util.pip_install("matplotlib")
                 import matplotlib
 
             matplotlib.use("Agg")
@@ -2666,7 +2666,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             import sklearn
         except ModuleNotFoundError:
             import pip
-            pip_install("sklearn")
+            slicer.util.pip_install("sklearn")
 
         from sklearn.cluster import KMeans
         from sklearn.cluster import AgglomerativeClustering
@@ -2724,7 +2724,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             import matplotlib
         except ModuleNotFoundError:
             import pip
-            pip_install("matplotlib")
+            slicer.util.pip_install("matplotlib")
             import matplotlib
 
         matplotlib.use("Agg")
