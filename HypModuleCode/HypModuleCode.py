@@ -1412,12 +1412,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             plotSeriesNode.SetXColumnName("Intensity")
             plotSeriesNode.SetYColumnName("Count")
             plotSeriesNode.SetPlotType(plotSeriesNode.PlotTypeBar)
-            if count % 3 == 1:
-                plotSeriesNode.SetColor(1.0, 0, 0)
-            elif count % 3 == 2:
-                plotSeriesNode.SetColor(0, 1.0, 0)
-            else:
-                plotSeriesNode.SetColor(0, 0, 1.0)
+            plotSeriesNode.SetColor(tuple(np.random.choice(range(256), size=3)))
 
             # Create chart and add plot
             plotChartNode = slicer.util.getNode("Histogram of Channel Mean Intensities")
