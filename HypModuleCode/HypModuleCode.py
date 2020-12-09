@@ -99,6 +99,7 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         self.ui = slicer.util.childWidgetVariables(uiWidget)
 
         # Set inputs to be a MRML node in a scene
+        self.ui.gatingMasks.clear()
 
         # Data
         self.ui.subjectHierarchy.setMRMLScene(slicer.mrmlScene)
@@ -2347,14 +2348,14 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         #     if len(parentDict) == len(selectedChannel)*len(selectedRoi):
         #         break
 
+
         # Create list of mean intensities for all cells for each channel
         # Create empty matrix of mean intensities
         roiIntensitiesDict = {}
         roiCellMaskArrays = {}
         roiPixelCounts = {}
-        for roi in selectedRoi:
-            # if roi == "Scene":
-            #     continue
+        if checkState == True:
+            roi = selectedGates[0]
             # Get cell mask array
             cellMask = globalCellMask[roi]
             cellMaskArray = slicer.util.arrayFromVolume(cellMask)
@@ -2363,7 +2364,20 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             cell, counts = np.unique(cellMaskArray, return_counts=True)
             cellPixelCounts = dict(zip(cell, counts))
             roiPixelCounts[roi] = cellPixelCounts
-            roiIntensitiesDict[roi] = np.full((len(cell) - 1, len(selectedChannel)+1), 0.00)
+            roiIntensitiesDict[roi] = np.full((len(cell) - 1, len(selectedChannel) + 1), 0.00)
+        else:
+            for roi in selectedRoi:
+                # if roi == "Scene":
+                #     continue
+                # Get cell mask array
+                cellMask = globalCellMask[roi]
+                cellMaskArray = slicer.util.arrayFromVolume(cellMask)
+                roiCellMaskArrays[roi] = cellMaskArray
+                # Get counts of pixels in each cell
+                cell, counts = np.unique(cellMaskArray, return_counts=True)
+                cellPixelCounts = dict(zip(cell, counts))
+                roiPixelCounts[roi] = cellPixelCounts
+                roiIntensitiesDict[roi] = np.full((len(cell) - 1, len(selectedChannel)+1), 0.00)
 
         # cellLabels = []
         displayList = []
@@ -2446,7 +2460,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             name = "PCA"
 
         # If only one ROI in t-sne, create plot that allows gating
-        if len(selectedRoi) == 1:
+        if len(roiCellMaskArrays) == 1:
             x = []
             y = []
             z = concatArray[:,0]
