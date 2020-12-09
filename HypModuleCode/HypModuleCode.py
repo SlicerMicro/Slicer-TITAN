@@ -36,6 +36,8 @@ roiDict = None
 selectedChannel = None
 scatterPlotRoi = None
 tsnePcaData = None
+gatingList = []
+selectedGates = None
 
 
 #
@@ -159,6 +161,8 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         self.ui.updPlotFromSel.connect("clicked(bool)", self.onUpdatePlotFromSelection)
         self.ui.clearSelection.connect("clicked(bool)", self.onClearSelection)
 
+        self.ui.gatingMasks.connect("itemSelectionChanged()", self.onGatingList)
+
         # Advanced
         self.ui.crtTsne.connect('clicked(bool)', self.onCreateTsne)
         self.ui.crtPCA.connect('clicked(bool)', self.onCreatePCA)
@@ -265,6 +269,12 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         selectedChannel = []
         for item in self.ui.channelList.selectedItems():
             selectedChannel.append(item.text())
+
+    def onGatingList(self):
+        global selectedGates
+        selectedGates = []
+        for item in self.ui.gatingMasks.selectedItems():
+            selectedGates.append(item.text())
 
     def onRefreshLists(self):
         # Get list of ROI's
@@ -413,9 +423,10 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
 
         logic = HypModuleLogic()
 
-        # If check box is checked, use the selected cells mask for the scatter plot
-        if self.ui.checkBoxSelectedCells.checkState() == 0:
+        if selectedGates is None or len(selectedGates) == 0:
             logic.scatterPlotRun(False)
+        elif len(selectedGates) > 1:
+            self.ui.analysisErrorMessage.text = "ERROR: One mask should be selected."
         else:
             logic.scatterPlotRun(True)
 
@@ -432,8 +443,6 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
 
         # Delete any existing selected cell masks
         existingMasks = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
-
-
 
         for selectionIndex in range(mrmlPlotDataIDs.GetNumberOfValues()):
             pointIdList = []
@@ -480,13 +489,13 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
                     selectedCellsMask[selectedCellsMask == cell] = 0
 
         # Create new cell mask image
-        name = "Cell Mask: Selected Cells"
+        name = self.ui.selectedCellsName.text
 
         volumeNode = slicer.modules.volumes.logic().CloneVolume(cellMaskNode, name)
         slicer.util.updateVolumeFromArray(volumeNode, selectedCellsMask)
 
         # Add to global list of cell masks
-        globalCellMask["Selected Cells"] = volumeNode
+        globalCellMask[name] = volumeNode
 
         # Change colormap of volume
         # labels = slicer.util.getFirstNodeByName("Labels")
@@ -496,8 +505,16 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         red_logic.GetSliceCompositeNode().SetBackgroundVolumeID(volumeNode.GetID())
 
         for img in existingMasks:
-            if "Cell Mask: Selected Cells" in img.GetName():
+            if name in img.GetName():
                 slicer.mrmlScene.RemoveNode(img)
+
+        # Add mask name to list of possible gating masks
+        global gatingList
+        if name not in gatingList:
+            gatingList.append(name)
+        self.ui.gatingMasks.clear()
+        for i in gatingList:
+            self.ui.gatingMasks.addItem(i)
 
     def onUpdatePlotFromSelection(self):
         # Export segmentation into a labelmap
@@ -536,13 +553,13 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
                     selectedCellsMask[selectedCellsMask == cell] = 0
 
         # Create new cell mask image
-        name = "Cell Mask: Selected Cells"
+        name = self.ui.selectedCellsName.text
 
         volumeNode = slicer.modules.volumes.logic().CloneVolume(cellMask, name)
         slicer.util.updateVolumeFromArray(volumeNode, selectedCellsMask)
 
         # Add to global list of cell masks
-        globalCellMask["Selected Cells"] = volumeNode
+        globalCellMask[name] = volumeNode
 
         self.ui.selectedCellsCount.text = len(cellLabels)
 
@@ -585,13 +602,13 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         self.ui.tsneSelectedCellsCount.text = ""
 
         logic = HypModuleLogic()
-        logic.tsnePCARun("tsne")
 
-        # # If check box is checked, use the selected cells mask for the scatter plot
-        # if self.ui.checkBoxSelectedCells.checkState() == 0:
-        #     logic.scatterPlotRun(False)
-        # else:
-        #     logic.scatterPlotRun(True)
+        if selectedGates is None or len(selectedGates) == 0:
+            logic.tsnePCARun("tsne", False)
+        elif len(selectedGates) > 1:
+            self.ui.analysisErrorMessage.text = "ERROR: One mask should be selected."
+        else:
+            logic.tsnePCARun("tsne", True)
 
         # Scatter plot gating signal
         layoutManager = slicer.app.layoutManager()
@@ -612,13 +629,13 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         self.ui.tsneSelectedCellsCount.text = ""
 
         logic = HypModuleLogic()
-        logic.tsnePCARun("pca")
 
-        # # If check box is checked, use the selected cells mask for the scatter plot
-        # if self.ui.checkBoxSelectedCells.checkState() == 0:
-        #     logic.scatterPlotRun(False)
-        # else:
-        #     logic.scatterPlotRun(True)
+        if selectedGates is None or len(selectedGates) == 0:
+            logic.tsnePCARun("pca", False)
+        elif len(selectedGates) > 1:
+            self.ui.analysisErrorMessage.text = "ERROR: One mask should be selected."
+        else:
+            logic.tsnePCARun("pca", True)
 
         # Scatter plot gating signal
         layoutManager = slicer.app.layoutManager()
@@ -1469,12 +1486,12 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         existingSeriesNodes = slicer.util.getNodesByClass("vtkMRMLPlotSeriesNode")
         existingTables = slicer.util.getNodesByClass("vtkMRMLTableNode")
 
-        for plot in existingPlots:
-            slicer.mrmlScene.RemoveNode(plot)
-        for seriesNode in existingSeriesNodes:
-            slicer.mrmlScene.RemoveNode(seriesNode)
-        for table in existingTables:
-            slicer.mrmlScene.RemoveNode(table)
+        # for plot in existingPlots:
+        #     slicer.mrmlScene.RemoveNode(plot)
+        # for seriesNode in existingSeriesNodes:
+        #     slicer.mrmlScene.RemoveNode(seriesNode)
+        # for table in existingTables:
+        #     slicer.mrmlScene.RemoveNode(table)
 
         positions = []
         channelItems = []
@@ -1496,34 +1513,14 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                     itemId = shNode.GetItemByDataNode(node)
                     channelItems.append(itemId)
 
-        # # Get list of all channels
-        # allChannels = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
-        #
-        # # Create dictionary of each channel with its respective ROI
-        # shNode = slicer.vtkMRMLSubjectHierarchyNode.GetSubjectHierarchyNode(slicer.mrmlScene)
-        # parentDict = {}
-        # for channel in allChannels:
-        #     itemId = shNode.GetItemByDataNode(channel)  # Channel
-        #     parent = shNode.GetItemParent(itemId)  # ROI
-        #     roiName = shNode.GetItemName(parent)
-        #     channelName = shNode.GetItemName(itemId)
-        #     if re.findall(r"_[0-9]\b", channelName) != []:
-        #         channelName = channelName[:-2]
-        #     # Check if the specific channel was selected
-        #     if roiName == "Scene":
-        #         roiName = "ROI"
-        #     if roiName in selectedRoi and channelName in selectedChannel:
-        #         parentDict[itemId] = roiName
-        #     if len(parentDict) == 2:
-        #         break
-
         # channels = list(parentDict.keys())
         # Get ROI name or Selected Cells mask
         if checkboxState == False:
             parent = shNode.GetItemParent(channelItems[0])  # ROI
             roiName = shNode.GetItemName(parent)
         else:
-            roiName = "Selected Cells"
+            roiName = selectedGates[0]
+
         # Get array of channel
 
         channelOneName = shNode.GetItemName(channelItems[0])
@@ -1583,7 +1580,14 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         nPoints = len(x)
 
         # Create table with x and y columns
-        tableNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode", roiName + ": " + channelOneName + " x " + channelTwoName + " data")
+        tableName = roiName + ": " + channelOneName + " x " + channelTwoName + " data"
+        tableNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode", tableName)
+
+        # Delete existing tables with same data
+        for table in existingTables:
+            if tableName in table.GetName():
+                slicer.mrmlScene.RemoveNode(table)
+
         table = tableNode.GetTable()
 
         arrX = vtk.vtkFloatArray()
@@ -1606,7 +1610,13 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             table.SetValue(i, 2, z[i])
 
         # Create plot series nodes
-        plotSeriesNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotSeriesNode", roiName + ": Cells")
+        plotSeriesNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotSeriesNode", roiName)
+
+        # Delete existing tables with same data
+        for plotSeries in existingSeriesNodes:
+            if roiName in plotSeries.GetName():
+                slicer.mrmlScene.RemoveNode(plotSeries)
+
         plotSeriesNode.SetAndObserveTableNodeID(tableNode.GetID())
         plotSeriesNode.SetXColumnName(channelOneName)
         plotSeriesNode.SetYColumnName(channelTwoName)
@@ -1625,7 +1635,14 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         # plotSeriesNode.SetPointLookupTable(densColour)
 
         # Create plot chart node
-        plotChartNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotChartNode", roiName + ": " + channelOneName + " x " + channelTwoName)
+        plotChartName = roiName + ": " + channelOneName + " x " + channelTwoName
+        plotChartNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotChartNode", plotChartName)
+
+        # Delete existing tables with same data
+        for chart in existingPlots:
+            if roiName in chart.GetName():
+                slicer.mrmlScene.RemoveNode(chart)
+
         plotChartNode.AddAndObservePlotSeriesNodeID(plotSeriesNode.GetID())
         plotChartNode.SetTitle(roiName + ": " + channelOneName + " x " + channelTwoName)
         plotChartNode.SetXAxisTitle(channelOneName)
@@ -2288,7 +2305,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
 
 
-    def tsnePCARun(self, plotType):
+    def tsnePCARun(self, plotType, checkState):
         """
         Create t-sne plot of selected channels
         """
