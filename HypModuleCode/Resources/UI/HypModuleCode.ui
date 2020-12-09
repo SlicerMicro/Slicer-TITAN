@@ -249,7 +249,7 @@
       <enum>QTabWidget::Triangular</enum>
      </property>
      <property name="currentIndex">
-      <number>4</number>
+      <number>5</number>
      </property>
      <property name="usesScrollButtons">
       <bool>false</bool>
@@ -1795,15 +1795,15 @@
          </property>
         </spacer>
        </item>
-       <item row="26" column="0">
-        <widget class="QListWidget" name="gatingMasks"/>
-       </item>
        <item row="25" column="0">
-        <widget class="QCheckBox" name="checkBoxSelectedCells">
+        <widget class="QLabel" name="label_49">
          <property name="text">
           <string>Use following mask for further scatter plot analysis</string>
          </property>
         </widget>
+       </item>
+       <item row="26" column="0">
+        <widget class="QListWidget" name="gatingMasks"/>
        </item>
       </layout>
      </widget>
@@ -1989,7 +1989,7 @@
          </property>
         </widget>
        </item>
-       <item row="15" column="0">
+       <item row="17" column="0">
         <spacer name="horizontalSpacer_15">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -2002,7 +2002,7 @@
          </property>
         </spacer>
        </item>
-       <item row="16" column="0">
+       <item row="18" column="0">
         <widget class="QLabel" name="label_35">
          <property name="font">
           <font>
@@ -2015,7 +2015,7 @@
          </property>
         </widget>
        </item>
-       <item row="16" column="1">
+       <item row="18" column="1">
         <widget class="QLabel" name="tsneSelectedCellsCount">
          <property name="font">
           <font>
@@ -2028,7 +2028,7 @@
          </property>
         </widget>
        </item>
-       <item row="17" column="0">
+       <item row="19" column="0">
         <spacer name="horizontalSpacer_17">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -2041,7 +2041,7 @@
          </property>
         </spacer>
        </item>
-       <item row="18" column="0">
+       <item row="20" column="0">
         <widget class="QLabel" name="label_42">
          <property name="font">
           <font>
@@ -2056,7 +2056,7 @@
          </property>
         </widget>
        </item>
-       <item row="20" column="0">
+       <item row="22" column="0">
         <widget class="QLabel" name="label_37">
          <property name="font">
           <font>
@@ -2071,21 +2071,21 @@
          </property>
         </widget>
        </item>
-       <item row="21" column="0">
+       <item row="23" column="0">
         <widget class="QLabel" name="label_38">
          <property name="text">
           <string>Number of Clusters:</string>
          </property>
         </widget>
        </item>
-       <item row="21" column="1">
+       <item row="23" column="1">
         <widget class="QSpinBox" name="nClusters">
          <property name="value">
           <number>2</number>
          </property>
         </widget>
        </item>
-       <item row="22" column="0">
+       <item row="24" column="0">
         <widget class="QLabel" name="label_39">
          <property name="font">
           <font>
@@ -2099,14 +2099,14 @@
          </property>
         </widget>
        </item>
-       <item row="22" column="1">
+       <item row="24" column="1">
         <widget class="QPushButton" name="crtKMeans">
          <property name="text">
           <string>Create K-Means Cluster</string>
          </property>
         </widget>
        </item>
-       <item row="23" column="0">
+       <item row="25" column="0">
         <widget class="QLabel" name="label_40">
          <property name="font">
           <font>
@@ -2120,7 +2120,7 @@
          </property>
         </widget>
        </item>
-       <item row="23" column="1">
+       <item row="25" column="1">
         <widget class="QPushButton" name="crtHierarch">
          <property name="text">
           <string>Create Hierarchical Cluster</string>
@@ -2147,6 +2147,32 @@
        </item>
        <item row="1" column="0">
         <spacer name="horizontalSpacer_18">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="16" column="0" colspan="2">
+        <widget class="QLabel" name="label_50">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>For gating on t-SNE or PCA plots, use Analysis tab</string>
+         </property>
+        </widget>
+       </item>
+       <item row="15" column="0">
+        <spacer name="horizontalSpacer_14">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>

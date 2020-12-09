@@ -2316,13 +2316,6 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         existingSeriesNodes = slicer.util.getNodesByClass("vtkMRMLPlotSeriesNode")
         existingTables = slicer.util.getNodesByClass("vtkMRMLTableNode")
 
-        for plot in existingPlots:
-            slicer.mrmlScene.RemoveNode(plot)
-        for seriesNode in existingSeriesNodes:
-            slicer.mrmlScene.RemoveNode(seriesNode)
-        for table in existingTables:
-            slicer.mrmlScene.RemoveNode(table)
-
         # channelRows = []
         # roiColumns = []
 
@@ -2381,53 +2374,116 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         # cellLabels = []
         displayList = []
+        channelItems = []
+        positions = []
 
-        for channel in allChannels:
-            itemId = shNode.GetItemByDataNode(channel)  # Channel
-            parent = shNode.GetItemParent(itemId)  # ROI
-            roiName = shNode.GetItemName(parent)
-            channelName = shNode.GetItemName(itemId)
-            if ".ome" not in channelName:
-                continue
-            if re.findall(r"_[0-9]\b", channelName) != []:
-                channelName = channelName[:-2]
-            if roiName == "Scene":
-                roiName = "ROI"
-            # Check if the specific channel was selected
-            if roiName in selectedRoi and channelName in selectedChannel:
-                # Add to display list
-                if len(displayList) <= 2:
-                    displayList.append(channel)
-                # Get column index for mean intensities array
-                columnPos = channelNames.index(channelName) + 1
-                # Get arrays for cell mask and channels
-                cellMaskArray = roiCellMaskArrays[roiName]
-                # Get counts of pixels in each cell
-                cellPixelCounts = roiPixelCounts[roiName]
-                # Get intensities for each cell
-                for cell in range(cellMaskArray.max() + 1):
-                    if cell != 0:
-                        if cell in cellPixelCounts.keys():
-                            # Channel one
-                            blank, i, j = np.nonzero(cellMaskArray == cell)
-                            # Get array of channel
-                            channelArray = slicer.util.arrayFromVolume(channel)
-                            # Get mean intensity of channel
-                            cellPixels = channelArray[:, i, j]
-                            sumIntens = np.sum(cellPixels)
-                            totalPixels = cellPixels.shape[1]
-                            nonZeroes = np.where(cellPixels != 0)
-                            numNonZeroes = nonZeroes[1].shape[0]
-                            if numNonZeroes == 0:
-                                avg = 0
-                            else:
-                                avg = float(sumIntens) / float(totalPixels)
-                            # Update meanIntensities matrix with this value
-                            rowPos = list(cellPixelCounts.keys()).index(cell) - 1
-                            roiIntensitiesDict[roiName][rowPos, columnPos] = avg
-                            roiIntensitiesDict[roiName][rowPos, 0] = cell
-                            # cellLabels.append(cell)
+        for roi in selectedRoi:
+            positions.append(roiDict[roi])
 
+        for channel in selectedChannel:
+            for pos in positions:
+                if pos == 0:
+                    node = slicer.util.getNode(channel)
+                    itemId = shNode.GetItemByDataNode(node)
+                    channelItems.append(itemId)
+                    if len(displayList) <= 2:
+                        displayList.append(node)
+                else:
+                    suffix = "_" + str(pos)
+                    name = channel + suffix
+                    node = slicer.util.getNode(name)
+                    itemId = shNode.GetItemByDataNode(node)
+                    channelItems.append(itemId)
+                    if len(displayList) <= 2:
+                        displayList.append(node)
+
+        for channel in channelItems:
+            channelName = shNode.GetItemName(channel)
+            if checkState == True:
+                roiName = selectedGates[0]
+            else:
+                roiName = shNode.GetItemName(shNode.GetItemParent(channel))
+            # Get column index for mean intensities array
+            columnPos = channelNames.index(channelName) + 1
+            # Get arrays for cell mask and channels
+            cellMaskArray = roiCellMaskArrays[roiName]
+            # Get counts of pixels in each cell
+            cellPixelCounts = roiPixelCounts[roiName]
+            # Get intensities for each cell
+            for cell in range(cellMaskArray.max() + 1):
+                if cell != 0:
+                    if cell in cellPixelCounts.keys():
+                        # Channel one
+                        blank, i, j = np.nonzero(cellMaskArray == cell)
+                        # Get array of channel
+                        channelNode = shNode.GetItemDataNode(channel)
+                        channelArray = slicer.util.arrayFromVolume(channelNode)
+                        # Get mean intensity of channel
+                        cellPixels = channelArray[:, i, j]
+                        sumIntens = np.sum(cellPixels)
+                        totalPixels = cellPixels.shape[1]
+                        nonZeroes = np.where(cellPixels != 0)
+                        numNonZeroes = nonZeroes[1].shape[0]
+                        if numNonZeroes == 0:
+                            avg = 0
+                        else:
+                            avg = float(sumIntens) / float(totalPixels)
+                        # Update meanIntensities matrix with this value
+                        rowPos = list(cellPixelCounts.keys()).index(cell) - 1
+                        roiIntensitiesDict[roiName][rowPos, columnPos] = avg
+                        roiIntensitiesDict[roiName][rowPos, 0] = cell
+
+
+        # for channel in allChannels:
+        #     itemId = shNode.GetItemByDataNode(channel)  # Channel
+        #     parent = shNode.GetItemParent(itemId)  # ROI
+        #     roiName = shNode.GetItemName(parent)
+        #     channelName = shNode.GetItemName(itemId)
+        #     if ".ome" not in channelName:
+        #         continue
+        #     if re.findall(r"_[0-9]\b", channelName) != []:
+        #         channelName = channelName[:-2]
+        #     if roiName == "Scene":
+        #         roiName = "ROI"
+        #     # Check if the specific channel was selected
+        #     print(roiName)
+        #     print(roiName in roiCellMaskArrays)
+        #     if checkState == True:
+        #         if channelName in selectedChannel:
+        #
+        #     if roiName in roiCellMaskArrays and channelName in selectedChannel:
+        #         # Add to display list
+        #         if len(displayList) <= 2:
+        #             displayList.append(channel)
+        #         # Get column index for mean intensities array
+        #         columnPos = channelNames.index(channelName) + 1
+        #         # Get arrays for cell mask and channels
+        #         cellMaskArray = roiCellMaskArrays[roiName]
+        #         # Get counts of pixels in each cell
+        #         cellPixelCounts = roiPixelCounts[roiName]
+        #         # Get intensities for each cell
+        #         for cell in range(cellMaskArray.max() + 1):
+        #             if cell != 0:
+        #                 if cell in cellPixelCounts.keys():
+        #                     # Channel one
+        #                     blank, i, j = np.nonzero(cellMaskArray == cell)
+        #                     # Get array of channel
+        #                     channelArray = slicer.util.arrayFromVolume(channel)
+        #                     # Get mean intensity of channel
+        #                     cellPixels = channelArray[:, i, j]
+        #                     sumIntens = np.sum(cellPixels)
+        #                     totalPixels = cellPixels.shape[1]
+        #                     nonZeroes = np.where(cellPixels != 0)
+        #                     numNonZeroes = nonZeroes[1].shape[0]
+        #                     if numNonZeroes == 0:
+        #                         avg = 0
+        #                     else:
+        #                         avg = float(sumIntens) / float(totalPixels)
+        #                     # Update meanIntensities matrix with this value
+        #                     rowPos = list(cellPixelCounts.keys()).index(cell) - 1
+        #                     roiIntensitiesDict[roiName][rowPos, columnPos] = avg
+        #                     roiIntensitiesDict[roiName][rowPos, 0] = cell
+        #                     # cellLabels.append(cell)
 
         # Append the arrays for each ROI together
         concatArray = list(roiIntensitiesDict.values())[0]
@@ -2461,6 +2517,10 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         # If only one ROI in t-sne, create plot that allows gating
         if len(roiCellMaskArrays) == 1:
+            if checkState == True:
+                roiName = selectedGates[0] #list(roiCellMaskArrays.keys())[0]
+            else:
+                roiName = selectedRoi[0]
             x = []
             y = []
             z = concatArray[:,0]
@@ -2470,8 +2530,14 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                 y.append(i[1])
 
             # Create table with x and y columns
-            tableNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode",
-                                                           selectedRoi[0] + ": "  + name + " data")
+            tableName = roiName + ": "  + name + " data"
+            tableNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode", tableName)
+
+            # Delete existing tables with same data
+            for table in existingTables:
+                if tableName in table.GetName():
+                    slicer.mrmlScene.RemoveNode(table)
+
             table = tableNode.GetTable()
 
             arrX = vtk.vtkFloatArray()
@@ -2497,7 +2563,14 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                 table.RemoveRow(0)
 
             # Create plot series nodes
-            plotSeriesNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotSeriesNode", selectedRoi[0] + ": " + name + " Points")
+            seriesName = roiName + ": " + name + " Points"
+            plotSeriesNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotSeriesNode", seriesName)
+
+            # Delete existing plot series with same data
+            for series in existingSeriesNodes:
+                if seriesName in series.GetName():
+                    slicer.mrmlScene.RemoveNode(series)
+
             plotSeriesNode.SetAndObserveTableNodeID(tableNode.GetID())
             plotSeriesNode.SetXColumnName(name + " 1")
             plotSeriesNode.SetYColumnName(name + " 2")
@@ -2507,10 +2580,16 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             plotSeriesNode.SetColor(0.46, 0.67, 0.96)
 
             # Create plot chart node
-            plotChartNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotChartNode",
-                                                               selectedRoi[0] + name)
+            chartName = roiName + name
+            plotChartNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotChartNode", chartName)
+
+            # Delete existing plot series with same data
+            for chart in existingPlots:
+                if chartName in chart.GetName():
+                    slicer.mrmlScene.RemoveNode(chart)
+
             plotChartNode.AddAndObservePlotSeriesNodeID(plotSeriesNode.GetID())
-            plotChartNode.SetTitle(selectedRoi[0] + " " + name)
+            plotChartNode.SetTitle(roiName + " " + name)
             plotChartNode.SetXAxisTitle(name + " 1")
             plotChartNode.SetYAxisTitle(name + " 2")
 
@@ -2548,7 +2627,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             slicer.util.resetSliceViews()
 
             global scatterPlotRoi
-            scatterPlotRoi = selectedRoi[0]
+            scatterPlotRoi = roiName
         # If multiple ROI, create matplotlib plot and pandas excel table
         else:
             # Create dataframe of all arrays
