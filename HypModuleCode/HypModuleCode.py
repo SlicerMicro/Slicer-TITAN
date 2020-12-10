@@ -19,6 +19,22 @@ except ModuleNotFoundError:
     slicer.util.pip_install("matplotlib")
     import matplotlib
 
+try:
+    import PIL
+except ModuleNotFoundError:
+    import pip
+
+    slicer.util.pip_install("PIL")
+    import PIL
+
+try:
+    import skimage
+except ModuleNotFoundError:
+    import pip
+
+    slicer.util.pip_install("skimage")
+    import skimage
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from pylab import savefig
