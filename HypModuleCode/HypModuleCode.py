@@ -1490,6 +1490,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         existingPlots = slicer.util.getNodesByClass("vtkMRMLPlotChartNode")
         existingSeriesNodes = slicer.util.getNodesByClass("vtkMRMLPlotSeriesNode")
         existingTables = slicer.util.getNodesByClass("vtkMRMLTableNode")
+        existingNodes = slicer.util.getNodesByClass("vtkMRMLVectorVolumeNode")
 
         # for plot in existingPlots:
         #     slicer.mrmlScene.RemoveNode(plot)
@@ -1719,7 +1720,11 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         # Create volume node
         # Needs to be a vector volume in order to show in colour
-        volumeNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLVectorVolumeNode", roiName + ": " + channelOneName + " x " + channelTwoName + " Density Scatter")
+        volumeNodeName = roiName + ": " + channelOneName + " x " + channelTwoName + " Density Scatter"
+        volumeNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLVectorVolumeNode", volumeNodeName)
+        for img in existingNodes:
+            if volumeNodeName in img.GetName():
+                slicer.mrmlScene.RemoveNode(img)
         volumeNode.SetOrigin(imageOrigin)
         volumeNode.SetSpacing(imageSpacing)
         volumeNode.SetIJKToRASDirections(imageDirections)
