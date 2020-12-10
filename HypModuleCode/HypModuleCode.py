@@ -32,7 +32,7 @@ try:
 except ModuleNotFoundError:
     import pip
 
-    slicer.util.pip_install("skimage")
+    slicer.util.pip_install("scikit-image")
     import skimage
 
 matplotlib.use("Agg")
