@@ -1036,7 +1036,10 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         pathName = defaultPath + '/' + fileName
         cap.captureImageFromView(view, pathName)
         import subprocess
-        subprocess.Popen(r'explorer /select,' + pathName)
+        try:
+            subprocess.Popen('explorer defaultPath')
+        except:
+            subprocess.Popen(["open", defaultPath])
 
     def crtMasksRun(self, nucleiMin, nucleiMax, cellDimInput):
         """
@@ -1777,7 +1780,10 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             slicer.util.saveNode(table, pathName)
             savedPaths.append(pathName)
         import subprocess
-        subprocess.Popen(r'explorer /select,' + savedPaths[0])
+        try:
+            subprocess.Popen('explorer savedPaths[0]')
+        except:
+            subprocess.Popen(["open", savedPaths[0]])
 
     def heatmapChannelRun(self):
 
@@ -2305,11 +2311,15 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             filename = "rawData_" + roi + ".csv"
             defaultPath = slicer.app.defaultScenePath
             pathName = defaultPath + '/' + filename
-            df.to_csv(filename, index=False)
+            df.to_csv(pathName, index=False)
 
         # Open file location in explorer
         import subprocess
-        subprocess.Popen(r'explorer /select,' + pathName)
+        try:
+            subprocess.Popen('explorer defaultPath')
+
+        except:
+            subprocess.Popen(["open", defaultPath])
 
 
 
@@ -2735,11 +2745,14 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             # Save dataframe to .csv file
             filename = name + " plot.csv"
             defaultPath = slicer.app.defaultScenePath
-            pathName = defaultPath + '/' + fileName
-            df.to_csv(filename, index=False)
+            pathName = defaultPath + '/' + filename
+            df.to_csv(pathName, index=False)
             # Open file location in explorer
             import subprocess
-            subprocess.Popen(r'explorer /select,' + pathName)
+            try:
+                subprocess.Popen('explorer defaultPath')
+            except:
+                subprocess.Popen(["open", defaultPath])
 
             global tsnePcaData
             tsnePcaData = df
@@ -2915,7 +2928,10 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         pathName = defaultPath + '/' + fileName
         cap.captureImageFromView(view, pathName)
         import subprocess
-        subprocess.Popen(r'explorer /select,' + pathName)
+        try:
+            subprocess.Popen('explorer defaultPath')
+        except:
+            subprocess.Popen(["open", defaultPath])
 
 
 # def analysisRunAlt(self, imageHistogramSelect):
