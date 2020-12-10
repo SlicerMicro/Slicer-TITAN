@@ -1032,7 +1032,8 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         import ScreenCapture
         cap = ScreenCapture.ScreenCaptureLogic()
         view = cap.viewFromNode(slicer.mrmlScene.GetNodeByID(viewNodeID))
-        pathName = os.getcwd() + '\\' + fileName
+        defaultPath = slicer.app.defaultScenePath
+        pathName = defaultPath + '/' + fileName
         cap.captureImageFromView(view, pathName)
         import subprocess
         subprocess.Popen(r'explorer /select,' + pathName)
@@ -1691,8 +1692,10 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         ax.set_title(roiName + ": " + channelOneName + " x " + channelTwoName, wrap=True)
 
         # Display heatmap
-        savefig("densityScatter.jpg")
-        densScatterImg = sitk.ReadImage("densityScatter.jpg")
+        defaultPath = slicer.app.defaultScenePath
+        pathName = defaultPath + '/' + "densityScatter.jpg"
+        savefig(pathName)
+        densScatterImg = sitk.ReadImage(pathName)
         densScatterArray = sitk.GetArrayFromImage(densScatterImg)
         arraySize = densScatterArray.shape
         plt.close()
@@ -1769,7 +1772,8 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         # Save table to .csv file
         for table in tables:
             fileName = table.GetName() + ".csv"
-            pathName = os.getcwd() + '\\' + fileName
+            defaultPath = slicer.app.defaultScenePath
+            pathName = defaultPath + '/' + fileName
             slicer.util.saveNode(table, pathName)
             savedPaths.append(pathName)
         import subprocess
@@ -2142,8 +2146,10 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         cbar.ax.set_ylabel("Mean Intensity", rotation = -90, va = "bottom")
 
         # Display heatmap
-        savefig("heatmap.jpg")
-        heatmapImg = sitk.ReadImage("heatmap.jpg")
+        defaultPath = slicer.app.defaultScenePath
+        pathName = defaultPath + '/' + "heatmap.jpg"
+        savefig(pathName)
+        heatmapImg = sitk.ReadImage(pathName)
         heatmapArray = sitk.GetArrayFromImage(heatmapImg)
         arraySize = heatmapArray.shape
         plt.close()
@@ -2297,7 +2303,8 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             # df = df.loc[:, (df != 0).any(axis=0)]
             # Save dataframe to .csv file
             filename = "rawData_" + roi + ".csv"
-            pathName = os.getcwd() + '\\' + filename
+            defaultPath = slicer.app.defaultScenePath
+            pathName = defaultPath + '/' + filename
             df.to_csv(filename, index=False)
 
         # Open file location in explorer
@@ -2678,8 +2685,10 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             legend1 = ax.legend(handles = scatter.legend_elements()[0], loc = "best", title = "ROI", labels = selectedRoi, fontsize = 14)
 
             # Display cluster plot
-            savefig("dimReduction.jpg")
-            dimRedImg = sitk.ReadImage("dimReduction.jpg")
+            defaultPath = slicer.app.defaultScenePath
+            pathName = defaultPath + '/' + "dimReduction.jpg"
+            savefig(pathName)
+            dimRedImg = sitk.ReadImage(pathName)
             dimRedArray = sitk.GetArrayFromImage(dimRedImg)
             arraySize = dimRedArray.shape
             plt.close()
@@ -2725,7 +2734,8 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
             # Save dataframe to .csv file
             filename = name + " plot.csv"
-            pathName = os.getcwd() + '\\' + filename
+            defaultPath = slicer.app.defaultScenePath
+            pathName = defaultPath + '/' + fileName
             df.to_csv(filename, index=False)
             # Open file location in explorer
             import subprocess
@@ -2843,8 +2853,10 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         ax.set_title(name)
 
         # Display cluster plot
-        savefig("kMeans.jpg")
-        kMeansImg = sitk.ReadImage("kMeans.jpg")
+        defaultPath = slicer.app.defaultScenePath
+        pathName = defaultPath + '/' + "kMeans.jpg"
+        savefig(pathName)
+        kMeansImg = sitk.ReadImage(pathName)
         kMeansArray = sitk.GetArrayFromImage(kMeansImg)
         arraySize = kMeansArray.shape
         plt.close()
@@ -2899,7 +2911,8 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         import ScreenCapture
         cap = ScreenCapture.ScreenCaptureLogic()
         view = cap.viewFromNode(slicer.mrmlScene.GetNodeByID(viewNodeID))
-        pathName = os.getcwd() + '\\' + fileName
+        defaultPath = slicer.app.defaultScenePath
+        pathName = defaultPath + '/' + fileName
         cap.captureImageFromView(view, pathName)
         import subprocess
         subprocess.Popen(r'explorer /select,' + pathName)
