@@ -433,11 +433,11 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         elif len(globalCellMask) == 0:
             self.ui.analysisErrorMessage.text = "ERROR: Masks have not been created."
             return
+        elif self.ui.arcsinTrans.checkState() != 0 and self.ui.logTrans.checkState() != 0:
+            self.ui.analysisErrorMessage.text = "ERROR: Maximum 1 transform can be selected."
+            return
         else:
             self.ui.analysisErrorMessage.text = ""
-
-        if self.ui.arcsinTrans.checkState() == 1 and self.ui.logTrans.checkState() == 1:
-            self.ui.analysisErrorMessage.text = "ERROR: Maximum 1 transform can be selected."
 
         self.ui.selectedCellsCount.text = ""
 
