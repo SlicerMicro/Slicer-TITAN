@@ -440,12 +440,19 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
 
         logic = HypModuleLogic()
 
+        # arcsinState = False
+
+        if self.ui.arcsinTrans.checkState()==0:
+            arcsinState = False
+        else:
+            arcsinState = True
+
         if selectedGates is None or len(selectedGates) == 0:
-            logic.scatterPlotRun(False)
+            logic.scatterPlotRun(False, arcsinState)
         elif len(selectedGates) > 1:
             self.ui.analysisErrorMessage.text = "ERROR: One mask should be selected."
         else:
-            logic.scatterPlotRun(True)
+            logic.scatterPlotRun(True, arcsinState)
 
         # Scatter plot gating signal
         layoutManager = slicer.app.layoutManager()
@@ -1510,7 +1517,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         slicer.util.resetSliceViews()
 
-    def scatterPlotRun(self, checkboxState):
+    def scatterPlotRun(self, checkboxState, arcsinState):
 
         """
         Create scatter plot of channelOne x channelTwo, where data points are the cells, values are the mean intensity
@@ -1566,6 +1573,14 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         channelTwoName = shNode.GetItemName(channelItems[1])
         channelTwoNode = slicer.util.getNode(channelTwoName)
         channelTwoArray = slicer.util.arrayFromVolume(channelTwoNode)
+
+        if arcsinState == True:
+            channelOneTransform = np.interp(channelOneArray, (channelOneArray.min(), channelOneArray.max()), (0, 1))
+            channelTwoTransform = np.interp(channelTwoArray, (channelTwoArray.min(), channelTwoArray.max()), (0, 1))
+            channelOneTransform = np.sqrt(channelOneTransform)
+            channelTwoTransform = np.sqrt(channelTwoTransform)
+            channelOneArray = np.arcsin(channelOneTransform)
+            channelTwoArray = np.arcsin(channelTwoTransform)
 
         # Get arrays for cell mask and channels
         cellMask = globalCellMask[roiName]
