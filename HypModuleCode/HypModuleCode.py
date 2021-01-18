@@ -932,8 +932,10 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         volumeNode.Modified()
 
-        volumeNode.GetDisplayNode().AutoWindowLevelOff()
-        volumeNode.GetDisplayNode().SetWindowLevel((arraySize[1] // 4), 127)
+        # volumeNode.GetDisplayNode().AutoWindowLevelOff()
+        # volumeNode.GetDisplayNode().SetWindowLevel((arraySize[1] // 4), 127)
+
+
 
         slicer.util.setSliceViewerLayers(background=volumeNode, foreground=None)
 
@@ -948,6 +950,12 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         # Reset field of view to show entire image
         slicer.util.resetSliceViews()
+
+        # Fix window/level values
+        widget = slicer.vtkMRMLWindowLevelWidget()
+        widget.SetSliceNode(slicer.util.getNode('vtkMRMLSliceNodeRed'))
+        widget.SetMRMLApplicationLogic(slicer.app.applicationLogic())
+        widget.UpdateWindowLevelFromRectangle(0, [60, 60], [45, 45])
 
     def thumbnails(self):
         """
@@ -1031,8 +1039,8 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         volumeNode.Modified()
 
-        volumeNode.GetDisplayNode().AutoWindowLevelOff()
-        volumeNode.GetDisplayNode().SetWindowLevel((arraySize[1] // 4), 127)
+        # volumeNode.GetDisplayNode().AutoWindowLevelOff()
+        # volumeNode.GetDisplayNode().SetWindowLevel((arraySize[1] // 4), 127)
 
         slicer.util.setSliceViewerLayers(background=volumeNode, foreground=None)
 
@@ -1041,6 +1049,12 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         lm.setLayout(slicer.vtkMRMLLayoutNode.SlicerLayoutOneUpRedSliceView)
 
         slicer.util.resetSliceViews()
+
+        # Fix window/level values
+        widget = slicer.vtkMRMLWindowLevelWidget()
+        widget.SetSliceNode(slicer.util.getNode('vtkMRMLSliceNodeRed'))
+        widget.SetMRMLApplicationLogic(slicer.app.applicationLogic())
+        widget.UpdateWindowLevelFromRectangle(0, [60, 60], [45, 45])
 
 
     def saveVisualization(self, fileName):
@@ -1430,7 +1444,8 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                     nonZeroes = np.where(cellPixels != 0)
                     numNonZeroes = nonZeroes[1].shape[0]
                     if numNonZeroes == 0:
-                        avg = 0
+                        # avg = 0
+                        continue
                     else:
                         avg = float(sumIntens) / float(numNonZeroes)
                     channelMeanIntens.append(avg)
