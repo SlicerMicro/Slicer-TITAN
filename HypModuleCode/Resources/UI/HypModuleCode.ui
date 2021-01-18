@@ -1690,7 +1690,7 @@
          </property>
         </widget>
        </item>
-       <item row="15" column="0">
+       <item row="16" column="0">
         <widget class="QLabel" name="label_12">
          <property name="font">
           <font>
@@ -1706,21 +1706,21 @@
          </property>
         </widget>
        </item>
-       <item row="15" column="1">
+       <item row="16" column="1">
         <widget class="QPushButton" name="crtScatterButton">
          <property name="text">
           <string>Create Scatter Plot</string>
          </property>
         </widget>
        </item>
-       <item row="16" column="1">
+       <item row="17" column="1">
         <widget class="QPushButton" name="saveScatPlotTable">
          <property name="text">
           <string>Save Table</string>
          </property>
         </widget>
        </item>
-       <item row="19" column="0">
+       <item row="20" column="0">
         <widget class="QLabel" name="label_48">
          <property name="font">
           <font>
@@ -1735,21 +1735,21 @@
          </property>
         </widget>
        </item>
-       <item row="20" column="0">
+       <item row="21" column="0">
         <widget class="QLabel" name="label_47">
          <property name="text">
           <string>Enter the name of the cells to be gated:</string>
          </property>
         </widget>
        </item>
-       <item row="20" column="1">
+       <item row="21" column="1">
         <widget class="QLineEdit" name="selectedCellsName">
          <property name="text">
           <string>Selected Cells</string>
          </property>
         </widget>
        </item>
-       <item row="21" column="1">
+       <item row="22" column="1">
         <spacer name="horizontalSpacer_5">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -1762,21 +1762,21 @@
          </property>
         </spacer>
        </item>
-       <item row="22" column="1">
+       <item row="23" column="1">
         <widget class="QPushButton" name="updPlotFromSel">
          <property name="text">
           <string>Update plot from image selection</string>
          </property>
         </widget>
        </item>
-       <item row="23" column="1">
+       <item row="24" column="1">
         <widget class="QPushButton" name="clearSelection">
          <property name="text">
           <string>Clear Selection</string>
          </property>
         </widget>
        </item>
-       <item row="24" column="0">
+       <item row="25" column="0">
         <widget class="QLabel" name="label_25">
          <property name="font">
           <font>
@@ -1789,7 +1789,7 @@
          </property>
         </widget>
        </item>
-       <item row="24" column="1">
+       <item row="25" column="1">
         <widget class="QLabel" name="selectedCellsCount">
          <property name="font">
           <font>
@@ -1802,7 +1802,7 @@
          </property>
         </widget>
        </item>
-       <item row="26" column="0">
+       <item row="27" column="0">
         <spacer name="horizontalSpacer_9">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -1815,15 +1815,22 @@
          </property>
         </spacer>
        </item>
-       <item row="27" column="0">
+       <item row="28" column="0">
         <widget class="QLabel" name="label_49">
          <property name="text">
           <string>Use following mask for further scatter plot analysis</string>
          </property>
         </widget>
        </item>
-       <item row="28" column="0">
+       <item row="29" column="0">
         <widget class="QListWidget" name="gatingMasks"/>
+       </item>
+       <item row="15" column="1">
+        <widget class="QCheckBox" name="logTrans">
+         <property name="text">
+          <string>Log</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>

@@ -436,23 +436,29 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         else:
             self.ui.analysisErrorMessage.text = ""
 
+        if self.ui.arcsinTrans.checkState() == 1 and self.ui.logTrans.checkState() == 1:
+            self.ui.analysisErrorMessage.text = "ERROR: Maximum 1 transform can be selected."
+
         self.ui.selectedCellsCount.text = ""
 
         logic = HypModuleLogic()
-
-        # arcsinState = False
 
         if self.ui.arcsinTrans.checkState()==0:
             arcsinState = False
         else:
             arcsinState = True
 
+        if self.ui.logTrans.checkState() == 0:
+            logState = False
+        else:
+            logState = True
+
         if selectedGates is None or len(selectedGates) == 0:
-            logic.scatterPlotRun(False, arcsinState)
+            logic.scatterPlotRun(False, arcsinState, logState)
         elif len(selectedGates) > 1:
             self.ui.analysisErrorMessage.text = "ERROR: One mask should be selected."
         else:
-            logic.scatterPlotRun(True, arcsinState)
+            logic.scatterPlotRun(True, arcsinState, logState)
 
         # Scatter plot gating signal
         layoutManager = slicer.app.layoutManager()
@@ -1517,7 +1523,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         slicer.util.resetSliceViews()
 
-    def scatterPlotRun(self, checkboxState, arcsinState):
+    def scatterPlotRun(self, checkboxState, arcsinState, logState):
 
         """
         Create scatter plot of channelOne x channelTwo, where data points are the cells, values are the mean intensity
@@ -1581,6 +1587,10 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             channelTwoTransform = np.sqrt(channelTwoTransform)
             channelOneArray = np.arcsin(channelOneTransform)
             channelTwoArray = np.arcsin(channelTwoTransform)
+
+        if logState == True:
+            channelOneArray = np.log(channelOneArray+1)
+            channelTwoArray = np.log(channelTwoArray+1)
 
         # Get arrays for cell mask and channels
         cellMask = globalCellMask[roiName]
