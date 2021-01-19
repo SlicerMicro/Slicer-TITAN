@@ -968,7 +968,10 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         widget = slicer.vtkMRMLWindowLevelWidget()
         widget.SetSliceNode(slicer.util.getNode('vtkMRMLSliceNodeRed'))
         widget.SetMRMLApplicationLogic(slicer.app.applicationLogic())
-        widget.UpdateWindowLevelFromRectangle(0, [60, 60], [45, 45])
+        p1 = voxels.shape[1] // 2
+        p2 = voxels.shape[2] // 2
+        widget.UpdateWindowLevelFromRectangle(0, [p1, p1], [p2, p2])
+        # widget.UpdateWindowLevelFromRectangle(0, [60, 60], [45, 45])
 
     def thumbnails(self):
         """
