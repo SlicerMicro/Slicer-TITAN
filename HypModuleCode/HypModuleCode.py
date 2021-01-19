@@ -1021,7 +1021,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         arrIn = np.stack(thumbnailArrays, axis=0)
         mont = montage(arrIn)
         img = Image.fromarray(mont)
-        img = img.convert("L")
+        # img = img.convert("L")
         # img = ImageOps.equalize(img)
         grid = np.array(img)
         arraySize = grid.shape
@@ -1080,8 +1080,11 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         widget.SetSliceNode(slicer.util.getNode('vtkMRMLSliceNodeRed'))
         widget.SetMRMLApplicationLogic(slicer.app.applicationLogic())
         p1 = voxels.shape[1]//2
+        # p1Range = (voxels.shape[1]//4)//2
         p2 = voxels.shape[2]//2
-        widget.UpdateWindowLevelFromRectangle(0, [p1,p1], [p2,p2])
+        # p2Range = (voxels.shape[2] // 8) // 2
+        # widget.UpdateWindowLevelFromRectangle(0, [p1-p1Range, p2-p2Range], [p1+p1Range,p2+p2Range])
+        widget.UpdateWindowLevelFromRectangle(0, [p1 - 50, p2 - 50], [p1 + 50, p2 + 50])
         # widget.UpdateWindowLevelFromRectangle(0, [800, 800], [500,500])
 
 
