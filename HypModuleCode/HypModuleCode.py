@@ -1052,8 +1052,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         volumeNode.Modified()
 
-        # volumeNode.GetDisplayNode().AutoWindowLevelOff()
-        # volumeNode.GetDisplayNode().SetWindowLevel((arraySize[1] // 4), 127)
+
 
         slicer.util.setSliceViewerLayers(background=volumeNode, foreground=None)
 
@@ -1063,11 +1062,17 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         slicer.util.resetSliceViews()
 
-        # Fix window/level values
-        widget = slicer.vtkMRMLWindowLevelWidget()
-        widget.SetSliceNode(slicer.util.getNode('vtkMRMLSliceNodeRed'))
-        widget.SetMRMLApplicationLogic(slicer.app.applicationLogic())
-        widget.UpdateWindowLevelFromRectangle(0, [60, 60], [45, 45])
+        if np.sqrt(len(channelNodes)) - int(np.sqrt(len(channelNodes))) == 0:
+            # Fix window/level values
+            widget = slicer.vtkMRMLWindowLevelWidget()
+            widget.SetSliceNode(slicer.util.getNode('vtkMRMLSliceNodeRed'))
+            widget.SetMRMLApplicationLogic(slicer.app.applicationLogic())
+            widget.UpdateWindowLevelFromRectangle(0, [60, 60], [45, 45])
+        else:
+            volumeNode.GetDisplayNode().AutoWindowLevelOff()
+            volumeNode.GetDisplayNode().SetWindowLevel((arraySize[1] // 4), 127)
+
+
 
 
     def saveVisualization(self, fileName):
