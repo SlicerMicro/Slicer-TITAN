@@ -1002,7 +1002,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                     # itemId = shNode.GetItemByDataNode(node)
                     channelNodes.append(node)
 
-        size = 200,200
+        size = 400,400
         thumbnailArrays = []
         for node in channelNodes:
             array = slicer.util.arrayFromVolume(node)
@@ -1010,7 +1010,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             img = img.convert("L")
             img.thumbnail(size)
             img = ImageOps.autocontrast(img)
-            img = ImageOps.equalize(img)
+            # img = ImageOps.equalize(img)
             thumbArr = np.array(img)
             thumbnailArrays.append(thumbArr)
 
@@ -1062,17 +1062,24 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         slicer.util.resetSliceViews()
 
-        if np.sqrt(len(channelNodes)) - int(np.sqrt(len(channelNodes))) == 0:
-            # Fix window/level values
-            widget = slicer.vtkMRMLWindowLevelWidget()
-            widget.SetSliceNode(slicer.util.getNode('vtkMRMLSliceNodeRed'))
-            widget.SetMRMLApplicationLogic(slicer.app.applicationLogic())
-            widget.UpdateWindowLevelFromRectangle(0, [60, 60], [45, 45])
-        else:
-            volumeNode.GetDisplayNode().AutoWindowLevelOff()
-            volumeNode.GetDisplayNode().SetWindowLevel((arraySize[1] // 4), 127)
+        # if np.sqrt(len(channelNodes)) - int(np.sqrt(len(channelNodes))) == 0:
+        #     # Fix window/level values
+        #     widget = slicer.vtkMRMLWindowLevelWidget()
+        #     widget.SetSliceNode(slicer.util.getNode('vtkMRMLSliceNodeRed'))
+        #     widget.SetMRMLApplicationLogic(slicer.app.applicationLogic())
+        #     widget.UpdateWindowLevelFromRectangle(0, [60, 60], [45, 45])
+        # else:
+        #     volumeNode.GetDisplayNode().AutoWindowLevelOff()
+        #     volumeNode.GetDisplayNode().SetWindowLevel((arraySize[1] // 8), 127)
 
-
+        # Fix window/level values
+        widget = slicer.vtkMRMLWindowLevelWidget()
+        widget.SetSliceNode(slicer.util.getNode('vtkMRMLSliceNodeRed'))
+        widget.SetMRMLApplicationLogic(slicer.app.applicationLogic())
+        p1 = voxels.shape[1]//2
+        p2 = voxels.shape[2]//2
+        widget.UpdateWindowLevelFromRectangle(0, [p1,p1], [p2,p2])
+        # widget.UpdateWindowLevelFromRectangle(0, [800, 800], [500,500])
 
 
     def saveVisualization(self, fileName):
