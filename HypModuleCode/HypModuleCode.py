@@ -2542,11 +2542,11 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             percentile = np.percentile(array, 99)
             normArray = array/percentile
             roiIntensitiesDict[roiName] = normArray
-            # Check for infiniti values
-            if True in np.isinf(normArray):
-                print("There are infiniti values")
-            if True in np.isnan(normArray):
-                print("There are NaN values")
+            # # Check for infiniti values
+            # if True in np.isinf(normArray):
+            #     print("There are infiniti values")
+            # if True in np.isnan(normArray):
+            #     print("There are NaN values")
 
 
         # for channel in allChannels:
