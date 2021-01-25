@@ -2506,6 +2506,8 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             else:
                 roiName = shNode.GetItemName(shNode.GetItemParent(channel))
             # Get column index for mean intensities array
+            if re.findall(r"_[0-9]\b", channelName) != []:
+                channelName = channelName[:-2]
             columnPos = channelNames.index(channelName) + 1
             # Get arrays for cell mask and channels
             cellMaskArray = roiCellMaskArrays[roiName]
@@ -2534,6 +2536,17 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                         rowPos = list(cellPixelCounts.keys()).index(cell) - 1
                         roiIntensitiesDict[roiName][rowPos, columnPos] = avg
                         roiIntensitiesDict[roiName][rowPos, 0] = cell
+
+        # Perform 99th-percentile normalization on each ROI array
+        for roiName, array in roiIntensitiesDict.items():
+            percentile = np.percentile(array, 99)
+            normArray = array/percentile
+            roiIntensitiesDict[roiName] = normArray
+            # Check for infiniti values
+            if True in np.isinf(normArray):
+                print("There are infiniti values")
+            if True in np.isnan(normArray):
+                print("There are NaN values")
 
 
         # for channel in allChannels:
