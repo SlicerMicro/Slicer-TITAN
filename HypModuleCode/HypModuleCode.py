@@ -613,11 +613,24 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         elif selectedRoi is None or len(selectedRoi) < 1:
             self.ui.analysisErrorMessage.text = "ERROR: Minimum 1 ROI should be selected."
             return
+        elif self.ui.hmapNormalizeRoi.checkState() !=0 and self.ui.hmapNormalizeChannel.checkState() != 0:
+            self.ui.analysisErrorMessage.text = "ERROR: Only one normalization should be selected."
         else:
             self.ui.analysisErrorMessage.text = ""
 
         logic = HypModuleLogic()
-        logic.heatmapRun()
+
+        if self.ui.hmapNormalizeRoi.checkState()==0:
+            normalizeRoi = False
+        else:
+            normalizeRoi = True
+
+        if self.ui.hmapNormalizeChannel.checkState()==0:
+            normalizeChannel = False
+        else:
+            normalizeChannel = True
+
+        logic.heatmapRun(normalizeRoi, normalizeChannel)
 
     def onCreateTsne(self):
         if selectedChannel is None or len(selectedChannel) < 1:
@@ -2103,7 +2116,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
     #
     #     slicer.util.resetSliceViews()
 
-    def heatmapRun(self):
+    def heatmapRun(self, normalizeRoiState, normalizeChannelState):
 
         """
         Create heatmap showing mean intensities of channels across all ROI's
@@ -2163,7 +2176,20 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             columnPos = roiColumns.index(parentDict[i])
             meanIntensities[columnPos, rowPos] = round(meanIntens, 2)
         # Normalize by row if option is selected
-        heatmapNormalized = np.interp(meanIntensities, (meanIntensities.min(), meanIntensities.max()), (0, 1))
+        if normalizeRoiState is True:
+            count = 0
+            for i in meanIntensities:
+                norm = np.interp(i, (i.min(), i.max()), (0, 1))
+                meanIntensities[count] = np.round(norm, 2)
+                count += 1
+        if normalizeChannelState is True:
+            count = 0
+            transArr = np.transpose(meanIntensities)
+            for i in transArr:
+                norm = np.interp(i, (i.min(), i.max()), (0, 1))
+                transArr[count] = np.round(norm, 2)
+                count += 1
+            meanIntensities = np.transpose(transArr)
         # Run helper function
         HypModuleLogic().heatmapRunHelper(channelRows, roiColumns, meanIntensities)
         return True

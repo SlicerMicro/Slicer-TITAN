@@ -1839,6 +1839,13 @@
          </property>
         </widget>
        </item>
+       <item row="11" column="1">
+        <widget class="QCheckBox" name="hmapNormalizeChannel">
+         <property name="text">
+          <string>Normalize by channel</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="tab_3">
