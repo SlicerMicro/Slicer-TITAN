@@ -615,6 +615,7 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
             return
         elif self.ui.hmapNormalizeRoi.checkState() !=0 and self.ui.hmapNormalizeChannel.checkState() != 0:
             self.ui.analysisErrorMessage.text = "ERROR: Only one normalization should be selected."
+            return
         else:
             self.ui.analysisErrorMessage.text = ""
 
