@@ -1897,29 +1897,6 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                     itemId = shNode.GetItemByDataNode(node)
                     channelItems.append(itemId)
 
-        # # Get list of all channels
-        # allChannels = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
-        #
-        # # Create dictionary of each channel with its respective ROI
-        # shNode = slicer.vtkMRMLSubjectHierarchyNode.GetSubjectHierarchyNode(slicer.mrmlScene)
-        # parentDict = {}
-        # for channel in allChannels:
-        #     itemId = shNode.GetItemByDataNode(channel)  # Channel
-        #     parent = shNode.GetItemParent(itemId)  # ROI
-        #     roiName = shNode.GetItemName(parent)
-        #     channelName = shNode.GetItemName(itemId)
-        #     if re.findall(r"_[0-9]\b", channelName) != []:
-        #         channelName = channelName[:-2]
-        #     # Check if the specific channel was selected
-        #     if roiName == "Scene":
-        #         roiName = "ROI"
-        #     if roiName in selectedRoi and channelName in selectedChannel:
-        #         parentDict[itemId] = roiName
-        #     if len(parentDict) == 1:
-        #         break
-
-        # channels = list(parentDict.keys())
-
         # Get array of channel
         parent = shNode.GetItemParent(channelItems[0])  # ROI
         roiName = shNode.GetItemName(parent)
@@ -2185,6 +2162,8 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             rowPos = channelRows.index(channelName)
             columnPos = roiColumns.index(parentDict[i])
             meanIntensities[columnPos, rowPos] = round(meanIntens, 2)
+        # Normalize by row if option is selected
+        heatmapNormalized = np.interp(meanIntensities, (meanIntensities.min(), meanIntensities.max()), (0, 1))
         # Run helper function
         HypModuleLogic().heatmapRunHelper(channelRows, roiColumns, meanIntensities)
         return True

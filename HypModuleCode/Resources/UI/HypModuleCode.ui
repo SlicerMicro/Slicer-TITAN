@@ -1832,6 +1832,13 @@
          </property>
         </widget>
        </item>
+       <item row="10" column="1">
+        <widget class="QCheckBox" name="hmapNormalizeRoi">
+         <property name="text">
+          <string>Normalize by ROI</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="tab_3">
