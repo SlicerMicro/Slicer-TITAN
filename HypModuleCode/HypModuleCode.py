@@ -593,8 +593,32 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
 
         self.ui.selectedCellsCount.text = len(cellLabels)
 
+        if self.ui.arcsinTrans.checkState()==0:
+            arcsinState = False
+        else:
+            arcsinState = True
+
+        if self.ui.logTrans.checkState() == 0:
+            logState = False
+        else:
+            logState = True
+
         logic = HypModuleLogic()
-        logic.scatterPlotRun(True)
+
+        if selectedGates is None or len(selectedGates) == 0:
+            logic.scatterPlotRun(False, arcsinState, logState)
+        elif len(selectedGates) > 1:
+            self.ui.analysisErrorMessage.text = "ERROR: One mask should be selected."
+        else:
+            logic.scatterPlotRun(True, arcsinState, logState)
+
+        # Add mask name to list of possible gating masks
+        global gatingList
+        if name not in gatingList:
+            gatingList.append(name)
+        self.ui.gatingMasks.clear()
+        for i in gatingList:
+            self.ui.gatingMasks.addItem(i)
 
     def onClearSelection(self):
         existingSegs = slicer.util.getNodesByClass("vtkMRMLSegmentationNode")
