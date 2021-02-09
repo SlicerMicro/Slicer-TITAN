@@ -1765,7 +1765,7 @@
        <item row="23" column="1">
         <widget class="QPushButton" name="updPlotFromSel">
          <property name="text">
-          <string>Update plot from image selection</string>
+          <string>Update mask from image selection</string>
          </property>
         </widget>
        </item>

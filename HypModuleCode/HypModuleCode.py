@@ -547,6 +547,12 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
             self.ui.gatingMasks.addItem(i)
 
     def onUpdatePlotFromSelection(self):
+        """
+        After user makes a selection on the cell mask or other image, update the cell mask to reflect this
+        """
+        # Delete any existing selected cell masks
+        existingMasks = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
+
         # Export segmentation into a labelmap
         cellMask = globalCellMask[scatterPlotRoi]
 
@@ -611,6 +617,13 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
             self.ui.analysisErrorMessage.text = "ERROR: One mask should be selected."
         else:
             logic.scatterPlotRun(True, arcsinState, logState)
+
+        red_logic = slicer.app.layoutManager().sliceWidget("Red").sliceLogic()
+        red_logic.GetSliceCompositeNode().SetBackgroundVolumeID(volumeNode.GetID())
+
+        for img in existingMasks:
+            if name in img.GetName():
+                slicer.mrmlScene.RemoveNode(img)
 
         # Add mask name to list of possible gating masks
         global gatingList
