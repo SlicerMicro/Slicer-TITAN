@@ -1900,6 +1900,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
     def saveTableData(self):
         # Get table node
+        print("working")
         tables = slicer.util.getNodesByClass("vtkMRMLTableNode")
         savedPaths = []
         # Save table to .csv file
@@ -1914,6 +1915,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             subprocess.Popen('explorer savedPaths[0]')
         except:
             subprocess.Popen(["open", savedPaths[0]])
+        print("done")
 
     def heatmapChannelRun(self):
 
