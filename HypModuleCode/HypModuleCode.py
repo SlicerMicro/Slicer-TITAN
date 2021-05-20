@@ -2578,15 +2578,17 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         # Perform 99th-percentile normalization on each ROI array
         for roiName, array in roiIntensitiesDict.items():
-            percentile = np.percentile(array, 99)
+            cellLabels = array[:,0]
+            newArray = array[:,1:]
+            percentile = np.percentile(newArray, 99)
             normArray = array/percentile
-            roiIntensitiesDict[roiName] = normArray
+            finalArray = np.insert(normArray, 0, values=cellLabels, axis=1)
+            roiIntensitiesDict[roiName] = finalArray
             # # Check for infiniti values
             # if True in np.isinf(normArray):
             #     print("There are infiniti values")
             # if True in np.isnan(normArray):
             #     print("There are NaN values")
-
 
         # for channel in allChannels:
         #     itemId = shNode.GetItemByDataNode(channel)  # Channel
@@ -3052,6 +3054,125 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             slicer.vtkMRMLLayoutNode.SlicerLayoutOneUpRedSliceView)
         slicer.util.resetSliceViews()
 
+
+    def phenographRun(self):
+        """
+        Runs PhenoGraph clustering on the selected data
+        """
+
+        # Import phenograph libraries
+        try:
+            import phenograph
+        except ModuleNotFoundError:
+            import pip
+            slicer.util.pip_install("phenograph")
+
+        # Create list of mean intensities for all cells for each channel
+        # Create empty matrix of mean intensities
+        roiIntensitiesDict = {}
+        roiCellMaskArrays = {}
+        roiPixelCounts = {}
+
+        for roi in selectedRoi:
+            # if roi == "Scene":
+            #     continue
+            # Get cell mask array
+            cellMask = globalCellMask[roi]
+            cellMaskArray = slicer.util.arrayFromVolume(cellMask)
+            roiCellMaskArrays[roi] = cellMaskArray
+            # Get counts of pixels in each cell
+            cell, counts = np.unique(cellMaskArray, return_counts=True)
+            cellPixelCounts = dict(zip(cell, counts))
+            roiPixelCounts[roi] = cellPixelCounts
+            roiIntensitiesDict[roi] = np.full((len(cell) - 1, len(selectedChannel) + 1), 0.00)
+
+        # cellLabels = []
+        displayList = []
+        channelItems = []
+        positions = []
+
+        for roi in selectedRoi:
+            positions.append(roiDict[roi])
+
+        for channel in selectedChannel:
+            for pos in positions:
+                if pos == 0:
+                    node = slicer.util.getNode(channel)
+                    itemId = shNode.GetItemByDataNode(node)
+                    channelItems.append(itemId)
+                    if len(displayList) <= 2:
+                        displayList.append(node)
+                else:
+                    suffix = "_" + str(pos)
+                    name = channel + suffix
+                    node = slicer.util.getNode(name)
+                    itemId = shNode.GetItemByDataNode(node)
+                    channelItems.append(itemId)
+                    if len(displayList) <= 2:
+                        displayList.append(node)
+
+        for channel in channelItems:
+            channelName = shNode.GetItemName(channel)
+            roiName = shNode.GetItemName(shNode.GetItemParent(channel))
+            # Get column index for mean intensities array
+            if re.findall(r"_[0-9]\b", channelName) != []:
+                channelName = channelName[:-2]
+            columnPos = channelNames.index(channelName) + 1
+            # Get arrays for cell mask and channels
+            cellMaskArray = roiCellMaskArrays[roiName]
+            # Get counts of pixels in each cell
+            cellPixelCounts = roiPixelCounts[roiName]
+            # Get intensities for each cell
+            for cell in range(cellMaskArray.max() + 1):
+                if cell != 0:
+                    if cell in cellPixelCounts.keys():
+                        # Channel one
+                        blank, i, j = np.nonzero(cellMaskArray == cell)
+                        # Get array of channel
+                        channelNode = shNode.GetItemDataNode(channel)
+                        channelArray = slicer.util.arrayFromVolume(channelNode)
+                        # Get mean intensity of channel
+                        cellPixels = channelArray[:, i, j]
+                        sumIntens = np.sum(cellPixels)
+                        totalPixels = cellPixels.shape[1]
+                        nonZeroes = np.where(cellPixels != 0)
+                        numNonZeroes = nonZeroes[1].shape[0]
+                        if numNonZeroes == 0:
+                            avg = 0
+                        else:
+                            avg = float(sumIntens) / float(totalPixels)
+                        # Update meanIntensities matrix with this value
+                        rowPos = list(cellPixelCounts.keys()).index(cell) - 1
+                        roiIntensitiesDict[roiName][rowPos, columnPos] = avg
+                        roiIntensitiesDict[roiName][rowPos, 0] = cell
+
+        # Log transform and 99th percentile transform the data
+        for roiName, array in roiIntensitiesDict.items():
+            cellLabels = array[:, 0]
+            newArray = array[:, 1:]
+            logTrans = np.log(newArray+1)
+            percentile = np.percentile(logTrans, 99)
+            normArray = logTrans / percentile
+            finalArray = np.insert(normArray, 0, values=cellLabels, axis=1)
+            roiIntensitiesDict[roiName] = finalArray
+
+        # Append the arrays for each ROI together
+        concatArray = list(roiIntensitiesDict.values())[0]
+        count = 0
+
+        for roi in roiIntensitiesDict:
+            if count == 0:
+                count += 1
+            else:
+                array = roiIntensitiesDict[roi]
+                concatArray = np.append(concatArray, array, axis=0)
+
+        # Run PCA on full array
+        nComponents = concatArray.shape[1] - 1
+
+        from sklearn.decomposition import PCA
+
+        plotValues = PCA(n_components=nComponents, copy=True).fit_transform(concatArray[:, 1:])
 
 
     def saveHeatmapChannelImg(self):
