@@ -249,7 +249,7 @@
       <enum>QTabWidget::Triangular</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>5</number>
      </property>
      <property name="usesScrollButtons">
       <bool>false</bool>
@@ -1853,7 +1853,7 @@
        <string>Advanced</string>
       </attribute>
       <layout class="QFormLayout" name="formLayout_3">
-       <item row="2" column="0">
+       <item row="3" column="0">
         <widget class="QLabel" name="label_43">
          <property name="font">
           <font>
@@ -1868,7 +1868,7 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="0">
+       <item row="4" column="0">
         <widget class="QLabel" name="label_44">
          <property name="font">
           <font>
@@ -1883,14 +1883,14 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="1">
+       <item row="4" column="1">
         <widget class="QPushButton" name="crtRawData">
          <property name="text">
           <string>Create Table</string>
          </property>
         </widget>
        </item>
-       <item row="5" column="0">
+       <item row="6" column="0">
         <spacer name="horizontalSpacer_20">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -1903,7 +1903,7 @@
          </property>
         </spacer>
        </item>
-       <item row="6" column="0">
+       <item row="7" column="0">
         <widget class="QLabel" name="label_36">
          <property name="font">
           <font>
@@ -1918,7 +1918,7 @@
          </property>
         </widget>
        </item>
-       <item row="7" column="0">
+       <item row="8" column="0">
         <spacer name="horizontalSpacer_21">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -1931,7 +1931,7 @@
          </property>
         </spacer>
        </item>
-       <item row="8" column="0">
+       <item row="9" column="0">
         <widget class="QLabel" name="label_41">
          <property name="font">
           <font>
@@ -1946,7 +1946,7 @@
          </property>
         </widget>
        </item>
-       <item row="9" column="0">
+       <item row="10" column="0">
         <widget class="QLabel" name="label_31">
          <property name="font">
           <font>
@@ -1961,14 +1961,14 @@
          </property>
         </widget>
        </item>
-       <item row="9" column="1">
+       <item row="10" column="1">
         <widget class="QPushButton" name="crtTsne">
          <property name="text">
           <string>Create t-SNE Plot</string>
          </property>
         </widget>
        </item>
-       <item row="10" column="0">
+       <item row="11" column="0">
         <widget class="QLabel" name="label_32">
          <property name="font">
           <font>
@@ -1983,7 +1983,7 @@
          </property>
         </widget>
        </item>
-       <item row="12" column="0">
+       <item row="13" column="0">
         <spacer name="horizontalSpacer_16">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -1996,7 +1996,7 @@
          </property>
         </spacer>
        </item>
-       <item row="13" column="0">
+       <item row="14" column="0">
         <widget class="QLabel" name="label_33">
          <property name="font">
           <font>
@@ -2011,14 +2011,14 @@
          </property>
         </widget>
        </item>
-       <item row="13" column="1">
+       <item row="14" column="1">
         <widget class="QPushButton" name="crtPCA">
          <property name="text">
           <string>Create PCA Plot</string>
          </property>
         </widget>
        </item>
-       <item row="14" column="0">
+       <item row="15" column="0">
         <widget class="QLabel" name="label_34">
          <property name="font">
           <font>
@@ -2030,7 +2030,7 @@
          </property>
         </widget>
        </item>
-       <item row="17" column="0">
+       <item row="18" column="0">
         <spacer name="horizontalSpacer_15">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -2043,7 +2043,7 @@
          </property>
         </spacer>
        </item>
-       <item row="18" column="0">
+       <item row="19" column="0">
         <widget class="QLabel" name="label_35">
          <property name="font">
           <font>
@@ -2056,7 +2056,7 @@
          </property>
         </widget>
        </item>
-       <item row="18" column="1">
+       <item row="19" column="1">
         <widget class="QLabel" name="tsneSelectedCellsCount">
          <property name="font">
           <font>
@@ -2069,7 +2069,7 @@
          </property>
         </widget>
        </item>
-       <item row="19" column="0">
+       <item row="20" column="0">
         <spacer name="horizontalSpacer_17">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -2082,7 +2082,7 @@
          </property>
         </spacer>
        </item>
-       <item row="20" column="0">
+       <item row="21" column="0">
         <widget class="QLabel" name="label_42">
          <property name="font">
           <font>
@@ -2097,7 +2097,7 @@
          </property>
         </widget>
        </item>
-       <item row="22" column="0">
+       <item row="23" column="0">
         <widget class="QLabel" name="label_37">
          <property name="font">
           <font>
@@ -2112,21 +2112,21 @@
          </property>
         </widget>
        </item>
-       <item row="23" column="0">
+       <item row="24" column="0">
         <widget class="QLabel" name="label_38">
          <property name="text">
           <string>Number of Clusters:</string>
          </property>
         </widget>
        </item>
-       <item row="23" column="1">
+       <item row="24" column="1">
         <widget class="QSpinBox" name="nClusters">
          <property name="value">
           <number>2</number>
          </property>
         </widget>
        </item>
-       <item row="24" column="0">
+       <item row="25" column="0">
         <widget class="QLabel" name="label_39">
          <property name="font">
           <font>
@@ -2140,14 +2140,14 @@
          </property>
         </widget>
        </item>
-       <item row="24" column="1">
+       <item row="25" column="1">
         <widget class="QPushButton" name="crtKMeans">
          <property name="text">
           <string>Create K-Means Cluster</string>
          </property>
         </widget>
        </item>
-       <item row="25" column="0">
+       <item row="26" column="0">
         <widget class="QLabel" name="label_40">
          <property name="font">
           <font>
@@ -2161,7 +2161,7 @@
          </property>
         </widget>
        </item>
-       <item row="25" column="1">
+       <item row="26" column="1">
         <widget class="QPushButton" name="crtHierarch">
          <property name="text">
           <string>Create Hierarchical Cluster</string>
@@ -2199,7 +2199,7 @@
          </property>
         </spacer>
        </item>
-       <item row="16" column="0" colspan="2">
+       <item row="17" column="0" colspan="2">
         <widget class="QLabel" name="label_50">
          <property name="font">
           <font>
@@ -2212,7 +2212,7 @@
          </property>
         </widget>
        </item>
-       <item row="15" column="0">
+       <item row="16" column="0">
         <spacer name="horizontalSpacer_14">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -2224,6 +2224,149 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item row="27" column="0">
+        <widget class="QLabel" name="label_52">
+         <property name="font">
+          <font>
+           <family>Montserrat</family>
+           <pointsize>10</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>PHENOGRAPH CLUSTERING</string>
+         </property>
+        </widget>
+       </item>
+       <item row="28" column="0">
+        <widget class="QLabel" name="label_53">
+         <property name="font">
+          <font>
+           <italic>true</italic>
+          </font>
+         </property>
+         <property name="text">
+          <string>Use PhenoGraph to cluster cells in ROI and display results in a heat map</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="28" column="1">
+        <widget class="QPushButton" name="crtPhenograph">
+         <property name="text">
+          <string>Run PhenoGraph</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0" colspan="2">
+        <widget class="QLabel" name="advancedErrorMessage">
+         <property name="palette">
+          <palette>
+           <active>
+            <colorrole role="WindowText">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>255</red>
+               <green>0</green>
+               <blue>0</blue>
+              </color>
+             </brush>
+            </colorrole>
+            <colorrole role="Text">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>255</red>
+               <green>0</green>
+               <blue>0</blue>
+              </color>
+             </brush>
+            </colorrole>
+            <colorrole role="PlaceholderText">
+             <brush brushstyle="SolidPattern">
+              <color alpha="128">
+               <red>255</red>
+               <green>0</green>
+               <blue>0</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </active>
+           <inactive>
+            <colorrole role="WindowText">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>255</red>
+               <green>0</green>
+               <blue>0</blue>
+              </color>
+             </brush>
+            </colorrole>
+            <colorrole role="Text">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>255</red>
+               <green>0</green>
+               <blue>0</blue>
+              </color>
+             </brush>
+            </colorrole>
+            <colorrole role="PlaceholderText">
+             <brush brushstyle="SolidPattern">
+              <color alpha="128">
+               <red>255</red>
+               <green>0</green>
+               <blue>0</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </inactive>
+           <disabled>
+            <colorrole role="WindowText">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>120</red>
+               <green>120</green>
+               <blue>120</blue>
+              </color>
+             </brush>
+            </colorrole>
+            <colorrole role="Text">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>120</red>
+               <green>120</green>
+               <blue>120</blue>
+              </color>
+             </brush>
+            </colorrole>
+            <colorrole role="PlaceholderText">
+             <brush brushstyle="SolidPattern">
+              <color alpha="128">
+               <red>0</red>
+               <green>0</green>
+               <blue>0</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </disabled>
+          </palette>
+         </property>
+         <property name="font">
+          <font>
+           <family>Courier</family>
+           <pointsize>12</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>

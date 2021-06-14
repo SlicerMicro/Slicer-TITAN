@@ -186,6 +186,7 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         self.ui.crtKMeans.connect('clicked(bool)', self.onCreateKMeans)
         self.ui.crtHierarch.connect('clicked(bool)', self.onHierarchicalCluster)
         self.ui.crtRawData.connect('clicked(bool)', self.onCreateRawData)
+        self.ui.crtPhenograph.connect('clicked(bool)', self.onPhenograph)
         
 
     def cleanup(self):
@@ -672,13 +673,13 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
 
     def onCreateTsne(self):
         if selectedChannel is None or len(selectedChannel) < 1:
-            self.ui.analysisErrorMessage.text = "ERROR: Minimum 1 channel should be selected."
+            self.ui.advancedErrorMessage.text = "ERROR: Minimum 1 channel should be selected."
             return
         elif selectedRoi is None or len(selectedRoi) < 1:
-            self.ui.analysisErrorMessage.text = "ERROR: Minimum 1 ROI should be selected."
+            self.ui.advancedErrorMessage.text = "ERROR: Minimum 1 ROI should be selected."
             return
         else:
-            self.ui.analysisErrorMessage.text = ""
+            self.ui.advancedErrorMessage.text = ""
 
         self.ui.tsneSelectedCellsCount.text = ""
 
@@ -687,7 +688,7 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         if selectedGates is None or len(selectedGates) == 0:
             logic.tsnePCARun("tsne", False)
         elif len(selectedGates) > 1:
-            self.ui.analysisErrorMessage.text = "ERROR: One mask should be selected."
+            self.ui.advancedErrorMessage.text = "ERROR: One mask should be selected."
         else:
             logic.tsnePCARun("tsne", True)
 
@@ -699,13 +700,13 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
 
     def onCreatePCA(self):
         if selectedChannel is None or len(selectedChannel) < 2:
-            self.ui.analysisErrorMessage.text = "ERROR: Minimum 2 channels should be selected."
+            self.ui.advancedErrorMessage.text = "ERROR: Minimum 2 channels should be selected."
             return
         elif selectedRoi is None or len(selectedRoi) < 1:
-            self.ui.analysisErrorMessage.text = "ERROR: Minimum 1 ROI should be selected."
+            self.ui.advancedErrorMessage.text = "ERROR: Minimum 1 ROI should be selected."
             return
         else:
-            self.ui.analysisErrorMessage.text = ""
+            self.ui.advancedErrorMessage.text = ""
 
         self.ui.tsneSelectedCellsCount.text = ""
 
@@ -714,7 +715,7 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         if selectedGates is None or len(selectedGates) == 0:
             logic.tsnePCARun("pca", False)
         elif len(selectedGates) > 1:
-            self.ui.analysisErrorMessage.text = "ERROR: One mask should be selected."
+            self.ui.advancedErrorMessage.text = "ERROR: One mask should be selected."
         else:
             logic.tsnePCARun("pca", True)
 
@@ -731,6 +732,19 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
     def onHierarchicalCluster(self):
         logic = HypModuleLogic()
         logic.clusterRun(nClusters=self.ui.nClusters.value, clusterType="hierarchical")
+
+    def onPhenograph(self):
+        if selectedChannel is None or len(selectedChannel) < 1:
+            self.ui.advancedErrorMessage.text = "ERROR: Minimum 1 channel should be selected."
+            return
+        elif selectedRoi is None or len(selectedRoi) != 1:
+            self.ui.advancedErrorMessage.text = "ERROR: Only 1 ROI should be selected."
+            return
+        else:
+            self.ui.advancedErrorMessage.text = ""
+
+        logic = HypModuleLogic()
+        logic.phenographRun()
 
     def onCreateRawData(self):
         # if selectedChannel is None or len(selectedChannel) < 1:
@@ -773,6 +787,9 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             return False
         return True
 
+
+    # def readTextFiles(self):
+        
 
     def visualizationRun(self, roiSelect, redSelect, greenSelect, blueSelect, yellowSelect, cyanSelect, magentaSelect, whiteSelect, threshMin, threshMax):
         """
@@ -3068,7 +3085,9 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
             import pip
             slicer.util.pip_install("phenograph")
 
+        shNode = slicer.vtkMRMLSubjectHierarchyNode.GetSubjectHierarchyNode(slicer.mrmlScene)
 
+        roi = selectedRoi[0]
         # Get cell mask array
         cellMask = globalCellMask[roi]
         cellMaskArray = slicer.util.arrayFromVolume(cellMask)
@@ -3164,113 +3183,115 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         communities, graph, Q = phenograph.cluster(normArray, k=15)
         nLabels = len(np.unique(communities))
 
-        # Create phenograph heat map
-        meanIntensitiesPhen = np.full((len(np.unique(communities)), normArray.shape[1]), 0.00)
-        clusters = np.unique(communities)
+        print(nLabels)
 
-        for clus in np.unique(communities):
-            cells = np.where(communities == clus)
-            for channel in range(normArray.shape[1]):
-                sumIntens = []
-                for i in cells[0]:
-                    intensVal = normArray[i][channel]
-                    sumIntens.append(intensVal)
-                medianIntens = statistics.median(sumIntens)
-                meanIntensitiesPhen[clus][channel] = medianIntens
-
-        # Normalize by row
-        count = 0
-        for i in meanIntensitiesPhen:
-            norm = np.interp(i, (i.min(), i.max()), (0, 1))
-            meanIntensitiesPhen[count] = norm
-            count += 1
-
-
-        # Install necessary libraries
-        try:
-            import matplotlib
-        except ModuleNotFoundError:
-            import pip
-            slicer.util.pip_install("matplotlib")
-            import matplotlib
-
-        matplotlib.use("Agg")
-        import matplotlib.pyplot as plt
-        from pylab import savefig
-
-        # Create heatmap
-        # plt.rcParams.update({'font.size': 6})
-        fig, ax = plt.subplots(figsize=(20, 10))
-
-        ax.set_xticks(np.arange(len(selectedChannel))+0.5)
-        ax.set_yticks(np.arange(len(clusters))+0.5)
-
-        ax.set_xticklabels(xaxis, rotation = 90, ha="center")
-        ax.set_yticklabels(clusters, rotation = 0)
-
-        plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
-                 rotation_mode="anchor")
-
-        # Loop through data and create text annotations
-        for i in range(len(clusters)):
-            for j in range(len(selectedChannel)):
-                text = ax.text(j, i, meanIntensitiesPhen[i, j],
-                               ha="center", va="center", color="w")
-
-        ax.set_title("Mean Intensity of PhenoGraph Clusters")
-
-        # Add colour bar to heatmap
-        im = ax.imshow(meanIntensitiesPhen)
-        cbar = ax.figure.colorbar(im)
-        cbar.ax.set_ylabel("Mean Intensity", rotation=-90, va="bottom")
-
-        # Display heatmap
-        defaultPath = slicer.app.defaultScenePath
-        pathName = defaultPath + '/' + "phenographHeatmap.jpg"
-        savefig(pathName)
-        heatmapImg = sitk.ReadImage(pathName)
-        heatmapArray = sitk.GetArrayFromImage(heatmapImg)
-        arraySize = heatmapArray.shape
-        plt.close()
-        # Create new volume "Heatmap"
-        imageSize = [arraySize[1], arraySize[0], 1]
-        voxelType = vtk.VTK_UNSIGNED_CHAR
-        imageOrigin = [0.0, 0.0, 0.0]
-        imageSpacing = [1.0, 1.0, 1.0]
-        imageDirections = [[-1, 0, 0], [0, -1, 0], [0, 0, 1]]
-        fillVoxelValue = 0
-
-        # Create an empty image volume, filled with fillVoxelValue
-        imageData = vtk.vtkImageData()
-        imageData.SetDimensions(imageSize)
-        imageData.AllocateScalars(voxelType, 3)
-        imageData.GetPointData().GetScalars().Fill(fillVoxelValue)
-
-        # Create volume node
-        # Needs to be a vector volume in order to show in colour
-        volumeNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLVectorVolumeNode", "PhenoGraph Heat Map")
-        volumeNode.SetOrigin(imageOrigin)
-        volumeNode.SetSpacing(imageSpacing)
-        volumeNode.SetIJKToRASDirections(imageDirections)
-        volumeNode.SetAndObserveImageData(imageData)
-        volumeNode.CreateDefaultDisplayNodes()
-        volumeNode.CreateDefaultStorageNode()
-
-        voxels = slicer.util.arrayFromVolume(volumeNode)
-        voxels[:] = heatmapArray
-
-        volumeNode.Modified()
-        volumeNode.GetDisplayNode().AutoWindowLevelOff()
-        volumeNode.GetDisplayNode().SetWindowLevel((arraySize[1] // 8), 127)
-
-        slicer.util.setSliceViewerLayers(background=volumeNode, foreground=None)
-
-        # Set slice view to display Red window only
-        lm = slicer.app.layoutManager()
-        lm.setLayout(slicer.vtkMRMLLayoutNode.SlicerLayoutOneUpRedSliceView)
-
-        # Reset field of view to show entire image
-        slicer.util.resetSliceViews()
+        # # Create phenograph heat map
+        # meanIntensitiesPhen = np.full((len(np.unique(communities)), normArray.shape[1]), 0.00)
+        # clusters = np.unique(communities)
+        #
+        # for clus in np.unique(communities):
+        #     cells = np.where(communities == clus)
+        #     for channel in range(normArray.shape[1]):
+        #         sumIntens = []
+        #         for i in cells[0]:
+        #             intensVal = normArray[i][channel]
+        #             sumIntens.append(intensVal)
+        #         medianIntens = statistics.median(sumIntens)
+        #         meanIntensitiesPhen[clus][channel] = medianIntens
+        #
+        # # Normalize by row
+        # count = 0
+        # for i in meanIntensitiesPhen:
+        #     norm = np.interp(i, (i.min(), i.max()), (0, 1))
+        #     meanIntensitiesPhen[count] = norm
+        #     count += 1
+        #
+        #
+        # # Install necessary libraries
+        # try:
+        #     import matplotlib
+        # except ModuleNotFoundError:
+        #     import pip
+        #     slicer.util.pip_install("matplotlib")
+        #     import matplotlib
+        #
+        # matplotlib.use("Agg")
+        # import matplotlib.pyplot as plt
+        # from pylab import savefig
+        #
+        # # Create heatmap
+        # # plt.rcParams.update({'font.size': 6})
+        # fig, ax = plt.subplots(figsize=(20, 10))
+        #
+        # ax.set_xticks(np.arange(len(selectedChannel))+0.5)
+        # ax.set_yticks(np.arange(len(clusters))+0.5)
+        #
+        # ax.set_xticklabels(xaxis, rotation = 90, ha="center")
+        # ax.set_yticklabels(clusters, rotation = 0)
+        #
+        # plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+        #          rotation_mode="anchor")
+        #
+        # # Loop through data and create text annotations
+        # for i in range(len(clusters)):
+        #     for j in range(len(selectedChannel)):
+        #         text = ax.text(j, i, meanIntensitiesPhen[i, j],
+        #                        ha="center", va="center", color="w")
+        #
+        # ax.set_title("Mean Intensity of PhenoGraph Clusters")
+        #
+        # # Add colour bar to heatmap
+        # im = ax.imshow(meanIntensitiesPhen)
+        # cbar = ax.figure.colorbar(im)
+        # cbar.ax.set_ylabel("Mean Intensity", rotation=-90, va="bottom")
+        #
+        # # Display heatmap
+        # defaultPath = slicer.app.defaultScenePath
+        # pathName = defaultPath + '/' + "phenographHeatmap.jpg"
+        # savefig(pathName)
+        # heatmapImg = sitk.ReadImage(pathName)
+        # heatmapArray = sitk.GetArrayFromImage(heatmapImg)
+        # arraySize = heatmapArray.shape
+        # plt.close()
+        # # Create new volume "Heatmap"
+        # imageSize = [arraySize[1], arraySize[0], 1]
+        # voxelType = vtk.VTK_UNSIGNED_CHAR
+        # imageOrigin = [0.0, 0.0, 0.0]
+        # imageSpacing = [1.0, 1.0, 1.0]
+        # imageDirections = [[-1, 0, 0], [0, -1, 0], [0, 0, 1]]
+        # fillVoxelValue = 0
+        #
+        # # Create an empty image volume, filled with fillVoxelValue
+        # imageData = vtk.vtkImageData()
+        # imageData.SetDimensions(imageSize)
+        # imageData.AllocateScalars(voxelType, 3)
+        # imageData.GetPointData().GetScalars().Fill(fillVoxelValue)
+        #
+        # # Create volume node
+        # # Needs to be a vector volume in order to show in colour
+        # volumeNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLVectorVolumeNode", "PhenoGraph Heat Map")
+        # volumeNode.SetOrigin(imageOrigin)
+        # volumeNode.SetSpacing(imageSpacing)
+        # volumeNode.SetIJKToRASDirections(imageDirections)
+        # volumeNode.SetAndObserveImageData(imageData)
+        # volumeNode.CreateDefaultDisplayNodes()
+        # volumeNode.CreateDefaultStorageNode()
+        #
+        # voxels = slicer.util.arrayFromVolume(volumeNode)
+        # voxels[:] = heatmapArray
+        #
+        # volumeNode.Modified()
+        # volumeNode.GetDisplayNode().AutoWindowLevelOff()
+        # volumeNode.GetDisplayNode().SetWindowLevel((arraySize[1] // 8), 127)
+        #
+        # slicer.util.setSliceViewerLayers(background=volumeNode, foreground=None)
+        #
+        # # Set slice view to display Red window only
+        # lm = slicer.app.layoutManager()
+        # lm.setLayout(slicer.vtkMRMLLayoutNode.SlicerLayoutOneUpRedSliceView)
+        #
+        # # Reset field of view to show entire image
+        # slicer.util.resetSliceViews()
 
 
 
