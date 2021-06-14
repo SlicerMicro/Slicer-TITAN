@@ -3061,33 +3061,24 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         """
 
         # Import phenograph libraries
+        import statistics
         try:
             import phenograph
         except ModuleNotFoundError:
             import pip
             slicer.util.pip_install("phenograph")
 
-        # Create list of mean intensities for all cells for each channel
-        # Create empty matrix of mean intensities
-        roiIntensitiesDict = {}
-        roiCellMaskArrays = {}
-        roiPixelCounts = {}
 
-        for roi in selectedRoi:
-            # if roi == "Scene":
-            #     continue
-            # Get cell mask array
-            cellMask = globalCellMask[roi]
-            cellMaskArray = slicer.util.arrayFromVolume(cellMask)
-            roiCellMaskArrays[roi] = cellMaskArray
-            # Get counts of pixels in each cell
-            cell, counts = np.unique(cellMaskArray, return_counts=True)
-            cellPixelCounts = dict(zip(cell, counts))
-            roiPixelCounts[roi] = cellPixelCounts
-            roiIntensitiesDict[roi] = np.full((len(cell) - 1, len(selectedChannel) + 1), 0.00)
+        # Get cell mask array
+        cellMask = globalCellMask[roi]
+        cellMaskArray = slicer.util.arrayFromVolume(cellMask)
+        # Get counts of pixels in each cell
+        cell, counts = np.unique(cellMaskArray, return_counts=True)
+        cellPixelCounts = dict(zip(cell, counts))
+        meanIntensitiesDict = np.full((len(cell) - 1, len(selectedChannel) + 1), 0.00)
 
         # cellLabels = []
-        displayList = []
+        # displayList = []
         channelItems = []
         positions = []
 
@@ -3100,28 +3091,24 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                     node = slicer.util.getNode(channel)
                     itemId = shNode.GetItemByDataNode(node)
                     channelItems.append(itemId)
-                    if len(displayList) <= 2:
-                        displayList.append(node)
+                    # if len(displayList) <= 2:
+                    #     displayList.append(node)
                 else:
                     suffix = "_" + str(pos)
                     name = channel + suffix
                     node = slicer.util.getNode(name)
                     itemId = shNode.GetItemByDataNode(node)
                     channelItems.append(itemId)
-                    if len(displayList) <= 2:
-                        displayList.append(node)
+                    # if len(displayList) <= 2:
+                    #     displayList.append(node)
 
         for channel in channelItems:
             channelName = shNode.GetItemName(channel)
-            roiName = shNode.GetItemName(shNode.GetItemParent(channel))
+            # roiName = shNode.GetItemName(shNode.GetItemParent(channel))
             # Get column index for mean intensities array
             if re.findall(r"_[0-9]\b", channelName) != []:
                 channelName = channelName[:-2]
             columnPos = channelNames.index(channelName) + 1
-            # Get arrays for cell mask and channels
-            cellMaskArray = roiCellMaskArrays[roiName]
-            # Get counts of pixels in each cell
-            cellPixelCounts = roiPixelCounts[roiName]
             # Get intensities for each cell
             for cell in range(cellMaskArray.max() + 1):
                 if cell != 0:
@@ -3143,36 +3130,148 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                             avg = float(sumIntens) / float(totalPixels)
                         # Update meanIntensities matrix with this value
                         rowPos = list(cellPixelCounts.keys()).index(cell) - 1
-                        roiIntensitiesDict[roiName][rowPos, columnPos] = avg
-                        roiIntensitiesDict[roiName][rowPos, 0] = cell
+                        meanIntensitiesDict[rowPos, columnPos] = avg
+                        meanIntensitiesDict[rowPos, 0] = cell
 
         # Log transform and 99th percentile transform the data
-        for roiName, array in roiIntensitiesDict.items():
-            cellLabels = array[:, 0]
-            newArray = array[:, 1:]
-            logTrans = np.log(newArray+1)
-            percentile = np.percentile(logTrans, 99)
-            normArray = logTrans / percentile
-            finalArray = np.insert(normArray, 0, values=cellLabels, axis=1)
-            roiIntensitiesDict[roiName] = finalArray
+        cellLabels = meanIntensitiesDict[:, 0]
+        newArray = meanIntensitiesDict[:, 1:]
+        logTrans = np.log(newArray+1)
+        percentile = np.percentile(logTrans, 99)
+        normArray = logTrans / percentile
+        # finalArray = np.insert(normArray, 0, values=cellLabels, axis=1)
+        # roiIntensitiesDict[roiName] = finalArray
 
-        # Append the arrays for each ROI together
-        concatArray = list(roiIntensitiesDict.values())[0]
-        count = 0
-
-        for roi in roiIntensitiesDict:
-            if count == 0:
-                count += 1
-            else:
-                array = roiIntensitiesDict[roi]
-                concatArray = np.append(concatArray, array, axis=0)
+        # # Append the arrays for each ROI together
+        # concatArray = list(roiIntensitiesDict.values())[0]
+        # count = 0
+        #
+        # for roi in roiIntensitiesDict:
+        #     if count == 0:
+        #         count += 1
+        #     else:
+        #         array = roiIntensitiesDict[roi]
+        #         concatArray = np.append(concatArray, array, axis=0)
 
         # Run PCA on full array
-        nComponents = concatArray.shape[1] - 1
+        # nComponents = normArray.shape[1] - 1
 
-        from sklearn.decomposition import PCA
+        # from sklearn.decomposition import PCA
+        #
+        # pcaData = PCA(n_components=nComponents, copy=True).fit_transform(normArray)
 
-        plotValues = PCA(n_components=nComponents, copy=True).fit_transform(concatArray[:, 1:])
+        # Run PhenoGraph on PCA data
+        communities, graph, Q = phenograph.cluster(normArray, k=15)
+        nLabels = len(np.unique(communities))
+
+        # Create phenograph heat map
+        meanIntensitiesPhen = np.full((len(np.unique(communities)), normArray.shape[1]), 0.00)
+        clusters = np.unique(communities)
+
+        for clus in np.unique(communities):
+            cells = np.where(communities == clus)
+            for channel in range(normArray.shape[1]):
+                sumIntens = []
+                for i in cells[0]:
+                    intensVal = normArray[i][channel]
+                    sumIntens.append(intensVal)
+                medianIntens = statistics.median(sumIntens)
+                meanIntensitiesPhen[clus][channel] = medianIntens
+
+        # Normalize by row
+        count = 0
+        for i in meanIntensitiesPhen:
+            norm = np.interp(i, (i.min(), i.max()), (0, 1))
+            meanIntensitiesPhen[count] = norm
+            count += 1
+
+
+        # Install necessary libraries
+        try:
+            import matplotlib
+        except ModuleNotFoundError:
+            import pip
+            slicer.util.pip_install("matplotlib")
+            import matplotlib
+
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        from pylab import savefig
+
+        # Create heatmap
+        # plt.rcParams.update({'font.size': 6})
+        fig, ax = plt.subplots(figsize=(20, 10))
+
+        ax.set_xticks(np.arange(len(selectedChannel))+0.5)
+        ax.set_yticks(np.arange(len(clusters))+0.5)
+
+        ax.set_xticklabels(xaxis, rotation = 90, ha="center")
+        ax.set_yticklabels(clusters, rotation = 0)
+
+        plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+                 rotation_mode="anchor")
+
+        # Loop through data and create text annotations
+        for i in range(len(clusters)):
+            for j in range(len(selectedChannel)):
+                text = ax.text(j, i, meanIntensitiesPhen[i, j],
+                               ha="center", va="center", color="w")
+
+        ax.set_title("Mean Intensity of PhenoGraph Clusters")
+
+        # Add colour bar to heatmap
+        im = ax.imshow(meanIntensitiesPhen)
+        cbar = ax.figure.colorbar(im)
+        cbar.ax.set_ylabel("Mean Intensity", rotation=-90, va="bottom")
+
+        # Display heatmap
+        defaultPath = slicer.app.defaultScenePath
+        pathName = defaultPath + '/' + "phenographHeatmap.jpg"
+        savefig(pathName)
+        heatmapImg = sitk.ReadImage(pathName)
+        heatmapArray = sitk.GetArrayFromImage(heatmapImg)
+        arraySize = heatmapArray.shape
+        plt.close()
+        # Create new volume "Heatmap"
+        imageSize = [arraySize[1], arraySize[0], 1]
+        voxelType = vtk.VTK_UNSIGNED_CHAR
+        imageOrigin = [0.0, 0.0, 0.0]
+        imageSpacing = [1.0, 1.0, 1.0]
+        imageDirections = [[-1, 0, 0], [0, -1, 0], [0, 0, 1]]
+        fillVoxelValue = 0
+
+        # Create an empty image volume, filled with fillVoxelValue
+        imageData = vtk.vtkImageData()
+        imageData.SetDimensions(imageSize)
+        imageData.AllocateScalars(voxelType, 3)
+        imageData.GetPointData().GetScalars().Fill(fillVoxelValue)
+
+        # Create volume node
+        # Needs to be a vector volume in order to show in colour
+        volumeNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLVectorVolumeNode", "PhenoGraph Heat Map")
+        volumeNode.SetOrigin(imageOrigin)
+        volumeNode.SetSpacing(imageSpacing)
+        volumeNode.SetIJKToRASDirections(imageDirections)
+        volumeNode.SetAndObserveImageData(imageData)
+        volumeNode.CreateDefaultDisplayNodes()
+        volumeNode.CreateDefaultStorageNode()
+
+        voxels = slicer.util.arrayFromVolume(volumeNode)
+        voxels[:] = heatmapArray
+
+        volumeNode.Modified()
+        volumeNode.GetDisplayNode().AutoWindowLevelOff()
+        volumeNode.GetDisplayNode().SetWindowLevel((arraySize[1] // 8), 127)
+
+        slicer.util.setSliceViewerLayers(background=volumeNode, foreground=None)
+
+        # Set slice view to display Red window only
+        lm = slicer.app.layoutManager()
+        lm.setLayout(slicer.vtkMRMLLayoutNode.SlicerLayoutOneUpRedSliceView)
+
+        # Reset field of view to show entire image
+        slicer.util.resetSliceViews()
+
 
 
     def saveHeatmapChannelImg(self):
