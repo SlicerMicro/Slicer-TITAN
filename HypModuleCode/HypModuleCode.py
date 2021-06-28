@@ -789,6 +789,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         for data_path in filePaths:
             roiName = data_path.split('/')[-1]
             data = []
+            # Parse through each row and get the pixel values
             with open(data_path, 'r') as read_obj:
                 for i, line in enumerate(read_obj):
                     x = line.split("\t")
@@ -797,6 +798,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                     else:
                         y = [float(num) for num in x]
                         data.append(np.expand_dims(y, axis=0))
+
 
             data = np.concatenate(data, axis=0)
 
