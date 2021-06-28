@@ -96,7 +96,6 @@ This file was originally developed by Sindhura Thirumal, Med-i Lab at Queen's Un
             slicer.selfTests = {}
         slicer.selfTests[self.moduleName] = self.runTest
 
-
 #
 # HypModuleWidget
 #
@@ -126,6 +125,7 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         # Connections
 
         # Data
+        self.ui.textFileLoad.connect("clicked(bool)", self.onTextFileLoad)
 
         self.ui.roiList.connect("itemSelectionChanged()", self.onRoiList)
         self.ui.channelList.connect("itemSelectionChanged()", self.onChannelList)
@@ -197,6 +197,10 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
 
     def onSubjectHierarchy(self):
         print(self.ui.subjectHierarchy.currentItems)
+
+    def onTextFileLoad(self):
+        logic = HypModuleLogic()
+        logic.textFileLoad()
 
     def onThumbnails(self):
         if selectedChannel is None or len(selectedChannel) <= 1:
@@ -475,6 +479,8 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         # Delete any existing selected cell masks
         existingMasks = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
 
+        # pointIdList = []
+
         for selectionIndex in range(mrmlPlotDataIDs.GetNumberOfValues()):
             pointIdList = []
             pointIds = selectionCol.GetItemAsObject(selectionIndex)
@@ -483,7 +489,7 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
             # The value returned is the row number of that cell, however you need to add 2 to the value to get
             # the correct number. eg. value 171 actually refers to the cell at row 173.
             # BUT in the code, the incorrect row number returned actually works out to refer to the correct cell
-
+        # print(pointIdList)
         # Get cell number
         tables = slicer.util.getNodesByClass("vtkMRMLTableNode")
         tableNode = tables[0]
@@ -494,6 +500,7 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         cellCount = len(cellLabels)
         self.ui.selectedCellsCount.text = cellCount
         self.ui.tsneSelectedCellsCount.text = cellCount
+        # print(cellLabels)
 
         # Get cell mask array
         # global globalCellMask
@@ -511,14 +518,15 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
 
         cellMaskNode = globalCellMask[scatterPlotRoi]
         cellMaskArray = slicer.util.arrayFromVolume(cellMaskNode)
-        selectedCellsMask = np.copy(cellMaskArray)
 
+        selectedCellsMask = np.copy(cellMaskArray)
+        # print(np.unique(selectedCellsMask))
         # Remove cells in the array that aren't part of the selected cells
         for cell in np.unique(selectedCellsMask):
             if cell != 0:
                 if str(cell) not in cellLabels:
                     selectedCellsMask[selectedCellsMask == cell] = 0
-
+        # print(np.unique(selectedCellsMask))
         # Create new cell mask image
         name = self.ui.selectedCellsName.text
 
@@ -774,22 +782,96 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
     https://github.com/Slicer/Slicer/blob/master/Base/Python/slicer/ScriptedLoadableModule.py
     """
 
-    def hasImageData(self, volumeNode):
-        """This is an example logic method that
-        returns true if the passed in volume
-        node has valid image data
-        """
-        if not volumeNode:
-            logging.debug('hasImageData failed: no volume node')
-            return False
-        if volumeNode.GetImageData() is None:
-            logging.debug('hasImageData failed: no image data in volume node')
-            return False
-        return True
+    # def hasImageData(self, volumeNode):
+    #     """This is an example logic method that
+    #     returns true if the passed in volume
+    #     node has valid image data
+    #     """
+    #     if not volumeNode:
+    #         logging.debug('hasImageData failed: no volume node')
+    #         return False
+    #     if volumeNode.GetImageData() is None:
+    #         logging.debug('hasImageData failed: no image data in volume node')
+    #         return False
+    #     return True
 
 
-    # def readTextFiles(self):
-        
+    def textFileLoad(self):
+        fileExplorer = qt.QFileDialog()
+        filePaths = fileExplorer.getOpenFileNames()
+        print(filePaths)
+        for data_path in filePaths:
+            file_name = data_path.split('/')[-1]
+
+            data = []
+            with open(data_path, 'r') as read_obj:
+                for i, line in enumerate(read_obj):
+                    x = line.split()
+                    if i == 0:
+                        headers = x
+                    else:
+                        y = [float(num) for num in x]
+                        data.append(np.expand_dims(y, axis=0))
+
+            data = np.concatenate(data, axis=0)
+
+            dim_x = int(np.max(data[:, 3])) + 1
+            dim_y = int(np.max(data[:, 4])) + 1
+            dim_ch = len(headers) - 6
+            ch_name = headers[6:]
+            ROI = np.zeros([dim_y, dim_x, dim_ch])
+            for i in range(len(data)):
+                ch_val = data[i, 6:]
+                ROI[int(data[i, 4]), int(data[i, 3]), :] = ch_val
+            # print(ROI.shape)
+
+            for channel in ROI:
+                # Get ROI name
+
+
+
+                # Create new volume "Image Overlay"
+                # Set name of overlaid image to be the names of all the channels being overlaid
+                imageSize = [arraySize[2], arraySize[1], 1]
+                voxelType = vtk.VTK_UNSIGNED_CHAR
+                imageOrigin = [0.0, 0.0, 0.0]
+                imageSpacing = [1.0, 1.0, 1.0]
+                imageDirections = [[-1, 0, 0], [0, -1, 0], [0, 0, 1]]
+                fillVoxelValue = 0
+
+                # Create an empty image volume, filled with fillVoxelValue
+                imageData = vtk.vtkImageData()
+                imageData.SetDimensions(imageSize)
+                imageData.AllocateScalars(voxelType, 1)
+                imageData.GetPointData().GetScalars().Fill(fillVoxelValue)
+
+                # Create volume node
+                # Needs to be a vector volume in order to show in colour
+                volumeNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLScalarVolumeNode", saveImageName)
+                volumeNode.SetOrigin(imageOrigin)
+                volumeNode.SetSpacing(imageSpacing)
+                volumeNode.SetIJKToRASDirections(imageDirections)
+                volumeNode.SetAndObserveImageData(imageData)
+                volumeNode.CreateDefaultDisplayNodes()
+                volumeNode.CreateDefaultStorageNode()
+
+                voxels = slicer.util.arrayFromVolume(volumeNode)
+                voxels[:] = overlay
+
+                volumeNode.Modified()
+
+                # After creating volume node, need to manipulate subject hierarchy
+                shNode = slicer.vtkMRMLSubjectHierarchyNode.GetSubjectHierarchyNode(slicer.mrmlScene)
+                # Create ROI folder
+                shNode.CreateFolderItem(itemId, nameOfFolder)
+                volumeId = shNode.GetItemByDataNode(volumeNode)
+                # Get scene id
+                sceneId = shNode.GetItemParent(volumeId)
+                folderIdshNode.CreateFolderItem(sceneId, roiName)
+                # shNode.SetItemParent(folderId, sceneId)
+                shNode.SetItemParent(volumeId, folderId)
+
+
 
     def visualizationRun(self, roiSelect, redSelect, greenSelect, blueSelect, yellowSelect, cyanSelect, magentaSelect, whiteSelect, threshMin, threshMax):
         """
@@ -1626,8 +1708,8 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         #     slicer.mrmlScene.RemoveNode(plot)
         # for seriesNode in existingSeriesNodes:
         #     slicer.mrmlScene.RemoveNode(seriesNode)
-        # for table in existingTables:
-        #     slicer.mrmlScene.RemoveNode(table)
+        for table in existingTables:
+            slicer.mrmlScene.RemoveNode(table)
 
         positions = []
         channelItems = []

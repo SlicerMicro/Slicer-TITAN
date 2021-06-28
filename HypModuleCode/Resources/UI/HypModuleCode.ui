@@ -249,7 +249,7 @@
       <enum>QTabWidget::Triangular</enum>
      </property>
      <property name="currentIndex">
-      <number>5</number>
+      <number>0</number>
      </property>
      <property name="usesScrollButtons">
       <bool>false</bool>
@@ -270,8 +270,8 @@
       <widget class="qMRMLSubjectHierarchyTreeView" name="subjectHierarchy">
        <property name="geometry">
         <rect>
-         <x>17</x>
-         <y>22</y>
+         <x>20</x>
+         <y>90</y>
          <width>441</width>
          <height>331</height>
         </rect>
@@ -287,6 +287,19 @@
        </property>
        <property name="selectionMode">
         <enum>QAbstractItemView::ExtendedSelection</enum>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="textFileLoad">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>20</y>
+         <width>441</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Load Text Files</string>
        </property>
       </widget>
      </widget>
