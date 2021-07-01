@@ -1513,6 +1513,14 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         slicer.util.resetSliceViews()
 
+        # Fix window/level values
+        widget = slicer.vtkMRMLWindowLevelWidget()
+        widget.SetSliceNode(slicer.util.getNode('Slice4'))
+        widget.SetMRMLApplicationLogic(slicer.app.applicationLogic())
+        p1 = dnaArray.shape[1] // 2
+        p2 = dnaArray.shape[2] // 2
+        widget.UpdateWindowLevelFromRectangle(0, [p1, p1], [p2, p2])
+
         return nCells
 
 
@@ -1664,6 +1672,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
         # Set red slice to show the heatmap
         redDisplayNode = displayList[0].GetScalarVolumeDisplayNode()
+        redArray = slicer.util.arrayFromVolume(displayList[0])
         redDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeRed")
         red_logic = slicer.app.layoutManager().sliceWidget("Red").sliceLogic()
         red_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[0].GetID())
@@ -1673,24 +1682,52 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         green_widget.setSliceOrientation("Axial")
         if len(displayList) > 1:
             greenDisplayNode = displayList[1].GetScalarVolumeDisplayNode()
+            greenArray = slicer.util.arrayFromVolume(displayList[1])
             greenDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeGreen")
             green_logic = green_widget.sliceLogic()
             green_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[1].GetID())
         else:
             green_logic = green_widget.sliceLogic()
             green_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[0].GetID())
+            greenArray = slicer.util.arrayFromVolume(displayList[0])
 
         # Set yellow slice to show cloned, thresholded channel
         yellow_widget = slicer.app.layoutManager().sliceWidget("Yellow")
         yellow_widget.setSliceOrientation("Axial")
         if len(displayList) > 2:
             yellowDisplayNode = displayList[2].GetScalarVolumeDisplayNode()
+            yellowArray = slicer.util.arrayFromVolume(displayList[2])
             yellowDisplayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeBlue")
             yellow_logic = yellow_widget.sliceLogic()
             yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[2].GetID())
         else:
             yellow_logic = yellow_widget.sliceLogic()
             yellow_logic.GetSliceCompositeNode().SetBackgroundVolumeID(displayList[0].GetID())
+            yellowArray = slicer.util.arrayFromVolume(displayList[0])
+
+        # Fix window/level values
+        widget = slicer.vtkMRMLWindowLevelWidget()
+        widget.SetSliceNode(slicer.util.getNode('vtkMRMLSliceNodeRed'))
+        widget.SetMRMLApplicationLogic(slicer.app.applicationLogic())
+        p1 = redArray.shape[1] // 2
+        p2 = redArray.shape[2] // 2
+        widget.UpdateWindowLevelFromRectangle(0, [p1, p1], [p2, p2])
+
+        # Fix window/level values
+        widget = slicer.vtkMRMLWindowLevelWidget()
+        widget.SetSliceNode(slicer.util.getNode('vtkMRMLSliceNodeGreen'))
+        widget.SetMRMLApplicationLogic(slicer.app.applicationLogic())
+        p1 = greenArray.shape[1] // 2
+        p2 = greenArray.shape[2] // 2
+        widget.UpdateWindowLevelFromRectangle(0, [p1, p1], [p2, p2])
+
+        # Fix window/level values
+        widget = slicer.vtkMRMLWindowLevelWidget()
+        widget.SetSliceNode(slicer.util.getNode('vtkMRMLSliceNodeYellow'))
+        widget.SetMRMLApplicationLogic(slicer.app.applicationLogic())
+        p1 = yellowArray.shape[1] // 2
+        p2 = yellowArray.shape[2] // 2
+        widget.UpdateWindowLevelFromRectangle(0, [p1, p1], [p2, p2])
 
         slicer.util.resetSliceViews()
 
