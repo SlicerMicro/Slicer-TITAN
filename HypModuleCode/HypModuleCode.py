@@ -785,6 +785,8 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         fileExplorer = qt.QFileDialog()
         filePaths = fileExplorer.getOpenFileNames()
 
+        roiCount = 0
+
         # For each file, generate arrays for each image
         for data_path in filePaths:
             roiName = data_path.split('/')[-1]
@@ -802,21 +804,27 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
             data = np.concatenate(data, axis=0)
 
+            # Get image size
             dim_x = int(np.max(data[:, 3])) + 1
             dim_y = int(np.max(data[:, 4])) + 1
             dim_ch = len(headers) - 6
             ch_name = headers[6:]
+            # Generate list of arrays for each image
             ROI = np.zeros([dim_y, dim_x, dim_ch])
             for i in range(len(data)):
                 ch_val = data[i, 6:]
                 ROI[int(data[i, 4]), int(data[i, 3]), :] = ch_val
 
-            index = 0
+            # index = 0
             folderId = None
 
-            for channel in ROI:
+            # For each image, create a new volume node
+            for index in range(len(ch_name)):
                 channelName = ch_name[index]
-                arraySize = channel.shape
+                if roiCount != 0:
+                    channelName = channelName + "_" + str(roiCount)
+                channelArray = ROI[:,:,index]
+                arraySize = channelArray.shape
                 # print(arraySize)
 
                 # Create new volume "Image Overlay"
@@ -836,6 +844,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
 
                 # Create volume node
                 # Needs to be a vector volume in order to show in colour
+
                 volumeNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLScalarVolumeNode", channelName)
                 volumeNode.SetOrigin(imageOrigin)
                 volumeNode.SetSpacing(imageSpacing)
@@ -845,7 +854,7 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                 volumeNode.CreateDefaultStorageNode()
 
                 voxels = slicer.util.arrayFromVolume(volumeNode)
-                voxels[:] = channel
+                voxels[:] = channelArray
 
                 volumeNode.Modified()
 
@@ -861,11 +870,10 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
                     # shNode.CreateFolderItem(volumeId, nameOfFolder)
                     folderId = shNode.CreateFolderItem(sceneId, roiName)
                     # shNode.SetItemParent(folderId, sceneId)
-
+                # Set image to be a child of ROI folder
                 shNode.SetItemParent(volumeId, folderId)
 
-                index += 1
-
+            roiCount += 1
 
 
     def visualizationRun(self, roiSelect, redSelect, greenSelect, blueSelect, yellowSelect, cyanSelect, magentaSelect, whiteSelect, threshMin, threshMax):
