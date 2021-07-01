@@ -1521,6 +1521,25 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         p2 = dnaArray.shape[2] // 2
         widget.UpdateWindowLevelFromRectangle(0, [p1, p1], [p2, p2])
 
+        # Fix window/level values
+        widget = slicer.vtkMRMLWindowLevelWidget()
+        widget.SetSliceNode(slicer.util.getNode('vtkMRMLSliceNodeRed'))
+        widget.SetMRMLApplicationLogic(slicer.app.applicationLogic())
+        p2 = dnaArray.shape[1]
+        widget.UpdateWindowLevelFromRectangle(0, [0, 0], [p2, p2])
+
+        # Fix window/level values
+        widget = slicer.vtkMRMLWindowLevelWidget()
+        widget.SetSliceNode(slicer.util.getNode('vtkMRMLSliceNodeGreen'))
+        widget.SetMRMLApplicationLogic(slicer.app.applicationLogic())
+        widget.UpdateWindowLevelFromRectangle(0, [0, 0], [p2, p2])
+
+        # Fix window/level values
+        widget = slicer.vtkMRMLWindowLevelWidget()
+        widget.SetSliceNode(slicer.util.getNode('vtkMRMLSliceNodeYellow'))
+        widget.SetMRMLApplicationLogic(slicer.app.applicationLogic())
+        widget.UpdateWindowLevelFromRectangle(0, [0, 0], [p2, p2])
+
         return nCells
 
 
@@ -2025,6 +2044,23 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         green_logic = green_widget.sliceLogic()
         green_logic.GetSliceCompositeNode().SetBackgroundVolumeID(channelTwoNode.GetID())
 
+        # Fix window/level values
+        widget = slicer.vtkMRMLWindowLevelWidget()
+        widget.SetSliceNode(slicer.util.getNode('vtkMRMLSliceNodeRed'))
+        widget.SetMRMLApplicationLogic(slicer.app.applicationLogic())
+        p2 = cellMaskArray.shape[1]
+        widget.UpdateWindowLevelFromRectangle(0, [0, 0], [p2, p2])
+
+        # Fix window/level values
+        widget = slicer.vtkMRMLWindowLevelWidget()
+        widget.SetSliceNode(slicer.util.getNode('vtkMRMLSliceNodeGreen'))
+        widget.SetMRMLApplicationLogic(slicer.app.applicationLogic())
+        p1 = cellMaskArray.shape[1] // 2
+        p2 = cellMaskArray.shape[2] // 2
+        widget.UpdateWindowLevelFromRectangle(0, [p1, p1], [p2, p2])
+
+
+
         slicer.util.resetSliceViews()
 
         # # Scatter plot gating signal
@@ -2218,6 +2254,27 @@ class HypModuleLogic(ScriptedLoadableModuleLogic):
         green_widget.setSliceOrientation("Axial")
         green_logic = green_widget.sliceLogic()
         green_logic.GetSliceCompositeNode().SetBackgroundVolumeID(channelNode.GetID())
+
+        # Fix window/level values
+        widget = slicer.vtkMRMLWindowLevelWidget()
+        widget.SetSliceNode(slicer.util.getNode('vtkMRMLSliceNodeRed'))
+        widget.SetMRMLApplicationLogic(slicer.app.applicationLogic())
+        p1 = channelArray.shape[1] // 2
+        p2 = channelArray.shape[2] // 2
+        widget.UpdateWindowLevelFromRectangle(0, [p1, p1], [p2, p2])
+
+        # Fix window/level values
+        widget = slicer.vtkMRMLWindowLevelWidget()
+        widget.SetSliceNode(slicer.util.getNode('vtkMRMLSliceNodeGreen'))
+        widget.SetMRMLApplicationLogic(slicer.app.applicationLogic())
+        widget.UpdateWindowLevelFromRectangle(0, [p1, p1], [p2, p2])
+
+        # Fix window/level values
+        widget = slicer.vtkMRMLWindowLevelWidget()
+        widget.SetSliceNode(slicer.util.getNode('vtkMRMLSliceNodeYellow'))
+        widget.SetMRMLApplicationLogic(slicer.app.applicationLogic())
+        p2 = channelArray.shape[1]
+        widget.UpdateWindowLevelFromRectangle(0, [0, 0], [p2, p2])
 
         slicer.util.resetSliceViews()
 
