@@ -6,6 +6,7 @@
 3.	In the file explorer that pops up, navigate to where you’ve saved the folder “TITAN”. Select the folder.
 4.	In the popup, select “Add selected module to search paths”, then click “Yes”. The extension will take some time to install. You may track the progress in the Python Interactor.
 5.	In the “Modules” section of the toolbar, find “TITAN” and open the module.
+6.	Go to "Edit" -> "Application Settings" and update "Default scene location" to the desired folder for saving results.
 
 ## Loading Data
 1.	Open 3D Slicer. In the “Modules” section of the toolbar, find “TITAN” and open the module.
