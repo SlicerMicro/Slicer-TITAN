@@ -57,7 +57,7 @@ selectedGates = None
 
 
 #
-# HypModule
+# TITAN Module
 #
 
 class HypModuleCode(ScriptedLoadableModule):
@@ -97,7 +97,7 @@ This file was originally developed by Sindhura Thirumal, Med-i Lab at Queen's Un
         slicer.selfTests[self.moduleName] = self.runTest
 
 #
-# HypModuleWidget
+# TITAN Module Widget
 #
 
 class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
@@ -730,7 +730,7 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
 
 
 #
-# HypModuleLogic
+# TITAN Module Logic
 #
 
 
