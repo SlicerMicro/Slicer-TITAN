@@ -488,35 +488,20 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         cellCount = len(cellLabels)
         self.ui.selectedCellsCount.text = cellCount
         self.ui.tsneSelectedCellsCount.text = cellCount
-        # print(cellLabels)
-
-        # Get cell mask array
-        # global globalCellMask
-        #
-        # cellMaskId = slicer.app.layoutManager().sliceWidget("Red").sliceLogic().GetSliceCompositeNode().GetBackgroundVolumeID()
-        # cellNode = slicer.util.getNode(cellMaskId)
-        # cellName = cellNode.GetName()
-        #
-        # roi = None
-        #
-        # if "Cell Mask: Selected Cells" in cellName:
-        #     roi = "Selected Cells"
-        # else:
-        #     roi = scatterPlotRoi
 
         cellMaskNode = globalCellMask[scatterPlotRoi]
         cellMaskArray = slicer.util.arrayFromVolume(cellMaskNode)
 
         selectedCellsMask = np.copy(cellMaskArray)
-        # print(np.unique(selectedCellsMask))
+
         # Remove cells in the array that aren't part of the selected cells
         for cell in np.unique(selectedCellsMask):
             if cell != 0:
                 if str(cell) not in cellLabels:
                     selectedCellsMask[selectedCellsMask == cell] = 0
-        # print(np.unique(selectedCellsMask))
+
         # Create new cell mask image
-        name = self.ui.selectedCellsName.text
+        name = self.ui.selectedCellsName.text + " - " + str(cellCount) + " Cells"
 
         volumeNode = slicer.modules.volumes.logic().CloneVolume(cellMaskNode, name)
         slicer.util.updateVolumeFromArray(volumeNode, selectedCellsMask)
@@ -525,9 +510,6 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         globalCellMask[name] = volumeNode
 
         # Change colormap of volume
-        # labels = slicer.util.getFirstNodeByName("Labels")
-        # maskDisplayNode = volumeNode.GetScalarVolumeDisplayNode()
-        # maskDisplayNode.SetAndObserveColorNodeID(labels.GetID())
         red_logic = slicer.app.layoutManager().sliceWidget("Red").sliceLogic()
         red_logic.GetSliceCompositeNode().SetBackgroundVolumeID(volumeNode.GetID())
 
