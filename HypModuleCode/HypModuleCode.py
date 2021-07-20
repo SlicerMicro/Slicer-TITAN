@@ -183,7 +183,6 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
         self.ui.crtKMeans.connect('clicked(bool)', self.onCreateKMeans)
         self.ui.crtHierarch.connect('clicked(bool)', self.onHierarchicalCluster)
         self.ui.crtRawData.connect('clicked(bool)', self.onCreateRawData)
-        self.ui.crtPhenograph.connect('clicked(bool)', self.onPhenograph)
 
     def onReset(self):
         slicer.util.resetSliceViews()
@@ -713,19 +712,6 @@ class HypModuleCodeWidget(ScriptedLoadableModuleWidget):
     def onHierarchicalCluster(self):
         logic = HypModuleLogic()
         logic.clusterRun(nClusters=self.ui.nClusters.value, clusterType="hierarchical")
-
-    def onPhenograph(self):
-        if selectedChannel is None or len(selectedChannel) < 1:
-            self.ui.advancedErrorMessage.text = "ERROR: Minimum 1 channel should be selected."
-            return
-        elif selectedRoi is None or len(selectedRoi) != 1:
-            self.ui.advancedErrorMessage.text = "ERROR: Only 1 ROI should be selected."
-            return
-        else:
-            self.ui.advancedErrorMessage.text = ""
-
-        logic = HypModuleLogic()
-        logic.phenographRun()
 
     def onCreateRawData(self):
         logic = HypModuleLogic()
