@@ -1,4 +1,4 @@
-![logo v2](https://user-images.githubusercontent.com/21988487/126827263-15f356e4-bef0-4244-8e0e-8a763e223242.PNG)
+<img src="https://user-images.githubusercontent.com/21988487/126827263-15f356e4-bef0-4244-8e0e-8a763e223242.PNG" alt="logo" width="200"/>
 
 TITAN is an extension developed for 3D Slicer that is responsible for the pre-processing and analysis tasks of imaging mass cytometry (IMC) data. It performs visualization, segmentation, and various analyses functions on IMC data.
 
