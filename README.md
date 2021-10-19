@@ -29,9 +29,9 @@ Example:
 
 ![thumbnails](https://user-images.githubusercontent.com/21988487/137831462-d2ef70f1-b501-401c-a4f9-65db554cd286.png)
 
-a) Download "BaselTMA_SP41_15.475kx12.665ky_10000x8500_5_20170905_90_88_X11Y5_242_a0_v2" folder in Sample Data and load into TITAN (refer to "Loading Data" section).
-b) In Data Selection tab, select ROI and channels "cd3", "cd20", "cd45", "cd68", "panck", and "PR".
-c) In Visualization tab, click "View Thumbnails".
+1. Download "BaselTMA_SP41_15.475kx12.665ky_10000x8500_5_20170905_90_88_X11Y5_242_a0_v2" folder in Sample Data and load into TITAN (refer to "Loading Data" section).
+2. In Data Selection tab, select ROI and channels "cd3", "cd20", "cd45", "cd68", "panck", and "PR".
+3. In Visualization tab, click "View Thumbnails".
 
 ### Image Overlay
 1.	In Visualization tab, select an ROI from the “ROI:” dropdown menu.
@@ -41,8 +41,9 @@ Example:
 
 ![visualization](https://user-images.githubusercontent.com/21988487/137831877-2cde6849-1a52-40d9-a10b-7644988e517f.png)
 
-a) Download "BaselTMA_SP41_15.475kx12.665ky_10000x8500_5_20170905_90_88_X11Y5_242_a0_v2" folder in Sample Data and load into TITAN (refer to "Loading Data" section).
-b) In Visualization tab, select ROI and the following channels for each colour:
+
+1. Download "BaselTMA_SP41_15.475kx12.665ky_10000x8500_5_20170905_90_88_X11Y5_242_a0_v2" folder in Sample Data and load into TITAN (refer to "Loading Data" section).
+2. In Visualization tab, select ROI and the following channels for each colour:
 - Red: "panck"
 - Green: "vimentin"
 - Blue: "dna2"
@@ -67,13 +68,14 @@ c.	Click “Set Window/Level”.
 
 Example:
 
-![fig3 v3](https://user-images.githubusercontent.com/21988487/137832208-4faa4345-83f9-4887-b65b-29cb471044a5.png)
+<img src="https://user-images.githubusercontent.com/21988487/137832208-4faa4345-83f9-4887-b65b-29cb471044a5.png" alt="overlay" width="700"/>
 
-a) Download both folders in Sample Data and load into TITAN (refer to "Loading Data" section).
-b) Repeat Example steps in Image Overlay section.
-c) In Visualization tab, click "Get Window/Level".
-d) Select the ROI "BaselTMA_SP41_15.475kx12.665ky_10000x8500_5_20170905_92_239_X11Y3_165_a0". Image will automatically update.
-e) Click "Set Window/Level". Image will adjust based on the values.
+
+1. Download both folders in Sample Data and load into TITAN (refer to "Loading Data" section).
+2. Repeat Example steps in Image Overlay section.
+3. In Visualization tab, click "Get Window/Level".
+4. Select the ROI "BaselTMA_SP41_15.475kx12.665ky_10000x8500_5_20170905_92_239_X11Y3_165_a0". Image will automatically update.
+5. Click "Set Window/Level". Image will adjust based on the values.
 
 
 ## Segmentation
@@ -85,9 +87,9 @@ Example:
 
 ![segmentation](https://user-images.githubusercontent.com/21988487/137832580-ff38af8e-75db-4b0b-8087-266cb8226c52.png)
 
-a) Download "BaselTMA_SP41_15.475kx12.665ky_10000x8500_5_20170905_90_88_X11Y5_242_a0_v2" folder in Sample Data and load into TITAN (refer to "Loading Data" section).
-b) In Data Selection tab, select ROI and "dna2" channel.
-c) In Segmentation tab, keep default parameter values and click "Create Nucleus, Cell, and Cytoplasm Masks".
+1. Download "BaselTMA_SP41_15.475kx12.665ky_10000x8500_5_20170905_90_88_X11Y5_242_a0_v2" folder in Sample Data and load into TITAN (refer to "Loading Data" section).
+2. In Data Selection tab, select ROI and "dna2" channel.
+3. In Segmentation tab, keep default parameter values and click "Create Nucleus, Cell, and Cytoplasm Masks".
 
 
 ## Analysis
@@ -99,11 +101,12 @@ Cell masks for ROI must be created prior to using any of the following functions
 3.	Click “Save Table” to save the data in a .csv file if desired.
 
 Example:
+
 ![histogram](https://user-images.githubusercontent.com/21988487/137832797-eb54bc4b-6e27-456b-98fe-144f33e75e42.png)
 
-a) Download "BaselTMA_SP41_15.475kx12.665ky_10000x8500_5_20170905_90_88_X11Y5_242_a0_v2" folder in Sample Data and load into TITAN (refer to "Loading Data" section).
-b) In Data Selection, select ROI and "cd3", "cd20", "cd45" channels.
-c) In Analysis tab, click "Create Histogram".
+1. Download "BaselTMA_SP41_15.475kx12.665ky_10000x8500_5_20170905_90_88_X11Y5_242_a0_v2" folder in Sample Data and load into TITAN (refer to "Loading Data" section).
+2. In Data Selection, select ROI and "cd3", "cd20", "cd45" channels.
+3. In Analysis tab, click "Create Histogram".
 
 ### Heat Map
 1.	In Data Selection, select at least one ROI and channel.
@@ -118,9 +121,9 @@ Example:
 
 ![heatmap overlay](https://user-images.githubusercontent.com/21988487/137832882-7d64a03b-76aa-400b-8ce9-4f09824914dc.png)
 
-a) Download "BaselTMA_SP41_15.475kx12.665ky_10000x8500_5_20170905_90_88_X11Y5_242_a0_v2" folder in Sample Data and load into TITAN (refer to "Loading Data" section).
-b) In Data Selection, select ROI and "cd3" channel.
-c) In Analysis, click "Create Heatmap on Selected Channel".
+1. Download "BaselTMA_SP41_15.475kx12.665ky_10000x8500_5_20170905_90_88_X11Y5_242_a0_v2" folder in Sample Data and load into TITAN (refer to "Loading Data" section).
+2. In Data Selection, select ROI and "cd3" channel.
+3. In Analysis, click "Create Heatmap on Selected Channel".
 
 ### Scatter Plot
 1.	In Data Selection, select one ROI and one channel.
@@ -141,15 +144,15 @@ Example:
 ![gating on plot](https://user-images.githubusercontent.com/21988487/137833736-1ca21b12-2f94-4e32-b2df-4b7af93ab237.png)
 
 
-a) Download "BaselTMA_SP41_15.475kx12.665ky_10000x8500_5_20170905_90_88_X11Y5_242_a0_v2" folder in Sample Data and load into TITAN (refer to "Loading Data" section).
-b) In Data Selection, select ROI and "panck" and "cd45" channels.
-c) In Analysis, click "Create Scatter Plot".
-d) In plot window (top right), click the pin icon to open the plot menu.
-e) In the “Interaction mode” drop down, select “select points”.
-f) Make selection on the cluster of points found in the bottom right of plot (shown in image).
-g) In the box below, select the mask name in order to use for further scatter plot analysis.
-h) In Data Selection, choose "cd3" and "cd68" channels.
-i) In Analysis, click “Create Scatter Plot”.
+1. Download "BaselTMA_SP41_15.475kx12.665ky_10000x8500_5_20170905_90_88_X11Y5_242_a0_v2" folder in Sample Data and load into TITAN (refer to "Loading Data" section).
+2. In Data Selection, select ROI and "panck" and "cd45" channels.
+3. In Analysis, click "Create Scatter Plot".
+4. In plot window (top right), click the pin icon to open the plot menu.
+5. In the “Interaction mode” drop down, select “select points”.
+6. Make selection on the cluster of points found in the bottom right of plot (shown in image).
+7. In the box below, select the mask name in order to use for further scatter plot analysis.
+8. In Data Selection, choose "cd3" and "cd68" channels.
+9. In Analysis, click “Create Scatter Plot”.
 
 ### Gating on Image/Cell Mask
 1.	Type in the name of your gate (eg. T cells)
@@ -165,16 +168,16 @@ Example:
 
 ![gating on mask](https://user-images.githubusercontent.com/21988487/137833809-aebc8b5d-8a97-4830-9008-be7efeb8df66.png)
 
-a) Download "BaselTMA_SP41_15.475kx12.665ky_10000x8500_5_20170905_90_88_X11Y5_242_a0_v2" folder in Sample Data and load into TITAN (refer to "Loading Data" section).
-b) In Data Selection, select ROI and any two channels.
-c) In Analysis, click "Create Scatter Plot".
-d) In the Slicer toolbar, click ![segment editor](https://user-images.githubusercontent.com/21988487/137834050-3aacaaf7-401a-4a06-8cc3-c5da7d8dc05e.PNG). This will take you to the “Segment Editor” module.
-e) Click “Add” --> “Draw”.
-f) If cell mask is not displayed, select the cell mask in the dropdown menu in red toolbar. Draw selection similar to the one shown in this image and then right-click to create the selection.
-g) Navigate back to “TITAN” module and click “Update plot from image selection in Analysis.
-h) In the box below, select the mask name in order to use for further scatter plot analysis.
-i) In Data Selection, choose "vimentin" and "panck" channels.
-j) In Analysis, click “Create Scatter Plot”.
+1. Download "BaselTMA_SP41_15.475kx12.665ky_10000x8500_5_20170905_90_88_X11Y5_242_a0_v2" folder in Sample Data and load into TITAN (refer to "Loading Data" section).
+2. In Data Selection, select ROI and any two channels.
+3. In Analysis, click "Create Scatter Plot".
+4. In the Slicer toolbar, click ![segment editor](https://user-images.githubusercontent.com/21988487/137834050-3aacaaf7-401a-4a06-8cc3-c5da7d8dc05e.PNG). This will take you to the “Segment Editor” module.
+5. Click “Add” --> “Draw”.
+6. If cell mask is not displayed, select the cell mask in the dropdown menu in red toolbar. Draw selection similar to the one shown in this image and then right-click to create the selection.
+7. Navigate back to “TITAN” module and click “Update plot from image selection in Analysis.
+8. In the box below, select the mask name in order to use for further scatter plot analysis.
+9. In Data Selection, choose "vimentin" and "panck" channels.
+10. In Analysis, click “Create Scatter Plot”.
 
 ## Advanced Analysis
 Cell masks for ROI must be created prior to using any of the following functions. Following functions can also be very computationally intensive depending on the data (i.e. number of cells, number of channels, etc.), can take significant amount of time to run.
