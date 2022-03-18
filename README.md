@@ -11,7 +11,7 @@ Thirumal, S., Jamzad, A., Cotechini, T., et al. TITAN: An End-to-End Data Analys
 ![overview v2](https://user-images.githubusercontent.com/21988487/126827330-1b7fec78-3358-4d61-b2a9-9510cc3d13c8.png)
 
 ## Installation
-1.	Install the preview release of 3D Slicer.
+1.	Install the <b><i>Preview Release</i></b> of 3D Slicer.
 2.	Open 3D Slicer. Open “Extensions Manager” ![image](https://user-images.githubusercontent.com/21988487/152819116-8b75f7f9-3436-4df7-a99b-ff71759440ee.png).
 3.	Search “Titan”. Select "Install".
 4.	Restart 3D Slicer. TITAN should now be installed.
