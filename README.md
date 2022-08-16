@@ -2,15 +2,20 @@
 
 TITAN is an extension developed for 3D Slicer that is responsible for the pre-processing and analysis tasks of imaging mass cytometry (IMC) data. It performs visualization, segmentation, and various analyses functions on IMC data.
 
+If using TITAN, please use the following citation:
+
+https://onlinelibrary.wiley.com/doi/10.1002/cyto.a.24535
+
+Thirumal, S., Jamzad, A., Cotechini, T., et al. TITAN: An End-to-End Data Analysis Environment for the Hyperion™ Imaging System. <i>Cytometry Part A</i>, (2022) 1-11.
+
 ![overview v2](https://user-images.githubusercontent.com/21988487/126827330-1b7fec78-3358-4d61-b2a9-9510cc3d13c8.png)
 
 ## Installation
-1.	Open 3D Slicer. In the “Modules” section of the toolbar, find “Extension Wizard” and open the module.
-2.	Select “Select Extension”.
-3.	In the file explorer that pops up, navigate to where you’ve saved the folder “TITAN”. Select the folder.
-4.	In the popup, select “Add selected module to search paths”, then click “Yes”. The extension will take some time to install. You may track the progress in the Python Interactor.
-5.	In the “Modules” section of the toolbar, find “TITAN” and open the module.
-6.	Go to "Edit" -> "Application Settings" and update "Default scene location" to the desired folder for saving results.
+1.	Install the <b><i>Preview Release</i></b> of 3D Slicer.
+2.	Open 3D Slicer. Open “Extensions Manager” ![image](https://user-images.githubusercontent.com/21988487/152819116-8b75f7f9-3436-4df7-a99b-ff71759440ee.png).
+3.	Search “Titan”. Select "Install".
+4.	Restart 3D Slicer. TITAN should now be installed.
+5.	Go to "Edit" -> "Application Settings" and update "Default scene location" to the desired folder for saving results.
 
 ## Loading Data
 1.	Open 3D Slicer. In the “Modules” section of the toolbar, find “TITAN” and open the module.
